@@ -1,7 +1,7 @@
 <template>
   <!-- header -->
   <div
-    class="w-full h-20 fixed top-0 bg-white/70 backdrop-blur-lg z-10 flex flex-row justify-around items-center drop-shadow-lg"
+    class="w-full h-20 fixed top-0 bg-white/30 backdrop-blur-lg z-10 flex flex-row justify-around items-center drop-shadow-lg"
   >
     <!-- title -->
     <div>
@@ -11,8 +11,9 @@
     <!-- search -->
     <div class="w-1/4 flex flex-row items-center">
       <div class="w-full bg-gray-200 p-2 rounded-lg">
-        <form action="" class="content-start flex items-stretch">
+        <form @submit.prevent='getCityWeather(cityName)' class="content-start flex items-stretch">
           <input
+          v-model="cityName"
             type="text"
             class="bg-inherit w-full focus:outline-none text-xl pl-2"
             placeholder="Search City"
@@ -37,7 +38,18 @@
 </template>
 
 <script>
+import { mapActions } from 'pinia'
+import useWeatherStore from '../stores/weather'
+
 export default {
-  name: 'AppHeader'
+  name: 'AppHeader',
+  data() {
+    return {
+      cityName: ''
+    }
+  },
+  methods: {
+    ...mapActions(useWeatherStore, ['getCityWeather'])
+  },
 }
 </script>

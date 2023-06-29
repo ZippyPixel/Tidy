@@ -52,7 +52,7 @@ export default {
             },
             backgroundColor: 'rgba(0,0,0,0.05)',
             fill: true,
-            data: [40, 39, 10, 40, 39, 80, 40]
+            data: [0, 0, 10, 0, 0, 0, 0]
           }
         ]
       },

@@ -13,6 +13,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "axios": "^1.4.0",
     "chart.js": "^4.3.0",
     "pinia": "^2.0.32",
     "tailwind-scrollbar-hide": "^1.1.7",

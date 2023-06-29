@@ -9,12 +9,12 @@
           <!-- sunrise -->
           <div class="flex flex-col items-center">
             <img class="w-[3rem] mb-1" src="../assets/icons/sunrise.png" alt="" />
-            <p class="text-lg font-regular">5:29 AM</p>
+            <p class="text-lg font-regular">{{ astro.sunrise }}</p>
           </div>
           <!-- sunset -->
           <div class="flex flex-col items-center">
             <img class="w-[3rem] mb-1" src="../assets/icons/sunset.png" alt="" />
-            <p class="text-lg font-regular">6:23 PM</p>
+            <p class="text-lg font-regular">{{ astro.sunset }}</p>
           </div>
         </div>
       </div>
@@ -25,12 +25,12 @@
           <!-- moonrise -->
           <div class="flex flex-col items-center">
             <img class="w-[3rem]" src="../assets/icons/moonrise.png" alt="" />
-            <p class="text-lg font-regular">5:29 AM</p>
+            <p class="text-lg font-regular">{{ astro.moonrise }}</p>
           </div>
           <!-- moonset -->
           <div class="flex flex-col items-center">
             <img class="w-[3rem]" src="../assets/icons/moonset.png" alt="" />
-            <p class="text-lg font-regular">6:23 PM</p>
+            <p class="text-lg font-regular">{{ astro.moonset }}</p>
           </div>
         </div>
       </div>
@@ -39,7 +39,13 @@
 </template>
 
 <script>
+import { mapState } from 'pinia'
+import useWeatherStore from '../stores/weather'
+
 export default {
-  name: 'PlanetaryInfo'
+  name: 'PlanetaryInfo',
+  computed: {
+    ...mapState(useWeatherStore, ['astro'])
+  },
 }
 </script>

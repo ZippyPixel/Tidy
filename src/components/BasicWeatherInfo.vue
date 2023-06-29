@@ -4,10 +4,10 @@
     <div class="w-full flex flex-row justify-between items-end">
       <div class="w-fit">
         <p class="text-gray-500">Current Location</p>
-        <p class="text-slate-800 font-medium text-2xl">Dhaka, Bangladesh</p>
+        <p class="text-slate-800 font-medium text-2xl">{{ location }}</p>
       </div>
       <div class="w-fit">
-        <p class="text-gray-500">Thursday, Apr 20</p>
+        <p class="text-gray-500">{{day}}</p>
       </div>
     </div>
     <!-- info -->
@@ -17,7 +17,7 @@
       <!-- chance of rain -->
       <div class="w-24 absolute top-2.5 right-2.5 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
         <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-        <p class="float-right">100%</p>
+        <p class="float-right">{{ chanceOfRain }}%</p>
       </div>
       <div class="w-[90%] h-full mx-auto flex flex-col justify-around">
         <!-- top -->
@@ -25,21 +25,21 @@
           <div class="flex flex-col">
             <div class="flex flex-row items-center mr-5">
               <div class="pr-5 flex flex-col">
-                <p class="text-8xl font-black">27°</p>
+                <p class="text-8xl font-black">{{temperature.avgTemp}}°</p>
                 <div class="flex flex-row justify-between">
                   <div class="flex flex-row">
                     <img src="../assets/icons/mdi_arrow-up.svg" alt="" />
-                    <p>35°C</p>
+                    <p>{{ temperature.maxTemp }}°C</p>
                   </div>
                   <div class="flex flex-row">
                     <img src="../assets/icons/mdi_arrow-down.svg" alt="" />
-                    <p>26°C</p>
+                    <p>{{ temperature.minTemp }}°C</p>
                   </div>
                 </div>
               </div>
               <div>
-                <p class="mb-2 font-normal text-2xl">Haze</p>
-                <p>Feels like 29°</p>
+                <p class="mb-2 font-normal text-2xl">{{ condition }}</p>
+                <p>Feels like {{ temperature.feelsLike }}°</p>
               </div>
             </div>
           </div>
@@ -51,23 +51,23 @@
         <div class="flex flex-row justify-between">
           <div class="flex flex-col">
             <p class="text-xs font-regular text-gray-500">Humidity</p>
-            <p class="text-md font-regular text-black">68%</p>
+            <p class="text-md font-regular text-black">{{ basicWeatherInfo.humidity }}%</p>
           </div>
           <div class="flex flex-col">
             <p class="text-xs font-regular text-gray-500">Visibility</p>
-            <p class="text-md font-regular text-black">3.54 km</p>
+            <p class="text-md font-regular text-black">{{ basicWeatherInfo.visibility }} km</p>
           </div>
           <div class="flex flex-col">
             <p class="text-xs font-regular text-gray-500">Pressure</p>
-            <p class="text-md font-regular text-black">1010 hPa</p>
+            <p class="text-md font-regular text-black">{{ basicWeatherInfo.pressure }} hPa</p>
           </div>
           <div class="flex flex-col">
             <p class="text-xs font-regular text-gray-500">UV</p>
-            <p class="text-md font-regular text-black">Lowest</p>
+            <p class="text-md font-regular text-black">{{ basicWeatherInfo.uv }}</p>
           </div>
           <div class="flex flex-col">
             <p class="text-xs font-regular text-gray-500">Air Quality</p>
-            <p class="text-md font-regular text-black">Poor</p>
+            <p class="text-md font-regular text-black">{{ basicWeatherInfo.airQuality }}</p>
           </div>
         </div>
       </div>
@@ -76,7 +76,13 @@
 </template>
 
 <script>
+import { mapState } from 'pinia'
+import useWeatherStore from '../stores/weather'
+
 export default {
-  name: 'BasicWeatherInfo'
+  name: 'BasicWeatherInfo',
+  computed: {
+    ...mapState(useWeatherStore, ['location', 'day',  'chanceOfRain', 'condition', 'basicWeatherInfo', 'temperature'])
+  },
 }
 </script>
