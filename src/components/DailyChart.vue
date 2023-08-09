@@ -5,7 +5,7 @@
       <p class="font-semibold text-gray-600">Daily Summary</p>
     </div>
     <div class="w-full h-[17rem] mt-5">
-      <LineChart id="line-chart" :options="chartOptions" :data="chartData" />
+      <LineChart id="line-chart" :options="chartOptions" :data="chartDataComputed" />
     </div>
   </div>
 </template>
@@ -13,6 +13,8 @@
 <script>
 import { Line as LineChart } from 'vue-chartjs'
 import 'chart.js/auto'
+import { mapState } from 'pinia'
+import useWeatherStore from '../stores/weather'
 
 export default {
   name: 'DailyChart',
@@ -80,6 +82,23 @@ export default {
         }
       }
     }
-  }
+  },
+  watch: {
+    date(newValue, oldValue) {
+      this.chartData.labels = this.dailySummary[this.date].hours
+      this.chartData.datasets[0].data = this.dailySummary[this.date].tempDataC
+      console.log(this.chartData.labels);
+      //in this line I want to update chart
+    },
+  },
+  computed: {
+    ...mapState(useWeatherStore, ['dailySummary', 'date']),
+    chartDataComputed(){
+      return this.chartData;
+    }
+  },
+  mounted() {
+    // console.log(this.dailySummary[this.date]);
+  },
 }
 </script>
