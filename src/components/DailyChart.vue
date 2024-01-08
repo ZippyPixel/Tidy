@@ -1,12 +1,15 @@
 <template>
   <!-- hourly data -->
-  <div class="w-full h-[21rem] bg-white p-3 rounded-3xl mt-7">
+  <div class="w-full h-[21rem] bg-white p-3 rounded-3xl mt-7" v-if="isDataAvailable">
     <div>
       <p class="font-semibold text-gray-600">Daily Summary</p>
     </div>
     <div class="w-full h-[17rem] mt-5">
       <LineChart id="line-chart" :options="chartOptions" :data="chartDataComputed" />
     </div>
+  </div>
+  <div v-else>
+    No Data
   </div>
 </template>
 
@@ -21,8 +24,35 @@ export default {
   components: { LineChart },
   data() {
     return {
-      chartData: {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 60,
+            grid: {
+              display: false
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    }
+  },
+  computed: {
+    chartDataComputed(){
+      return {
+        labels: this.getChartData.labels,
         datasets: [
           {
             label: '',
@@ -54,51 +84,26 @@ export default {
             },
             backgroundColor: 'rgba(0,0,0,0.05)',
             fill: true,
-            data: [0, 0, 10, 0, 0, 0, 0]
+            data: this.getChartData.data,
           }
         ]
-      },
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            min: 0,
-            max: 100,
-            grid: {
-              display: false
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        }
       }
-    }
-  },
-  watch: {
-    date(newValue, oldValue) {
-      this.chartData.labels = this.dailySummary[this.date].hours
-      this.chartData.datasets[0].data = this.dailySummary[this.date].tempDataC
-      console.log(this.chartData.labels);
-      //in this line I want to update chart
     },
-  },
-  computed: {
+    getChartData() {
+      return this.date && this.dailySummary[this.date] 
+      ? {
+        labels: this.dailySummary[this.date].hours,
+        data: this.dailySummary[this.date].tempDataC,
+      }
+      : {
+        labels: [],
+        data: [],
+      };
+    },
+    isDataAvailable() {
+      return !!this.dailySummary
+    },
     ...mapState(useWeatherStore, ['dailySummary', 'date']),
-    chartDataComputed(){
-      return this.chartData;
-    }
-  },
-  mounted() {
-    // console.log(this.dailySummary[this.date]);
   },
 }
 </script>

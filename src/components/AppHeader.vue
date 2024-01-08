@@ -11,7 +11,7 @@
     <!-- search -->
     <div class="w-1/4 flex flex-row items-center">
       <div class="w-full bg-gray-200 p-2 rounded-lg">
-        <form @submit.prevent='getCityWeather(cityName)' class="content-start flex items-stretch">
+        <form @submit.prevent='fetchCityWeather(cityName)' class="content-start flex items-stretch">
           <input
           v-model="cityName"
             type="text"
@@ -49,6 +49,9 @@ export default {
     }
   },
   methods: {
+    async fetchCityWeather(cityName) {
+      await this.getCityWeather(cityName);
+    },
     ...mapActions(useWeatherStore, ['getCityWeather'])
   },
 }

@@ -21,6 +21,6 @@ import PlanetaryInfo from '../components/PlanetaryInfo.vue'
 
 export default {
   name: 'HomeView',
-  components: { DailyChart, BasicWeatherInfo, WeatherForecast, PlanetaryInfo }
+  components: { DailyChart, BasicWeatherInfo, WeatherForecast, PlanetaryInfo },
 }
 </script>

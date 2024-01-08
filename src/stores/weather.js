@@ -15,21 +15,24 @@ export default defineStore('weather', {
     astro: {}, //sunrise, sunset, moonrise, moonset
     temperature: {}, //current temperature values
     chanceOfRain: '',
-    basicWeatherInfo: {}
+    basicWeatherInfo: {},
+    isLoading: false,
   }),
   actions: {
     async getCityWeather (cityName) {
+      this.isLoading = true;
       const apid = '8bca70a578594fd6b4c142700230605'
       const daysCount = 7
-      try {
-        const response = await axios.get(`http://api.weatherapi.com/v1/forecast.json?key=${apid}&q=${cityName}&days=${daysCount}&aqi=yes&alerts=yes`)
-        console.log(response.data);
-        this.setValues(response.data)
-      } catch (error) {
-        console.log(error)
-      }
+      await axios.get(`http://api.weatherapi.com/v1/forecast.json?key=${apid}&q=${cityName}&days=${daysCount}&aqi=yes&alerts=yes`).then((res) => {
+        this.setValues(res.data)
+        this.isLoading = false;
+      }).catch((err) => {
+        this.isLoading = false;
+        throw err;
+      })
+      
     },
-    setValues(response){
+    async setValues(response){
       //current location
       this.location = `${response.location.name}, ${response.location.country}`
 
@@ -63,14 +66,14 @@ export default defineStore('weather', {
       this.basicWeatherInfo.airQuality = airQualityIndex(response.current.air_quality['us-epa-index'])
 
       //Daily Summary
-      response.forecast.forecastday.map((day) => {
+      await response.forecast.forecastday.map((day) => {
         this.dailySummary[day.date] = {
           hours: [],
           tempDataC: [],
           tempDataF: [],
         };
         day.hour.map((hour, index) => {
-          this.dailySummary[day.date].hours.push(convertToAMPM(index))
+          this.dailySummary[day.date].hours.push(convertToAMPM(index).toString())
           this.dailySummary[day.date].tempDataC.push(hour.temp_c)
           this.dailySummary[day.date].tempDataF.push(hour.temp_f)
         })
