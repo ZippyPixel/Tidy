@@ -30,8 +30,8 @@ export default defineStore('weather', {
         this.isLoading = false;
         throw err;
       })
-      
     },
+
     async setValues(response){
       //current location
       this.location = `${response.location.name}, ${response.location.country}`
