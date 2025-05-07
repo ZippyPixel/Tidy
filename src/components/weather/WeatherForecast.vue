@@ -50,7 +50,7 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
-import { dateToName } from "@helpers/formatDate";
+import { dateToName } from "@/utils/date";
 
 export default {
   name: 'WeatherForecast',
