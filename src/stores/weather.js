@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import moment from 'moment'
-import { airQualityIndex, uvIndex, formatTemperature, formatChanceOfRain } from '@/utils/weather'
+import { airQualityIndex, uvIndex } from '@/utils/weather'
+import weatherMixin from '@/mixins/weatherMixin'
 
 export default defineStore('weather', {
   state: () => ({
@@ -51,17 +51,17 @@ export default defineStore('weather', {
       this.condition = response.current.condition.text
 
       //current chance of rain
-      this.chanceOfRain = formatChanceOfRain(response.forecast.forecastday[0].day.daily_chance_of_rain)
+      this.chanceOfRain = weatherMixin.methods.formatRainChance(response.forecast.forecastday[0].day.daily_chance_of_rain)
 
       //current date
       this.date = response.current.last_updated.split(' ')[0] //"2023-05-07 11:00" => "2023-05-07"
-      this.day = moment(this.date).format('dddd, MMM D')
+      this.day = weatherMixin.methods.formatDate(this.date)
 
       //current temperature values
-      this.temperature.avgTemp = formatTemperature(response.current.temp_c)
-      this.temperature.feelsLike = formatTemperature(response.current.feelslike_c)
-      this.temperature.maxTemp = formatTemperature(response.forecast.forecastday[0].day.maxtemp_c)
-      this.temperature.minTemp = formatTemperature(response.forecast.forecastday[0].day.mintemp_c)
+      this.temperature.avgTemp = weatherMixin.methods.formatTemp(response.current.temp_c)
+      this.temperature.feelsLike = weatherMixin.methods.formatTemp(response.current.feelslike_c)
+      this.temperature.maxTemp = weatherMixin.methods.formatTemp(response.forecast.forecastday[0].day.maxtemp_c)
+      this.temperature.minTemp = weatherMixin.methods.formatTemp(response.forecast.forecastday[0].day.mintemp_c)
 
       //current astronomical values
       this.astro.sunrise = response.forecast.forecastday[0].astro.sunrise
@@ -86,7 +86,7 @@ export default defineStore('weather', {
           tempDataF: []
         }
         day.hour.map((hour, index) => {
-          this.dailySummary[day.date].hours.push(moment().hour(index).format('h a').toLowerCase())
+          this.dailySummary[day.date].hours.push(weatherMixin.methods.formatTime(index))
           this.dailySummary[day.date].tempDataC.push(hour.temp_c)
           this.dailySummary[day.date].tempDataF.push(hour.temp_f)
         })
@@ -98,11 +98,11 @@ export default defineStore('weather', {
       // Update other relevant state properties based on the selected date
       if (date) {
         this.date = date.date;
-        this.day = moment(date.date).format('dddd, MMM D');
+        this.day = weatherMixin.methods.formatDate(date.date);
         this.condition = date.day.condition.text;
-        this.chanceOfRain = formatChanceOfRain(date.day.daily_chance_of_rain);
-        this.temperature.maxTemp = formatTemperature(date.day.maxtemp_c);
-        this.temperature.minTemp = formatTemperature(date.day.mintemp_c);
+        this.chanceOfRain = weatherMixin.methods.formatRainChance(date.day.daily_chance_of_rain);
+        this.temperature.maxTemp = weatherMixin.methods.formatTemp(date.day.maxtemp_c);
+        this.temperature.minTemp = weatherMixin.methods.formatTemp(date.day.mintemp_c);
         this.astro = date.astro;
       }
     }

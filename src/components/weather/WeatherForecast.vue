@@ -50,10 +50,11 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
-import moment from 'moment'
+import weatherMixin from '@/mixins/weatherMixin'
 
 export default {
   name: 'WeatherForecast',
+  mixins: [weatherMixin],
   computed: {
     forecastDayCount() {
       const days = this.forecast?.length || 0;
@@ -63,19 +64,19 @@ export default {
   },
   methods: {
     getDay(dayInfo) {
-      return moment(dayInfo.date).format('dddd');
+      return this.getDayName(dayInfo.date);
     },
     getDate(dayInfo) {
-      return moment(dayInfo.date).format('MMM D');
+      return this.getShortDate(dayInfo.date);
     },
     getMaxTemp(dayInfo) {
-      return `${Math.ceil(dayInfo.day.maxtemp_c)}°`;
+      return this.formatTemp(dayInfo.day.maxtemp_c);
     },
     getMinTemp(dayInfo) {
-      return `${Math.ceil(dayInfo.day.mintemp_c)}°`;
+      return this.formatTemp(dayInfo.day.mintemp_c);
     },
     getChanceOfRain(dayInfo) {
-      return `${dayInfo.day.daily_chance_of_rain}%`
+      return this.formatRainChance(dayInfo.day.daily_chance_of_rain);
     },
     ...mapActions(useWeatherStore, ['setSelectedForecastDate']),
     selectForecastDate(day) {
