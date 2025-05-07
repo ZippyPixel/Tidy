@@ -18,11 +18,11 @@
             class="bg-inherit w-full focus:outline-none text-xl pl-2"
             placeholder="Search City"
           />
-          <button type="submit"><img src="../assets/icons/arrow-right.svg" alt="" /></button>
+          <button type="submit"><img src="@/assets/icons/arrow-right.svg" alt="" /></button>
         </form>
       </div>
       <button>
-        <img src="../assets/icons/gps-location.svg" alt="" class="p-2" />
+        <img src="@/assets/icons/gps-location.svg" alt="" class="p-2" />
       </button>
     </div>
 
@@ -39,7 +39,7 @@
 
 <script>
 import { mapActions } from 'pinia'
-import useWeatherStore from '../stores/weather'
+import useWeatherStore from '@/stores/weather'
 
 export default {
   name: 'AppHeader',
@@ -55,4 +55,4 @@ export default {
     ...mapActions(useWeatherStore, ['getCityWeather'])
   },
 }
-</script>
+</script> 
