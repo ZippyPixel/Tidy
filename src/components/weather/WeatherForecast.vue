@@ -50,7 +50,7 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
-import { dateToName } from "@/utils/date";
+import moment from 'moment'
 
 export default {
   name: 'WeatherForecast',
@@ -62,12 +62,11 @@ export default {
     ...mapState(useWeatherStore, ['forecast', 'selectedForecastDate'])
   },
   methods: {
-    dateToName,
     getDay(dayInfo) {
-      return this.dateToName(dayInfo.date).split(', ')[0];
+      return moment(dayInfo.date).format('dddd');
     },
     getDate(dayInfo) {
-      return this.dateToName(dayInfo.date).split(', ')[1];
+      return moment(dayInfo.date).format('MMM D');
     },
     getMaxTemp(dayInfo) {
       return `${Math.ceil(dayInfo.day.maxtemp_c)}°`;

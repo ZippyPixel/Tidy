@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import { dateToName, convertToAMPM } from '@/utils/date'
+import moment from 'moment'
 import { airQualityIndex, uvIndex, formatTemperature, formatChanceOfRain } from '@/utils/weather'
 
 export default defineStore('weather', {
@@ -55,7 +55,7 @@ export default defineStore('weather', {
 
       //current date
       this.date = response.current.last_updated.split(' ')[0] //"2023-05-07 11:00" => "2023-05-07"
-      this.day = dateToName(this.date)
+      this.day = moment(this.date).format('dddd, MMM D')
 
       //current temperature values
       this.temperature.avgTemp = formatTemperature(response.current.temp_c)
@@ -86,7 +86,7 @@ export default defineStore('weather', {
           tempDataF: []
         }
         day.hour.map((hour, index) => {
-          this.dailySummary[day.date].hours.push(convertToAMPM(index).toString())
+          this.dailySummary[day.date].hours.push(moment().hour(index).format('h a').toLowerCase())
           this.dailySummary[day.date].tempDataC.push(hour.temp_c)
           this.dailySummary[day.date].tempDataF.push(hour.temp_f)
         })
@@ -98,7 +98,7 @@ export default defineStore('weather', {
       // Update other relevant state properties based on the selected date
       if (date) {
         this.date = date.date;
-        this.day = dateToName(date.date);
+        this.day = moment(date.date).format('dddd, MMM D');
         this.condition = date.day.condition.text;
         this.chanceOfRain = formatChanceOfRain(date.day.daily_chance_of_rain);
         this.temperature.maxTemp = formatTemperature(date.day.maxtemp_c);
