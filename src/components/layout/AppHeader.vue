@@ -13,7 +13,7 @@
       <div class="w-full bg-gray-200 p-2 rounded-lg">
         <form @submit.prevent='fetchCityWeather(cityName)' class="content-start flex items-stretch">
           <input
-          v-model="cityName"
+            v-model="cityName"
             type="text"
             class="bg-inherit w-full focus:outline-none text-xl pl-2"
             placeholder="Search City"
@@ -21,8 +21,12 @@
           <button type="submit"><img src="@/assets/icons/arrow-right.svg" alt="" /></button>
         </form>
       </div>
-      <button>
-        <img src="@/assets/icons/gps-location.svg" alt="" class="p-2" />
+      <button
+        @click="handleLocationClick"
+        :disabled="isLoading"
+        :title="locationError || 'Get current location'"
+      >
+        <img src="@/assets/icons/gps-location.svg" alt="Get location" class="p-2" />
       </button>
     </div>
 
@@ -38,7 +42,7 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia'
+import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 
 export default {
@@ -48,11 +52,30 @@ export default {
       cityName: ''
     }
   },
-  methods: {
-    async fetchCityWeather(cityName) {
-      await this.getCityWeather(cityName);
-    },
-    ...mapActions(useWeatherStore, ['getCityWeather'])
+  computed: {
+    ...mapState(useWeatherStore, ['isLoading', 'locationError'])
   },
+  methods: {
+    ...mapActions(useWeatherStore, {
+      getCityWeather: 'getCityWeather',
+      detectUserLocation: 'detectUserLocation'
+    }),
+    async fetchCityWeather(cityName) {
+      if (!cityName.trim()) return
+      try {
+        await this.getCityWeather(cityName)
+        this.cityName = '' // Clear input after successful fetch
+      } catch (error) {
+        console.error('Failed to fetch city weather:', error)
+      }
+    },
+    async handleLocationClick() {
+      try {
+        await this.detectUserLocation()
+      } catch (error) {
+        console.error('Location detection failed:', error)
+      }
+    }
+  }
 }
 </script> 

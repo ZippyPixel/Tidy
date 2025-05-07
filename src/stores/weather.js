@@ -20,26 +20,70 @@ export default defineStore('weather', {
     isLoading: false,
     forecast: [],
     weatherByDate: [],
-    selectedForecastDate: null
+    selectedForecastDate: null,
+    userLocation: null,
+    locationError: null
   }),
   actions: {
+    async detectUserLocation() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          this.locationError = 'Geolocation is not supported by your browser'
+          reject(new Error(this.locationError))
+          return
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords
+            this.userLocation = { latitude, longitude }
+            try {
+              await this.getWeatherByCoords(latitude, longitude)
+              resolve()
+            } catch (error) {
+              reject(error)
+            }
+          },
+          (error) => {
+            this.locationError = 'Unable to retrieve your location'
+            reject(error)
+          }
+        )
+      })
+    },
+
+    async getWeatherByCoords(latitude, longitude) {
+      this.isLoading = true
+      const { BASE_URL, PARAMS } = API_ENDPOINTS.WEATHER
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
+      
+      try {
+        const response = await axios.get(
+          `${BASE_URL}?key=${apiKey}&q=${latitude},${longitude}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
+        )
+        await this.setValues(response.data)
+      } catch (error) {
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     async getCityWeather(cityName) {
       this.isLoading = true
       const { BASE_URL, PARAMS } = API_ENDPOINTS.WEATHER
       const apiKey = import.meta.env.VITE_WEATHER_API_KEY
       
-      await axios
-        .get(
+      try {
+        const response = await axios.get(
           `${BASE_URL}?key=${apiKey}&q=${cityName}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
         )
-        .then((res) => {
-          this.setValues(res.data)
-          this.isLoading = false
-        })
-        .catch((err) => {
-          this.isLoading = false
-          throw err
-        })
+        await this.setValues(response.data)
+      } catch (error) {
+        throw error
+      } finally {
+        this.isLoading = false
+      }
     },
 
     async setValues(response) {
