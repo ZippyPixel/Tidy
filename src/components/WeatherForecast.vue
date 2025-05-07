@@ -12,154 +12,31 @@
     </div>
     <div class="w-full h-full mt-3 bg-gray-200 rounded-3xl p-3">
       <div>
-        <p class="font-semibold text-gray-600">7 Days Forecast</p>
+        <p class="font-semibold text-gray-600">{{forecastDayCount}}</p>
         <!-- days list -->
         <div class="mt-5 max-h-[37rem] overflow-y-auto scrollbar-hide">
           <!-- day -->
           <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
+            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700 cursor-pointer"
+            v-for="day in forecast"
+            :key="day.date"
+            @click.prevent="selectForecastDate(day)"
+            >
             <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
+              <p class="text-center font-medium">{{ getDay(day) }}</p>
+              <p class="font-thin text-sm">{{ getDate(day) }}</p>
             </div>
             <div class="flex flex-row items-center justify-between">
               <div>
                 <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
               </div>
               <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
+                <div class="text-xl font-semibold">{{ getMaxTemp(day) }}</div>
+                <div class="text-gray-500">{{ getMinTemp(day) }}</div>
               </div>
               <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
                 <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
-            </div>
-            <div class="flex flex-row items-center justify-between">
-              <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
-              </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
-              </div>
-              <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
-            </div>
-            <div class="flex flex-row items-center justify-between">
-              <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
-              </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
-              </div>
-              <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
-            </div>
-            <div class="flex flex-row items-center justify-between">
-              <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
-              </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
-              </div>
-              <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
-            </div>
-            <div class="flex flex-row items-center justify-between">
-              <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
-              </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
-              </div>
-              <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
-            </div>
-            <div class="flex flex-row items-center justify-between">
-              <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
-              </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
-              </div>
-              <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700"
-          >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium">Wednesday</p>
-              <p class="font-thin text-sm">April 26th</p>
-            </div>
-            <div class="flex flex-row items-center justify-between">
-              <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
-              </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold">37°</div>
-                <div class="text-gray-500">26°</div>
-              </div>
-              <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
-                <p class="float-right">100%</p>
+                <p class="float-right">{{ getChanceOfRain(day) }}</p>
               </div>
             </div>
           </div>
@@ -170,7 +47,39 @@
 </template>
 
 <script>
+import { mapState } from 'pinia'
+import useWeatherStore from '../stores/weather'
+import { dateToName } from "@helpers/formatDate";
+
 export default {
-  name: 'WeatherForecast'
+  name: 'WeatherForecast',
+  computed: {
+    forecastDayCount() {
+      const days = this.forecast?.length || 0;
+      return `${days} ${days > 1 ? 'Days' : 'Day'} Forecast`;
+    },
+    ...mapState(useWeatherStore, ['forecast'])
+  },
+  methods: {
+    dateToName,
+    getDay(dayInfo) {
+      return this.dateToName(dayInfo.date).split(', ')[0];
+    },
+    getDate(dayInfo) {
+      return this.dateToName(dayInfo.date).split(', ')[1];
+    },
+    getMaxTemp(dayInfo) {
+      return `${Math.ceil(dayInfo.day.maxtemp_c)}°`;
+    },
+    getMinTemp(dayInfo) {
+      return `${Math.ceil(dayInfo.day.mintemp_c)}°`;
+    },
+    getChanceOfRain(dayInfo) {
+      return `${dayInfo.day.daily_chance_of_rain}%`
+    },
+    selectForecastDate(day) {
+      console.log(day);
+    },
+  },
 }
 </script>
