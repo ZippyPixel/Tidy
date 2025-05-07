@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import { WEATHER_API, AIR_QUALITY_LEVELS, UV_INDEX_LEVELS } from '@/constants/weather'
+import { AIR_QUALITY_LEVELS, UV_INDEX_LEVELS } from '@/constants/weather'
+import { API_ENDPOINTS, API_CONFIG } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
 
 export default defineStore('weather', {
@@ -24,10 +25,12 @@ export default defineStore('weather', {
   actions: {
     async getCityWeather(cityName) {
       this.isLoading = true
-      const { BASE_URL, KEY, DAYS_COUNT, PARAMS } = WEATHER_API
+      const { BASE_URL, PARAMS } = API_ENDPOINTS.WEATHER
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
+      
       await axios
         .get(
-          `${BASE_URL}?key=${KEY}&q=${cityName}&days=${DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
+          `${BASE_URL}?key=${apiKey}&q=${cityName}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
         )
         .then((res) => {
           this.setValues(res.data)

@@ -1,13 +1,3 @@
-export const WEATHER_API = {
-  BASE_URL: 'http://api.weatherapi.com/v1/forecast.json',
-  KEY: '8bca70a578594fd6b4c142700230605',
-  DAYS_COUNT: 7,
-  PARAMS: {
-    AQI: 'yes',
-    ALERTS: 'yes'
-  }
-}
-
 export const AIR_QUALITY_LEVELS = {
   GOOD: 1,
   MODERATE: 2,
