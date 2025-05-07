@@ -14,10 +14,10 @@
 </template>
 
 <script>
-import DailyChart from '../components/DailyChart.vue'
-import BasicWeatherInfo from '../components/BasicWeatherInfo.vue'
-import WeatherForecast from '../components/WeatherForecast.vue'
-import PlanetaryInfo from '../components/PlanetaryInfo.vue'
+import DailyChart from '@/components/weather/DailyChart.vue'
+import BasicWeatherInfo from '@/components/weather/BasicWeatherInfo.vue'
+import WeatherForecast from '@/components/weather/WeatherForecast.vue'
+import PlanetaryInfo from '@/components/weather/PlanetaryInfo.vue'
 
 export default {
   name: 'HomeView',

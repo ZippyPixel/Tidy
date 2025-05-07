@@ -16,7 +16,7 @@
     >
       <!-- chance of rain -->
       <div class="w-24 absolute top-2.5 right-2.5 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-        <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
+        <img class="float-left" src="@/assets/icons/mdi_weather-heavy-rain.svg" alt="" />
         <p class="float-right">{{ chanceOfRain }}%</p>
       </div>
       <div class="w-[90%] h-full mx-auto flex flex-col justify-around">
@@ -28,11 +28,11 @@
                 <p class="text-8xl font-black">{{temperature.avgTemp}}°</p>
                 <div class="flex flex-row justify-between">
                   <div class="flex flex-row">
-                    <img src="../assets/icons/mdi_arrow-up.svg" alt="" />
+                    <img src="@/assets/icons/mdi_arrow-up.svg" alt="" />
                     <p>{{ temperature.maxTemp }}°C</p>
                   </div>
                   <div class="flex flex-row">
-                    <img src="../assets/icons/mdi_arrow-down.svg" alt="" />
+                    <img src="@/assets/icons/mdi_arrow-down.svg" alt="" />
                     <p>{{ temperature.minTemp }}°C</p>
                   </div>
                 </div>
@@ -44,7 +44,7 @@
             </div>
           </div>
           <div>
-            <img class="w-[80%] float-right" src="../assets/icons/weather-icon.svg" alt="" />
+            <img class="w-[80%] float-right" src="@/assets/icons/weather-icon.svg" alt="" />
           </div>
         </div>
         <!-- bottom -->
@@ -77,7 +77,7 @@
 
 <script>
 import { mapState } from 'pinia'
-import useWeatherStore from '../stores/weather'
+import useWeatherStore from '@/stores/weather'
 
 export default {
   name: 'BasicWeatherInfo',
@@ -85,4 +85,4 @@ export default {
     ...mapState(useWeatherStore, ['location', 'day',  'chanceOfRain', 'condition', 'basicWeatherInfo', 'temperature'])
   },
 }
-</script>
+</script> 

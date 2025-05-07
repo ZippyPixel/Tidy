@@ -17,7 +17,7 @@
 import { Line as LineChart } from 'vue-chartjs'
 import 'chart.js/auto'
 import { mapState } from 'pinia'
-import useWeatherStore from '../stores/weather'
+import useWeatherStore from '@/stores/weather'
 
 export default {
   name: 'DailyChart',
@@ -106,4 +106,4 @@ export default {
     ...mapState(useWeatherStore, ['dailySummary', 'date']),
   },
 }
-</script>
+</script> 

@@ -8,12 +8,12 @@
         <div class="w-full flex flex-row justify-around my-3">
           <!-- sunrise -->
           <div class="flex flex-col items-center">
-            <img class="w-[3rem] mb-1" src="../assets/icons/sunrise.png" alt="" />
+            <img class="w-[3rem] mb-1" src="@/assets/icons/sunrise.png" alt="" />
             <p class="text-lg font-regular">{{ astro.sunrise }}</p>
           </div>
           <!-- sunset -->
           <div class="flex flex-col items-center">
-            <img class="w-[3rem] mb-1" src="../assets/icons/sunset.png" alt="" />
+            <img class="w-[3rem] mb-1" src="@/assets/icons/sunset.png" alt="" />
             <p class="text-lg font-regular">{{ astro.sunset }}</p>
           </div>
         </div>
@@ -24,12 +24,12 @@
         <div class="w-full flex flex-row justify-around my-3">
           <!-- moonrise -->
           <div class="flex flex-col items-center">
-            <img class="w-[3rem]" src="../assets/icons/moonrise.png" alt="" />
+            <img class="w-[3rem]" src="@/assets/icons/moonrise.png" alt="" />
             <p class="text-lg font-regular">{{ astro.moonrise }}</p>
           </div>
           <!-- moonset -->
           <div class="flex flex-col items-center">
-            <img class="w-[3rem]" src="../assets/icons/moonset.png" alt="" />
+            <img class="w-[3rem]" src="@/assets/icons/moonset.png" alt="" />
             <p class="text-lg font-regular">{{ astro.moonset }}</p>
           </div>
         </div>
@@ -40,7 +40,7 @@
 
 <script>
 import { mapState } from 'pinia'
-import useWeatherStore from '../stores/weather'
+import useWeatherStore from '@/stores/weather'
 
 export default {
   name: 'PlanetaryInfo',
@@ -48,4 +48,4 @@ export default {
     ...mapState(useWeatherStore, ['astro'])
   },
 }
-</script>
+</script> 

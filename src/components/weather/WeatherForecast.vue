@@ -29,14 +29,14 @@
             </div>
             <div class="flex flex-row items-center justify-between">
               <div>
-                <img class="w-[80px]" src="../assets/icons/weather-icon.svg" alt="" />
+                <img class="w-[80px]" src="@/assets/icons/weather-icon.svg" alt="" />
               </div>
               <div class="w-16 flex flex-row justify-between items-end">
                 <div class="text-xl font-semibold">{{ getMaxTemp(day) }}</div>
                 <div class="text-gray-500">{{ getMinTemp(day) }}</div>
               </div>
               <div class="w-24 py-1 px-3 bg-gray-50 drop-shadow-sm rounded-3xl">
-                <img class="float-left" src="../assets/icons/mdi_weather-heavy-rain.svg" alt="" />
+                <img class="float-left" src="@/assets/icons/mdi_weather-heavy-rain.svg" alt="" />
                 <p class="float-right">{{ getChanceOfRain(day) }}</p>
               </div>
             </div>
@@ -49,7 +49,7 @@
 
 <script>
 import { mapState, mapActions } from 'pinia'
-import useWeatherStore from '../stores/weather'
+import useWeatherStore from '@/stores/weather'
 import { dateToName } from "@helpers/formatDate";
 
 export default {
@@ -84,4 +84,4 @@ export default {
     },
   },
 }
-</script>
+</script> 
