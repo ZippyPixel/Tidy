@@ -97,12 +97,3 @@ src/
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Weather data provided by [WeatherAPI.com](https://www.weatherapi.com/)
-- Icons from [Material Design Icons](https://materialdesignicons.com/)
-- Built with [Vue.js](https://vuejs.org/)
