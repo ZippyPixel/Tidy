@@ -1,25 +1,25 @@
 import moment from 'moment'
-import { formatTemperature, formatChanceOfRain } from '@/utils/weather'
+import { DATE_FORMATS, TEMPERATURE, RAIN_CHANCE } from '@/constants/weather'
 
 export default {
   methods: {
-    formatDate(date, format = 'dddd, MMM D') {
+    formatDate(date, format = DATE_FORMATS.FULL) {
       return moment(date).format(format)
     },
     formatTime(hour) {
-      return moment().hour(hour).format('h a').toLowerCase()
+      return moment().hour(hour).format(DATE_FORMATS.TIME).toLowerCase()
     },
     formatTemp(temp) {
-      return formatTemperature(temp)
+      return `${Math.ceil(temp)}${TEMPERATURE.DEGREE_SYMBOL}`
     },
     formatRainChance(chance) {
-      return formatChanceOfRain(chance)
+      return `${chance}${RAIN_CHANCE.PERCENTAGE_SYMBOL}`
     },
     getDayName(date) {
-      return moment(date).format('dddd')
+      return moment(date).format(DATE_FORMATS.DAY)
     },
     getShortDate(date) {
-      return moment(date).format('MMM D')
+      return moment(date).format(DATE_FORMATS.SHORT_DATE)
     }
   }
 } 

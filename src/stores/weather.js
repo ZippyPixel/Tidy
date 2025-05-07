@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import { airQualityIndex, uvIndex } from '@/utils/weather'
+import { WEATHER_API, AIR_QUALITY_LEVELS, UV_INDEX_LEVELS } from '@/constants/weather'
 import weatherMixin from '@/mixins/weatherMixin'
 
 export default defineStore('weather', {
@@ -24,11 +24,10 @@ export default defineStore('weather', {
   actions: {
     async getCityWeather(cityName) {
       this.isLoading = true
-      const apid = '8bca70a578594fd6b4c142700230605'
-      const daysCount = 7
+      const { BASE_URL, KEY, DAYS_COUNT, PARAMS } = WEATHER_API
       await axios
         .get(
-          `http://api.weatherapi.com/v1/forecast.json?key=${apid}&q=${cityName}&days=${daysCount}&aqi=yes&alerts=yes`
+          `${BASE_URL}?key=${KEY}&q=${cityName}&days=${DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
         )
         .then((res) => {
           this.setValues(res.data)
@@ -73,8 +72,8 @@ export default defineStore('weather', {
       this.basicWeatherInfo.humidity = response.current.humidity
       this.basicWeatherInfo.visibility = response.current.vis_km
       this.basicWeatherInfo.pressure = response.current.pressure_mb
-      this.basicWeatherInfo.uv = uvIndex(response.current.uv)
-      this.basicWeatherInfo.airQuality = airQualityIndex(
+      this.basicWeatherInfo.uv = this.getUVIndexLevel(response.current.uv)
+      this.basicWeatherInfo.airQuality = this.getAirQualityLevel(
         response.current.air_quality['us-epa-index']
       )
 
@@ -91,6 +90,43 @@ export default defineStore('weather', {
           this.dailySummary[day.date].tempDataF.push(hour.temp_f)
         })
       })
+    },
+
+    getAirQualityLevel(index) {
+      switch (index) {
+        case AIR_QUALITY_LEVELS.GOOD:
+          return 'Good'
+        case AIR_QUALITY_LEVELS.MODERATE:
+          return 'Moderate'
+        case AIR_QUALITY_LEVELS.UNHEALTHY:
+        case AIR_QUALITY_LEVELS.UNHEALTHY + 1:
+          return 'Unhealthy'
+        case AIR_QUALITY_LEVELS.VERY_UNHEALTHY:
+          return 'Very Unhealthy'
+        case AIR_QUALITY_LEVELS.HAZARDOUS:
+          return 'Hazardous'
+        default:
+          return 'Unknown'
+      }
+    },
+
+    getUVIndexLevel(index) {
+      if (index >= UV_INDEX_LEVELS.LOW.min && index <= UV_INDEX_LEVELS.LOW.max) {
+        return 'Low'
+      }
+      if (index >= UV_INDEX_LEVELS.MODERATE.min && index <= UV_INDEX_LEVELS.MODERATE.max) {
+        return 'Moderate'
+      }
+      if (index >= UV_INDEX_LEVELS.HIGH.min && index <= UV_INDEX_LEVELS.HIGH.max) {
+        return 'High'
+      }
+      if (index >= UV_INDEX_LEVELS.VERY_HIGH.min && index <= UV_INDEX_LEVELS.VERY_HIGH.max) {
+        return 'Very High'
+      }
+      if (index >= UV_INDEX_LEVELS.EXTREME.min) {
+        return 'Extreme'
+      }
+      return 'Unknown'
     },
 
     setSelectedForecastDate(date) {
