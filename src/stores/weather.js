@@ -18,7 +18,8 @@ export default defineStore('weather', {
     basicWeatherInfo: {},
     isLoading: false,
     forecast: [],
-    weatherByDate: []
+    weatherByDate: [],
+    selectedForecastDate: null
   }),
   actions: {
     async getCityWeather(cityName) {
@@ -91,7 +92,20 @@ export default defineStore('weather', {
         })
       })
       // this.weatherByDate =
+    },
+
+    setSelectedForecastDate(date) {
+      this.selectedForecastDate = date;
+      // Update other relevant state properties based on the selected date
+      if (date) {
+        this.date = date.date;
+        this.day = dateToName(date.date);
+        this.condition = date.day.condition.text;
+        this.chanceOfRain = date.day.daily_chance_of_rain;
+        this.temperature.maxTemp = Math.ceil(date.day.maxtemp_c);
+        this.temperature.minTemp = Math.ceil(date.day.mintemp_c);
+        this.astro = date.astro;
+      }
     }
-    // setWeatherByDate(date) {}
   }
 })

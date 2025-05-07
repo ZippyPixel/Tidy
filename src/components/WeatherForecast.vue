@@ -18,6 +18,7 @@
           <!-- day -->
           <div
             class="border border-gray-300 p-3 rounded-3xl my-3 hover:bg-white hover:border-white transition-colors duration-700 cursor-pointer"
+            :class="{ 'bg-white border-white': day.date === selectedForecastDate?.date }"
             v-for="day in forecast"
             :key="day.date"
             @click.prevent="selectForecastDate(day)"
@@ -47,7 +48,7 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
+import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '../stores/weather'
 import { dateToName } from "@helpers/formatDate";
 
@@ -58,7 +59,7 @@ export default {
       const days = this.forecast?.length || 0;
       return `${days} ${days > 1 ? 'Days' : 'Day'} Forecast`;
     },
-    ...mapState(useWeatherStore, ['forecast'])
+    ...mapState(useWeatherStore, ['forecast', 'selectedForecastDate'])
   },
   methods: {
     dateToName,
@@ -77,8 +78,9 @@ export default {
     getChanceOfRain(dayInfo) {
       return `${dayInfo.day.daily_chance_of_rain}%`
     },
+    ...mapActions(useWeatherStore, ['setSelectedForecastDate']),
     selectForecastDate(day) {
-      console.log(day);
+      this.setSelectedForecastDate(day);
     },
   },
 }
