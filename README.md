@@ -30,8 +30,18 @@ A modern, responsive weather application built with Vue 3, providing real-time w
 - Node.js (v14 or higher)
 - npm or yarn
 - Git
+- WeatherAPI.com account and API key
 
-## Project Setup
+## Getting Started
+
+### 1. Get Your Weather API Key
+
+1. Visit [WeatherAPI.com](https://www.weatherapi.com/)
+2. Click on "Sign Up" to create a free account
+3. After signing up, you'll be redirected to your dashboard
+4. Your API key will be displayed on the dashboard
+
+### 2. Project Setup
 
 1. Clone the repository:
 ```bash
@@ -46,10 +56,12 @@ npm install
 yarn install
 ```
 
-3. Create a `.env` file in the root directory and add your Weather API key:
-```env
-VITE_WEATHER_API_KEY=your_api_key_here
-```
+3. Set up environment variables:
+   - Copy the `example.env` file to create a new `.env` file:
+   ```bash
+   cp example.env .env
+   ```
+   - Open the `.env` file and replace `your_api_key_here` with your actual WeatherAPI.com API key
 
 4. Start the development server:
 ```bash
