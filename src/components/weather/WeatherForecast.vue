@@ -41,12 +41,8 @@
               <div
                 class="w-24 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-3xl flex flex-row justify-between items-center"
               >
-                <AppIcon
-                  name="rainy"
-                  :size="20"
-                  class="float-left text-blue-500 dark:text-night-muted"
-                />
-                <p class="float-right">{{ getChanceOfRain(day) }}</p>
+                <AppIcon name="rainy" :size="20" class="text-blue-500 dark:text-night-muted" />
+                <p>{{ getChanceOfRain(day) }}</p>
               </div>
             </div>
           </div>
