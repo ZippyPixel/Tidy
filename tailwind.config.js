@@ -6,11 +6,11 @@ module.exports = {
     extend: {
       colors: {
         night: {
-          bg: '#1C0F13',
-          surface: '#1F5673',
+          bg: '#0d1117',
+          surface: '#0D0106',
           text: '#F8FFE5',
           muted: '#8EA8C3',
-          accent: '#4C956C',
+          accent: '#4C956C'
         }
       }
     }
