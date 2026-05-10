@@ -11,14 +11,16 @@
     <!-- search -->
     <div class="w-1/4 flex flex-row items-center">
       <div class="w-full bg-gray-200 p-2 rounded-lg">
-        <form @submit.prevent='fetchCityWeather(cityName)' class="content-start flex items-stretch">
+        <form @submit.prevent="fetchCityWeather(cityName)" class="content-start flex items-stretch">
           <input
             v-model="cityName"
             type="text"
-            class="bg-inherit w-full focus:outline-none text-xl pl-2"
+            class="bg-transparent w-full focus:outline-none text-xl pl-2"
             placeholder="Search City"
           />
-          <button type="submit"><img src="@/assets/icons/arrow-right.svg" alt="" /></button>
+          <button class="flex items-center justify-center" type="submit">
+            <AppIcon name="chevron_right" :size="32" />
+          </button>
         </form>
       </div>
       <button
@@ -44,9 +46,13 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import AppIcon from '@/components/common/AppIcon.vue'
 
 export default {
   name: 'AppHeader',
+  components: {
+    AppIcon
+  },
   data() {
     return {
       cityName: ''
@@ -78,4 +84,4 @@ export default {
     }
   }
 }
-</script> 
+</script>
