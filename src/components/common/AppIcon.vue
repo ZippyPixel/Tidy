@@ -1,6 +1,6 @@
 <template>
   <span
-    class="material-symbols-outlined"
+    class="material-symbols-outlined flex items-center justify-center"
     :style="{
       fontSize: size + 'px',
       fontVariationSettings: `'FILL' ${fill}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${opsz}`
