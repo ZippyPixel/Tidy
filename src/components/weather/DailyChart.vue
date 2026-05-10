@@ -1,8 +1,8 @@
 <template>
   <!-- hourly data -->
-  <div class="w-full h-[21rem] bg-white p-3 rounded-3xl mt-7" v-if="isDataAvailable">
+  <div class="w-full h-[21rem] bg-white dark:bg-night-surface p-3 rounded-3xl mt-7" v-if="isDataAvailable">
     <div>
-      <p class="font-semibold text-gray-600">Daily Summary</p>
+      <p class="font-semibold text-gray-600 dark:text-night-muted">Daily Summary</p>
     </div>
     <div class="w-full h-[17rem] mt-5">
       <LineChart id="line-chart" :options="chartOptions" :data="chartDataComputed" />

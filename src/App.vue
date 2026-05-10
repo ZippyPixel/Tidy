@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen bg-gray-100 dark:bg-night-bg">
     <LoadingOverlay />
     <router-view></router-view>
   </div>
@@ -8,6 +8,7 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import useThemeStore from '@/stores/theme'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 
 export default {
@@ -33,6 +34,8 @@ export default {
     }
   },
   async mounted() {
+    const themeStore = useThemeStore()
+    themeStore.initTheme()
     await this.checkAndDetectLocation()
   }
 }
