@@ -30,3 +30,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Claude
+CLAUDE.md

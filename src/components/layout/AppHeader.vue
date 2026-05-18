@@ -22,14 +22,7 @@
           >
             <AppIcon :name="isDark ? 'light_mode' : 'dark_mode'" :size="24" />
           </button>
-          <select
-            name="unit"
-            id="unit"
-            class="p-2 rounded-md dark:bg-night-surface dark:text-night-text dark:border-night-muted"
-          >
-            <option value="celsius">Celsius</option>
-            <option value="fahrenheit">Fahrenheit</option>
-          </select>
+          <UnitToggle />
         </div>
       </div>
 
@@ -71,11 +64,13 @@ import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import useThemeStore from '@/stores/theme'
 import AppIcon from '@/components/common/AppIcon.vue'
+import UnitToggle from '@/components/ui/UnitToggle.vue'
 
 export default {
   name: 'AppHeader',
   components: {
-    AppIcon
+    AppIcon,
+    UnitToggle
   },
   data() {
     return {
