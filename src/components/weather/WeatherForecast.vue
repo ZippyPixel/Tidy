@@ -1,7 +1,7 @@
 <template>
   <!-- forecast -->
-  <div class="w-[25rem] h-[47rem] flex flex-col justify-stretch">
-    <div class="w-full flex flex-row justify-between items-end invisible">
+  <div class="w-full lg:w-96 h-auto lg:h-[47rem] flex flex-col justify-stretch">
+    <div class="w-full flex flex-row justify-between items-end invisible h-0 lg:h-auto">
       <div class="w-fit">
         <p class="text-gray-500 dark:text-night-muted">C</p>
         <p class="text-slate-800 dark:text-night-text font-medium text-2xl">D</p>
@@ -10,14 +10,14 @@
         <p class="text-gray-500 dark:text-night-muted">T</p>
       </div>
     </div>
-    <div class="w-full h-full mt-3 bg-gray-200 dark:bg-night-surface rounded-3xl p-3">
-      <div>
-        <p class="font-semibold text-gray-600 dark:text-night-muted">{{ forecastDayCount }}</p>
+    <div class="w-full h-full mt-3 bg-gray-200 dark:bg-night-surface rounded-3xl p-4 md:p-6">
+      <div class="h-full flex flex-col">
+        <p class="font-semibold text-gray-600 dark:text-night-muted mb-4">{{ forecastDayCount }}</p>
         <!-- days list -->
-        <div class="mt-5 max-h-[37rem] overflow-y-auto scrollbar-hide">
+        <div class="flex-1 overflow-y-auto scrollbar-hide space-y-3 max-h-80 md:max-h-[26rem] lg:max-h-none">
           <!-- day -->
           <div
-            class="border border-gray-300 dark:border-night-muted/30 p-3 rounded-3xl my-3 hover:bg-white dark:hover:bg-night-bg hover:border-white dark:hover:border-night-bg transition-colors duration-700 cursor-pointer"
+            class="border border-gray-300 dark:border-night-muted/30 p-3 md:p-4 rounded-3xl hover:bg-white dark:hover:bg-night-bg hover:border-white dark:hover:border-night-bg transition-colors duration-700 cursor-pointer"
             :class="{
               'bg-white border-white dark:bg-night-bg dark:border-night-bg':
                 day.date === selectedForecastDate?.date
@@ -26,23 +26,23 @@
             :key="day.date"
             @click.prevent="selectForecastDate(day)"
           >
-            <div class="flex flex-row justify-between items-end">
-              <p class="text-center font-medium dark:text-night-text">{{ getDay(day) }}</p>
-              <p class="font-thin text-sm dark:text-night-muted">{{ getDate(day) }}</p>
+            <div class="flex flex-row justify-between items-center mb-2">
+              <p class="font-medium dark:text-night-text">{{ getDay(day) }}</p>
+              <p class="font-thin text-xs md:text-sm dark:text-night-muted">{{ getDate(day) }}</p>
             </div>
             <div class="flex flex-row items-center justify-between">
               <div>
-                <img class="w-[80px]" src="@/assets/icons/weather-icon.svg" alt="" />
+                <img class="w-12 md:w-16" src="@/assets/icons/weather-icon.svg" alt="" />
               </div>
-              <div class="w-16 flex flex-row justify-between items-end">
-                <div class="text-xl font-semibold dark:text-night-text">{{ getMaxTemp(day) }}</div>
-                <div class="text-gray-500 dark:text-night-muted">{{ getMinTemp(day) }}</div>
+              <div class="flex flex-row items-baseline gap-2">
+                <span class="text-lg md:text-xl font-semibold dark:text-night-text">{{ getMaxTemp(day) }}</span>
+                <span class="text-sm text-gray-500 dark:text-night-muted">{{ getMinTemp(day) }}</span>
               </div>
               <div
-                class="w-24 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-3xl flex flex-row justify-between items-center"
+                class="flex flex-row items-center gap-2 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-full"
               >
-                <AppIcon name="rainy" :size="20" class="text-blue-500 dark:text-night-muted" />
-                <p>{{ getChanceOfRain(day) }}</p>
+                <AppIcon name="rainy" :size="16" class="text-blue-500 dark:text-night-muted" />
+                <p class="text-xs md:text-sm">{{ getChanceOfRain(day) }}</p>
               </div>
             </div>
           </div>
