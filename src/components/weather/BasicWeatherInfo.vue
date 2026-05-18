@@ -31,11 +31,11 @@
                 <div class="flex flex-row justify-between text-sm md:text-base">
                   <div class="flex flex-row mr-2">
                     <img src="@/assets/icons/mdi_arrow-up.svg" alt="" class="w-4 md:w-5" />
-                    <p>{{ temperature.maxTemp }}C</p>
+                    <p>{{ temperature.maxTemp }}{{ unitLabel }}</p>
                   </div>
                   <div class="flex flex-row">
                     <img src="@/assets/icons/mdi_arrow-down.svg" alt="" class="w-4 md:w-5" />
-                    <p>{{ temperature.minTemp }}C</p>
+                    <p>{{ temperature.minTemp }}{{ unitLabel }}</p>
                   </div>
                 </div>
               </div>
@@ -95,6 +95,7 @@
 <script>
 import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import useUnitStore from '@/stores/unit'
 import AppIcon from '@/components/common/AppIcon.vue'
 
 export default {

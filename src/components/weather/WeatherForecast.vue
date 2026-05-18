@@ -55,6 +55,7 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import useUnitStore from '@/stores/unit'
 import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
 
@@ -69,7 +70,8 @@ export default {
       const days = this.forecast?.length || 0
       return `${days} ${days > 1 ? 'Days' : 'Day'} Forecast`
     },
-    ...mapState(useWeatherStore, ['forecast', 'selectedForecastDate'])
+    ...mapState(useWeatherStore, ['forecast', 'selectedForecastDate']),
+    ...mapState(useUnitStore, ['unit'])
   },
   methods: {
     getDay(dayInfo) {
@@ -79,10 +81,14 @@ export default {
       return this.getShortDate(dayInfo.date)
     },
     getMaxTemp(dayInfo) {
-      return this.formatTemp(dayInfo.day.maxtemp_c)
+      return this.unit === 'celsius'
+        ? this.formatTemp(dayInfo.day.maxtemp_c)
+        : this.formatTemp(dayInfo.day.maxtemp_f)
     },
     getMinTemp(dayInfo) {
-      return this.formatTemp(dayInfo.day.mintemp_c)
+      return this.unit === 'celsius'
+        ? this.formatTemp(dayInfo.day.mintemp_c)
+        : this.formatTemp(dayInfo.day.mintemp_f)
     },
     getChanceOfRain(dayInfo) {
       return this.formatRainChance(dayInfo.day.daily_chance_of_rain)

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { AIR_QUALITY_LEVELS, UV_INDEX_LEVELS } from '@/constants/weather'
 import { API_ENDPOINTS, API_CONFIG } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
+import useUnitStore from '@/stores/unit'
 
 export default defineStore('weather', {
   state: () => ({
@@ -14,7 +15,7 @@ export default defineStore('weather', {
     hourlyData: {},
     dailySummary: {},
     astro: {}, //sunrise, sunset, moonrise, moonset
-    temperature: {}, //current temperature values
+    rawTemperature: {}, //stores raw C and F values from API
     chanceOfRain: '',
     basicWeatherInfo: {},
     isLoading: false,
@@ -24,6 +25,19 @@ export default defineStore('weather', {
     userLocation: null,
     locationError: null
   }),
+  getters: {
+    temperature(state) {
+      const isCelsius = useUnitStore().unit === 'celsius'
+      const fmt = weatherMixin.methods.formatTemp
+      const r = state.rawTemperature
+      return {
+        avgTemp: fmt(isCelsius ? r.avgTemp_c : r.avgTemp_f),
+        feelsLike: fmt(isCelsius ? r.feelsLike_c : r.feelsLike_f),
+        maxTemp: fmt(isCelsius ? r.maxTemp_c : r.maxTemp_f),
+        minTemp: fmt(isCelsius ? r.minTemp_c : r.minTemp_f),
+      }
+    }
+  },
   actions: {
     async detectUserLocation() {
       return new Promise((resolve, reject) => {
@@ -103,11 +117,17 @@ export default defineStore('weather', {
       this.date = response.current.last_updated.split(' ')[0] //"2023-05-07 11:00" => "2023-05-07"
       this.day = weatherMixin.methods.formatDate(this.date)
 
-      //current temperature values
-      this.temperature.avgTemp = weatherMixin.methods.formatTemp(response.current.temp_c)
-      this.temperature.feelsLike = weatherMixin.methods.formatTemp(response.current.feelslike_c)
-      this.temperature.maxTemp = weatherMixin.methods.formatTemp(response.forecast.forecastday[0].day.maxtemp_c)
-      this.temperature.minTemp = weatherMixin.methods.formatTemp(response.forecast.forecastday[0].day.mintemp_c)
+      //current temperature values (raw, unit conversion happens in getter)
+      this.rawTemperature = {
+        avgTemp_c: response.current.temp_c,
+        avgTemp_f: response.current.temp_f,
+        feelsLike_c: response.current.feelslike_c,
+        feelsLike_f: response.current.feelslike_f,
+        maxTemp_c: response.forecast.forecastday[0].day.maxtemp_c,
+        maxTemp_f: response.forecast.forecastday[0].day.maxtemp_f,
+        minTemp_c: response.forecast.forecastday[0].day.mintemp_c,
+        minTemp_f: response.forecast.forecastday[0].day.mintemp_f,
+      }
 
       //current astronomical values
       this.astro.sunrise = response.forecast.forecastday[0].astro.sunrise
@@ -184,8 +204,13 @@ export default defineStore('weather', {
         this.day = weatherMixin.methods.formatDate(date.date);
         this.condition = date.day.condition.text;
         this.chanceOfRain = weatherMixin.methods.formatRainChance(date.day.daily_chance_of_rain);
-        this.temperature.maxTemp = weatherMixin.methods.formatTemp(date.day.maxtemp_c);
-        this.temperature.minTemp = weatherMixin.methods.formatTemp(date.day.mintemp_c);
+        this.rawTemperature = {
+          ...this.rawTemperature,
+          maxTemp_c: date.day.maxtemp_c,
+          maxTemp_f: date.day.maxtemp_f,
+          minTemp_c: date.day.mintemp_c,
+          minTemp_f: date.day.mintemp_f,
+        };
         this.astro = date.astro;
       }
     }

@@ -18,38 +18,27 @@ import { Line as LineChart } from 'vue-chartjs'
 import 'chart.js/auto'
 import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import useUnitStore from '@/stores/unit'
 
 export default {
   name: 'DailyChart',
   components: { LineChart },
-  data() {
-    return {
-      chartOptions: {
+  computed: {
+    chartOptions() {
+      return {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
+        plugins: { legend: { display: false } },
         scales: {
           y: {
-            min: 0,
-            max: 60,
-            grid: {
-              display: false
-            }
+            min: this.unit === 'celsius' ? 0 : 32,
+            max: this.unit === 'celsius' ? 60 : 140,
+            grid: { display: false }
           },
-          x: {
-            grid: {
-              display: false
-            }
-          }
+          x: { grid: { display: false } }
         }
       }
-    }
-  },
-  computed: {
+    },
     chartDataComputed(){
       return {
         labels: this.getChartData.labels,
@@ -90,20 +79,18 @@ export default {
       }
     },
     getChartData() {
-      return this.date && this.dailySummary[this.date] 
-      ? {
+      if (!this.date || !this.dailySummary[this.date]) return { labels: [], data: [] }
+      const tempKey = this.unit === 'celsius' ? 'tempDataC' : 'tempDataF'
+      return {
         labels: this.dailySummary[this.date].hours,
-        data: this.dailySummary[this.date].tempDataC,
+        data: this.dailySummary[this.date][tempKey],
       }
-      : {
-        labels: [],
-        data: [],
-      };
     },
     isDataAvailable() {
       return !!this.dailySummary
     },
     ...mapState(useWeatherStore, ['dailySummary', 'date']),
+    ...mapState(useUnitStore, ['unit']),
   },
 }
 </script> 
