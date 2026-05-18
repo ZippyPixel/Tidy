@@ -111,7 +111,11 @@ export default {
       'condition',
       'basicWeatherInfo',
       'temperature'
-    ])
+    ]),
+    ...mapState(useUnitStore, ['unit']),
+    unitLabel() {
+      return this.unit === 'celsius' ? 'C' : 'F'
+    }
   }
 }
 </script>
