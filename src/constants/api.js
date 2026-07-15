@@ -5,6 +5,9 @@ export const API_ENDPOINTS = {
       AQI: 'yes',
       ALERTS: 'yes'
     }
+  },
+  SEARCH: {
+    BASE_URL: 'http://api.weatherapi.com/v1/search.json'
   }
 }
 
