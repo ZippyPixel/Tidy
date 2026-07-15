@@ -14,15 +14,38 @@
           </p>
         </div>
         <!-- controls -->
-        <div class="flex flex-row items-center gap-3 md:order-3">
-          <button
-            @click="toggleTheme"
-            class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-night-bg transition-colors"
-            :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-          >
-            <AppIcon :name="isDark ? 'light_mode' : 'dark_mode'" :size="24" />
-          </button>
-          <UnitToggle />
+        <div class="flex flex-row items-center md:order-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
+                class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-night-bg transition-colors dark:text-night-text"
+                title="Settings"
+                aria-label="Open settings menu"
+              >
+                <AppIcon name="settings" :size="24" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-60">
+              <DropdownMenuLabel>Settings</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                class="justify-between cursor-pointer"
+                :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                @select.prevent="toggleTheme"
+              >
+                <span>{{ isDark ? 'Dark mode' : 'Light mode' }}</span>
+                <AppIcon :name="isDark ? 'dark_mode' : 'light_mode'" :size="18" />
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                class="justify-between cursor-pointer"
+                :title="`Switch to ${unit === 'celsius' ? 'Fahrenheit' : 'Celsius'}`"
+                @select.prevent="toggleUnit"
+              >
+                <span>Temperature</span>
+                <span @click.stop><UnitToggle /></span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -63,16 +86,31 @@
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import useThemeStore from '@/stores/theme'
+import useUnitStore from '@/stores/unit'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UnitToggle from '@/components/ui/UnitToggle.vue'
 import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 export default {
   name: 'AppHeader',
   components: {
     AppIcon,
     UnitToggle,
-    UiInput: Input
+    UiInput: Input,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
   },
   data() {
     return {
@@ -81,7 +119,8 @@ export default {
   },
   computed: {
     ...mapState(useWeatherStore, ['isLoading', 'locationError']),
-    ...mapState(useThemeStore, ['isDark'])
+    ...mapState(useThemeStore, ['isDark']),
+    ...mapState(useUnitStore, ['unit'])
   },
   methods: {
     ...mapActions(useWeatherStore, {
@@ -89,6 +128,10 @@ export default {
       detectUserLocation: 'detectUserLocation'
     }),
     ...mapActions(useThemeStore, ['toggleTheme']),
+    ...mapActions(useUnitStore, ['setUnit']),
+    toggleUnit() {
+      this.setUnit(this.unit === 'celsius' ? 'fahrenheit' : 'celsius')
+    },
     async fetchCityWeather(cityName) {
       if (!cityName.trim()) return
       try {
