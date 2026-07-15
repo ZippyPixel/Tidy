@@ -12,6 +12,12 @@ module.exports = {
     {
       files: ['cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}'],
       extends: ['plugin:cypress/recommended']
+    },
+    {
+      files: ['src/components/ui/**/*.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'off'
+      }
     }
   ],
   parserOptions: {
