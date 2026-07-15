@@ -1,48 +1,43 @@
 <template>
-  <span
-    class="material-symbols-outlined flex items-center justify-center"
-    :style="{
-      fontSize: size + 'px',
-      fontVariationSettings: `'FILL' ${fill}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${opsz}`
-    }"
-    >{{ name }}</span
-  >
+  <component :is="icon" :size="Number(size)" :stroke-width="Number(strokeWidth)" />
 </template>
 
 <script>
+import { ChevronRight, CloudRain, Moon, Settings, Sun } from 'lucide-vue-next'
+
+// Icons used in the app, keyed by their lucide name (kebab-case).
+// Add new icons here so only the ones we use end up in the bundle.
+const icons = {
+  'chevron-right': ChevronRight,
+  'cloud-rain': CloudRain,
+  moon: Moon,
+  settings: Settings,
+  sun: Sun
+}
+
 export default {
   name: 'AppIcon',
   props: {
-    /** Icon name from https://fonts.google.com/icons */
+    /** Icon name from https://lucide.dev/icons — must be registered in the icons map above */
     name: {
       type: String,
-      required: true
+      required: true,
+      validator: (v) => v in icons
     },
     /** Icon size in pixels */
     size: {
       type: [Number, String],
       default: 24
     },
-    /** Fill: 0 = outlined, 1 = filled */
-    fill: {
-      type: Number,
-      default: 0,
-      validator: (v) => v === 0 || v === 1
-    },
-    /** Weight: 100–700 */
-    weight: {
-      type: Number,
-      default: 400
-    },
-    /** Grade: -50 to 200 */
-    grade: {
-      type: Number,
-      default: 0
-    },
-    /** Optical size: 20–48 */
-    opsz: {
-      type: Number,
-      default: 24
+    /** SVG stroke width */
+    strokeWidth: {
+      type: [Number, String],
+      default: 2
+    }
+  },
+  computed: {
+    icon() {
+      return icons[this.name]
     }
   }
 }

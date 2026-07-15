@@ -1,7 +1,7 @@
 <template>
   <!-- home -->
   <div
-    class="container w-full h-max mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-8 px-4 pt-4"
+    class="container w-full h-max mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6 px-4 pt-4"
   >
     <!-- weather-info -->
     <div class="w-full lg:flex-1 h-auto flex flex-col items-center lg:items-end justify-between">

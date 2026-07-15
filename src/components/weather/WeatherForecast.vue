@@ -10,7 +10,7 @@
         <p class="text-gray-500 dark:text-night-muted">T</p>
       </div>
     </div>
-    <div class="w-full h-full mt-3 bg-gray-200 dark:bg-night-surface rounded-3xl p-4 md:p-6">
+    <div class="w-full h-full mt-2 bg-gray-200 dark:bg-night-surface rounded-3xl p-4 md:p-6">
       <div class="h-full flex flex-col">
         <p class="font-semibold text-gray-600 dark:text-night-muted mb-4">{{ forecastDayCount }}</p>
         <!-- days list -->
@@ -32,7 +32,7 @@
             </div>
             <div class="flex flex-row items-center justify-between">
               <div>
-                <img class="w-12 md:w-16" src="@/assets/icons/weather-icon.svg" alt="" />
+                <img class="w-12 md:w-16" :src="getIcon(day)" :alt="day.day.condition.text" />
               </div>
               <div class="flex flex-row items-baseline gap-2">
                 <span class="text-lg md:text-xl font-semibold dark:text-night-text">{{ getMaxTemp(day) }}</span>
@@ -41,7 +41,7 @@
               <div
                 class="flex flex-row items-center gap-2 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-full"
               >
-                <AppIcon name="rainy" :size="16" class="text-blue-500 dark:text-night-muted" />
+                <AppIcon name="cloud-rain" :size="16" class="text-blue-500 dark:text-night-muted" />
                 <p class="text-xs md:text-sm">{{ getChanceOfRain(day) }}</p>
               </div>
             </div>
@@ -58,6 +58,7 @@ import useWeatherStore from '@/stores/weather'
 import useUnitStore from '@/stores/unit'
 import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { getWeatherIcon } from '@/constants/weatherIcons'
 
 export default {
   name: 'WeatherForecast',
@@ -92,6 +93,9 @@ export default {
     },
     getChanceOfRain(dayInfo) {
       return this.formatRainChance(dayInfo.day.daily_chance_of_rain)
+    },
+    getIcon(dayInfo) {
+      return getWeatherIcon(dayInfo.day.condition.code)
     },
     ...mapActions(useWeatherStore, ['setSelectedForecastDate']),
     selectForecastDate(day) {

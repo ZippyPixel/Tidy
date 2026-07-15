@@ -18,7 +18,7 @@
       <div
         class="w-20 md:w-24 absolute top-2.5 right-2.5 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-3xl flex flex-row justify-between items-center"
       >
-        <AppIcon name="rainy" :size="18" class="text-blue-500 dark:text-night-muted" />
+        <AppIcon name="cloud-rain" :size="18" class="text-blue-500 dark:text-night-muted" />
         <p class="text-sm md:text-base">{{ chanceOfRain }}</p>
       </div>
       <div class="w-[90%] h-full mx-auto flex flex-col justify-around gap-6">
@@ -46,7 +46,7 @@
             </div>
           </div>
           <div class="w-24 md:w-32 lg:w-40">
-            <img class="w-full" src="@/assets/icons/weather-icon.svg" alt="" />
+            <img class="w-full" :src="weatherIcon" :alt="condition" />
           </div>
         </div>
         <!-- condition for mobile only -->
@@ -97,6 +97,7 @@ import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import useUnitStore from '@/stores/unit'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { getWeatherIcon } from '@/constants/weatherIcons'
 
 export default {
   name: 'BasicWeatherInfo',
@@ -109,12 +110,17 @@ export default {
       'day',
       'chanceOfRain',
       'condition',
+      'conditionCode',
+      'isDay',
       'basicWeatherInfo',
       'temperature'
     ]),
     ...mapState(useUnitStore, ['unit']),
     unitLabel() {
       return this.unit === 'celsius' ? 'C' : 'F'
+    },
+    weatherIcon() {
+      return getWeatherIcon(this.conditionCode, this.isDay === 1)
     }
   }
 }
