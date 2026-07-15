@@ -51,22 +51,48 @@
 
       <!-- search -->
       <div class="w-full md:max-w-md lg:max-w-2xl flex flex-row items-center md:order-2">
-        <div class="w-full bg-gray-200 dark:bg-night-surface p-2 rounded-lg">
-          <form
-            @submit.prevent="fetchCityWeather(cityName)"
-            class="content-start flex items-stretch"
+        <Combobox
+          class="w-full"
+          ignore-filter
+          :open="showSuggestions"
+          :reset-search-term-on-blur="false"
+          @update:open="onSuggestionsOpenChange"
+        >
+          <ComboboxAnchor class="w-full bg-gray-200 dark:bg-night-surface p-2 rounded-lg">
+            <form
+              @submit.prevent="fetchCityWeather(cityName)"
+              class="content-start flex items-stretch"
+            >
+              <ComboboxInput
+                v-model="cityName"
+                class="h-auto rounded-none border-0 py-0 pl-2 pr-0 text-lg shadow-none focus-visible:ring-0 md:text-xl dark:text-night-text dark:placeholder:text-night-muted"
+                placeholder="Search City"
+              />
+              <button class="flex items-center justify-center dark:text-night-text" type="submit">
+                <AppIcon name="chevron-right" :size="28" />
+              </button>
+            </form>
+          </ComboboxAnchor>
+          <ComboboxList
+            align="start"
+            :side-offset="6"
+            class="w-[--reka-combobox-trigger-width] max-h-72 overflow-y-auto p-1 bg-white/30 dark:bg-night-surface/30 backdrop-blur-lg"
           >
-            <UiInput
-              v-model="cityName"
-              type="text"
-              class="h-auto rounded-none border-0 py-0 pl-2 pr-0 text-lg shadow-none focus-visible:ring-0 md:text-xl dark:text-night-text dark:placeholder:text-night-muted"
-              placeholder="Search City"
-            />
-            <button class="flex items-center justify-center dark:text-night-text" type="submit">
-              <AppIcon name="chevron-right" :size="28" />
-            </button>
-          </form>
-        </div>
+            <ComboboxEmpty>No matching cities</ComboboxEmpty>
+            <ComboboxItem
+              v-for="suggestion in suggestions"
+              :key="suggestion.id"
+              :value="suggestion"
+              class="cursor-pointer"
+              @select="selectSuggestion(suggestion)"
+            >
+              <span class="truncate">{{ suggestion.name }}</span>
+              <span class="truncate text-xs text-muted-foreground">
+                {{ suggestionDetail(suggestion) }}
+              </span>
+            </ComboboxItem>
+          </ComboboxList>
+        </Combobox>
         <button
           @click="handleLocationClick"
           :disabled="isLoading"
@@ -89,7 +115,14 @@ import useThemeStore from '@/stores/theme'
 import useUnitStore from '@/stores/unit'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UnitToggle from '@/components/ui/UnitToggle.vue'
-import { Input } from '@/components/ui/input'
+import {
+  Combobox,
+  ComboboxAnchor,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList
+} from '@/components/ui/combobox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,7 +137,12 @@ export default {
   components: {
     AppIcon,
     UnitToggle,
-    UiInput: Input,
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -114,7 +152,10 @@ export default {
   },
   data() {
     return {
-      cityName: ''
+      cityName: '',
+      suggestions: [],
+      showSuggestions: false,
+      searchTimer: null
     }
   },
   computed: {
@@ -122,9 +163,25 @@ export default {
     ...mapState(useThemeStore, ['isDark']),
     ...mapState(useUnitStore, ['unit'])
   },
+  watch: {
+    cityName(value) {
+      clearTimeout(this.searchTimer)
+      const query = value.trim()
+      if (query.length < 3) {
+        this.suggestions = []
+        this.showSuggestions = false
+        return
+      }
+      this.searchTimer = setTimeout(() => this.fetchSuggestions(query), 300)
+    }
+  },
+  beforeUnmount() {
+    clearTimeout(this.searchTimer)
+  },
   methods: {
     ...mapActions(useWeatherStore, {
       getCityWeather: 'getCityWeather',
+      searchLocations: 'searchLocations',
       detectUserLocation: 'detectUserLocation'
     }),
     ...mapActions(useThemeStore, ['toggleTheme']),
@@ -132,8 +189,38 @@ export default {
     toggleUnit() {
       this.setUnit(this.unit === 'celsius' ? 'fahrenheit' : 'celsius')
     },
+    async fetchSuggestions(query) {
+      try {
+        const results = await this.searchLocations(query)
+        if (query !== this.cityName.trim()) return // input changed while fetching
+        this.suggestions = results
+        this.showSuggestions = true
+      } catch (error) {
+        console.error('City search failed:', error)
+        this.suggestions = []
+        this.showSuggestions = false
+      }
+    },
+    onSuggestionsOpenChange(open) {
+      // opening is driven by fetched results only; honor close requests (esc, outside click)
+      if (!open) this.showSuggestions = false
+    },
+    suggestionDetail(suggestion) {
+      return [suggestion.region, suggestion.country].filter(Boolean).join(', ')
+    },
+    async selectSuggestion(suggestion) {
+      this.showSuggestions = false
+      this.cityName = ''
+      try {
+        await this.getCityWeather(`id:${suggestion.id}`)
+      } catch (error) {
+        console.error('Failed to fetch city weather:', error)
+      }
+    },
     async fetchCityWeather(cityName) {
       if (!cityName.trim()) return
+      this.showSuggestions = false
+      clearTimeout(this.searchTimer)
       try {
         await this.getCityWeather(cityName)
         this.cityName = '' // Clear input after successful fetch

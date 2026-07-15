@@ -1,10 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
+import axios from 'axios'
 
 import AppHeader from '@/components/layout/AppHeader.vue'
 import useThemeStore from '@/stores/theme'
 import useUnitStore from '@/stores/unit'
+import useWeatherStore from '@/stores/weather'
+
+vi.mock('axios', () => ({
+  default: { get: vi.fn() }
+}))
 
 if (typeof window !== 'undefined' && !window.ResizeObserver) {
   window.ResizeObserver = vi.fn(() => ({
@@ -12,6 +18,10 @@ if (typeof window !== 'undefined' && !window.ResizeObserver) {
     unobserve: vi.fn(),
     disconnect: vi.fn()
   }))
+}
+
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn()
 }
 
 async function openSettingsMenu(wrapper) {
@@ -79,6 +89,90 @@ describe('AppHeader settings dropdown', () => {
     await wrapper.vm.$nextTick()
 
     expect(unitStore.unit).toBe('fahrenheit')
+    wrapper.unmount()
+  })
+})
+
+describe('AppHeader search autocomplete', () => {
+  const SUGGESTIONS = [
+    { id: 1283240, name: 'Dhaka', region: '', country: 'Bangladesh', lat: 23.72, lon: 90.41 },
+    { id: 9000037, name: 'Dhahran', region: 'Dhahran', country: 'Saudi Arabia', lat: 26.27, lon: 50.15 }
+  ]
+
+  beforeEach(() => {
+    document.body.innerHTML = ''
+    vi.useFakeTimers()
+    axios.get.mockReset()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  async function typeInSearch(wrapper, text) {
+    const input = wrapper.find('input[placeholder="Search City"]')
+    await input.setValue(text)
+    await vi.advanceTimersByTimeAsync(300)
+    await wrapper.vm.$nextTick()
+    return input
+  }
+
+  function options() {
+    return [...document.body.querySelectorAll('[role="option"]')]
+  }
+
+  it('does not query the API for fewer than 3 characters', async () => {
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia()] } })
+    await typeInSearch(wrapper, 'dh')
+    await vi.advanceTimersByTimeAsync(500)
+
+    expect(axios.get).not.toHaveBeenCalled()
+    expect(options().length).toBe(0)
+    wrapper.unmount()
+  })
+
+  it('shows debounced suggestions below the search bar', async () => {
+    axios.get.mockResolvedValue({ data: SUGGESTIONS })
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia()] } })
+    await typeInSearch(wrapper, 'dha')
+
+    expect(axios.get).toHaveBeenCalledTimes(1)
+    expect(axios.get.mock.calls[0][0]).toContain('search.json')
+    expect(axios.get.mock.calls[0][0]).toContain('q=dha')
+
+    const items = options()
+    expect(items.length).toBe(2)
+    expect(items[0].textContent).toContain('Dhaka')
+    expect(items[0].textContent).toContain('Bangladesh')
+    expect(items[1].textContent).toContain('Dhahran, Saudi Arabia')
+    wrapper.unmount()
+  })
+
+  it('shows an empty state when no city matches', async () => {
+    axios.get.mockResolvedValue({ data: [] })
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia()] } })
+    await typeInSearch(wrapper, 'zzz')
+
+    expect(options().length).toBe(0)
+    expect(document.body.textContent).toContain('No matching cities')
+    wrapper.unmount()
+  })
+
+  it('fetches weather by location id when a suggestion is clicked', async () => {
+    axios.get.mockResolvedValue({ data: SUGGESTIONS })
+    const pinia = createPinia()
+    const wrapper = mount(AppHeader, { global: { plugins: [pinia] } })
+    const weatherStore = useWeatherStore(pinia)
+    const getCityWeather = vi.spyOn(weatherStore, 'getCityWeather').mockResolvedValue()
+
+    const input = await typeInSearch(wrapper, 'dha')
+    options()[0].dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await vi.advanceTimersByTimeAsync(0)
+    await wrapper.vm.$nextTick()
+
+    expect(getCityWeather).toHaveBeenCalledWith('id:1283240')
+    expect(options().length).toBe(0)
+    expect(input.element.value).toBe('')
     wrapper.unmount()
   })
 })

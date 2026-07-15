@@ -102,6 +102,13 @@ export default defineStore('weather', {
       }
     },
 
+    async searchLocations(query) {
+      const { BASE_URL } = API_ENDPOINTS.SEARCH
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
+      const response = await axios.get(`${BASE_URL}?key=${apiKey}&q=${encodeURIComponent(query)}`)
+      return response.data || []
+    },
+
     async setValues(response) {
       //forecast
       this.forecast = response?.forecast?.forecastday || []
