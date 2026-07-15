@@ -10,7 +10,7 @@
         <p class="text-gray-500 dark:text-night-muted">T</p>
       </div>
     </div>
-    <div class="w-full h-full mt-3 bg-gray-200 dark:bg-night-surface rounded-3xl p-4 md:p-6">
+    <div class="w-full h-full mt-2 bg-gray-200 dark:bg-night-surface rounded-3xl p-4 md:p-6">
       <div class="h-full flex flex-col">
         <p class="font-semibold text-gray-600 dark:text-night-muted mb-4">{{ forecastDayCount }}</p>
         <!-- days list -->

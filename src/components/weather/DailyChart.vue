@@ -1,6 +1,6 @@
 <template>
   <!-- hourly data -->
-  <div class="w-full h-auto bg-white dark:bg-night-surface p-4 rounded-3xl mt-7 overflow-hidden" v-if="isDataAvailable">
+  <div class="w-full h-auto bg-white dark:bg-night-surface p-4 rounded-3xl mt-6 overflow-hidden" v-if="isDataAvailable">
     <div>
       <p class="font-semibold text-gray-600 dark:text-night-muted">Daily Summary</p>
     </div>
