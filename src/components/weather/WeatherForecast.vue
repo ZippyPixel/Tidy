@@ -32,7 +32,7 @@
             </div>
             <div class="flex flex-row items-center justify-between">
               <div>
-                <img class="w-12 md:w-16" src="@/assets/icons/weather-icon.svg" alt="" />
+                <img class="w-12 md:w-16" :src="getIcon(day)" :alt="day.day.condition.text" />
               </div>
               <div class="flex flex-row items-baseline gap-2">
                 <span class="text-lg md:text-xl font-semibold dark:text-night-text">{{ getMaxTemp(day) }}</span>
@@ -58,6 +58,7 @@ import useWeatherStore from '@/stores/weather'
 import useUnitStore from '@/stores/unit'
 import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { getWeatherIcon } from '@/constants/weatherIcons'
 
 export default {
   name: 'WeatherForecast',
@@ -92,6 +93,9 @@ export default {
     },
     getChanceOfRain(dayInfo) {
       return this.formatRainChance(dayInfo.day.daily_chance_of_rain)
+    },
+    getIcon(dayInfo) {
+      return getWeatherIcon(dayInfo.day.condition.code)
     },
     ...mapActions(useWeatherStore, ['setSelectedForecastDate']),
     selectForecastDate(day) {

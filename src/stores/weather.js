@@ -12,6 +12,8 @@ export default defineStore('weather', {
     day: '',
     date: '',
     condition: '',
+    conditionCode: null,
+    isDay: 1,
     hourlyData: {},
     dailySummary: {},
     astro: {}, //sunrise, sunset, moonrise, moonset
@@ -109,6 +111,8 @@ export default defineStore('weather', {
 
       //current condition
       this.condition = response.current.condition.text
+      this.conditionCode = response.current.condition.code
+      this.isDay = response.current.is_day
 
       //current chance of rain
       this.chanceOfRain = weatherMixin.methods.formatRainChance(response.forecast.forecastday[0].day.daily_chance_of_rain)
@@ -203,6 +207,8 @@ export default defineStore('weather', {
         this.date = date.date;
         this.day = weatherMixin.methods.formatDate(date.date);
         this.condition = date.day.condition.text;
+        this.conditionCode = date.day.condition.code;
+        this.isDay = 1; // day-level condition represents the whole day
         this.chanceOfRain = weatherMixin.methods.formatRainChance(date.day.daily_chance_of_rain);
         this.rawTemperature = {
           ...this.rawTemperature,
