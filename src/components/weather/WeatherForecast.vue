@@ -41,7 +41,7 @@
               <div
                 class="flex flex-row items-center gap-2 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-full"
               >
-                <AppIcon name="rainy" :size="16" class="text-blue-500 dark:text-night-muted" />
+                <AppIcon name="cloud-rain" :size="16" class="text-blue-500 dark:text-night-muted" />
                 <p class="text-xs md:text-sm">{{ getChanceOfRain(day) }}</p>
               </div>
             </div>

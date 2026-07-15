@@ -18,7 +18,7 @@
       <div
         class="w-20 md:w-24 absolute top-2.5 right-2.5 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-3xl flex flex-row justify-between items-center"
       >
-        <AppIcon name="rainy" :size="18" class="text-blue-500 dark:text-night-muted" />
+        <AppIcon name="cloud-rain" :size="18" class="text-blue-500 dark:text-night-muted" />
         <p class="text-sm md:text-base">{{ chanceOfRain }}</p>
       </div>
       <div class="w-[90%] h-full mx-auto flex flex-col justify-around gap-6">

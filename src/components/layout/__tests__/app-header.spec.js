@@ -34,7 +34,7 @@ describe('AppHeader settings dropdown', () => {
   it('renders a settings trigger instead of standalone toggles', () => {
     const wrapper = mount(AppHeader, { global: { plugins: [createPinia()] } })
     expect(wrapper.find('[aria-label="Open settings menu"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('settings')
+    expect(wrapper.find('[aria-label="Open settings menu"] svg.lucide-settings-icon').exists()).toBe(true)
     // unit pill and theme button only live inside the (closed) menu
     expect(wrapper.find('[role="switch"]').exists()).toBe(false)
     wrapper.unmount()

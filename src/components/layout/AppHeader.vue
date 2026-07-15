@@ -34,7 +34,7 @@
                 @select.prevent="toggleTheme"
               >
                 <span>{{ isDark ? 'Dark mode' : 'Light mode' }}</span>
-                <AppIcon :name="isDark ? 'dark_mode' : 'light_mode'" :size="18" />
+                <AppIcon :name="isDark ? 'moon' : 'sun'" :size="18" />
               </DropdownMenuItem>
               <DropdownMenuItem
                 class="justify-between cursor-pointer"
@@ -63,7 +63,7 @@
               placeholder="Search City"
             />
             <button class="flex items-center justify-center dark:text-night-text" type="submit">
-              <AppIcon name="chevron_right" :size="28" />
+              <AppIcon name="chevron-right" :size="28" />
             </button>
           </form>
         </div>
