@@ -33,10 +33,10 @@
             @submit.prevent="fetchCityWeather(cityName)"
             class="content-start flex items-stretch"
           >
-            <input
+            <UiInput
               v-model="cityName"
               type="text"
-              class="bg-transparent w-full focus:outline-none text-lg md:text-xl pl-2 dark:text-night-text dark:placeholder-night-muted"
+              class="h-auto rounded-none border-0 py-0 pl-2 pr-0 text-lg shadow-none focus-visible:ring-0 md:text-xl dark:text-night-text dark:placeholder:text-night-muted"
               placeholder="Search City"
             />
             <button class="flex items-center justify-center dark:text-night-text" type="submit">
@@ -65,12 +65,14 @@ import useWeatherStore from '@/stores/weather'
 import useThemeStore from '@/stores/theme'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UnitToggle from '@/components/ui/UnitToggle.vue'
+import { Input } from '@/components/ui/input'
 
 export default {
   name: 'AppHeader',
   components: {
     AppIcon,
-    UnitToggle
+    UnitToggle,
+    UiInput: Input
   },
   data() {
     return {
