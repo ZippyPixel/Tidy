@@ -6,7 +6,7 @@
     <div class="w-full h-full mx-auto flex flex-col justify-between gap-6">
       <!-- sunrise & sunset -->
       <div class="">
-        <p class="text-gray-500 dark:text-night-muted text-sm mb-2">Sunrise & Sunset</p>
+        <p class="text-gray-500 dark:text-night-muted text-sm mb-2">{{ $t('planetary.sunriseSunset') }}</p>
         <div class="w-full flex flex-row justify-around py-2">
           <!-- sunrise -->
           <div class="flex flex-col items-center">
@@ -24,7 +24,7 @@
       </div>
       <!-- moonrise & moonset -->
       <div class="">
-        <p class="text-gray-500 dark:text-night-muted text-sm mb-2">Moonrise & Moonset</p>
+        <p class="text-gray-500 dark:text-night-muted text-sm mb-2">{{ $t('planetary.moonriseMoonset') }}</p>
         <div class="w-full flex flex-row justify-around py-2">
           <!-- moonrise -->
           <div class="flex flex-col items-center">

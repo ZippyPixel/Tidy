@@ -3,11 +3,12 @@ import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 
 import UnitToggle from '@/components/ui/UnitToggle.vue'
+import i18n from '@/i18n'
 import useUnitStore from '@/stores/unit'
 
 function mountToggle() {
   const pinia = createPinia()
-  const wrapper = mount(UnitToggle, { global: { plugins: [pinia] } })
+  const wrapper = mount(UnitToggle, { global: { plugins: [pinia, i18n] } })
   return { wrapper, store: useUnitStore(pinia) }
 }
 

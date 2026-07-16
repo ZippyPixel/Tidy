@@ -1,0 +1,64 @@
+{
+  "languageName": "English",
+  "loading": "Loading weather data...",
+  "header": {
+    "searchPlaceholder": "Search City",
+    "noMatchingCities": "No matching cities",
+    "settings": "Settings",
+    "openSettings": "Open settings menu",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode",
+    "temperature": "Temperature",
+    "switchToUnit": "Switch to {unit}",
+    "celsius": "Celsius",
+    "fahrenheit": "Fahrenheit",
+    "language": "Language",
+    "switchLanguage": "Switch to বাংলা",
+    "getCurrentLocation": "Get current location",
+    "getLocation": "Get location"
+  },
+  "weather": {
+    "currentLocation": "Current Location",
+    "feelsLike": "Feels like {temp}",
+    "humidity": "Humidity",
+    "visibility": "Visibility",
+    "pressure": "Pressure",
+    "uv": "UV",
+    "airQuality": "Air Quality",
+    "km": "km",
+    "hPa": "hPa"
+  },
+  "forecast": {
+    "dayCount": "{count} Day Forecast | {count} Days Forecast"
+  },
+  "chart": {
+    "dailySummary": "Daily Summary",
+    "noData": "No Data"
+  },
+  "planetary": {
+    "sunriseSunset": "Sunrise & Sunset",
+    "moonriseMoonset": "Moonrise & Moonset"
+  },
+  "airQualityLevels": {
+    "good": "Good",
+    "moderate": "Moderate",
+    "unhealthy": "Unhealthy",
+    "veryUnhealthy": "Very Unhealthy",
+    "hazardous": "Hazardous",
+    "unknown": "Unknown"
+  },
+  "uvLevels": {
+    "low": "Low",
+    "moderate": "Moderate",
+    "high": "High",
+    "veryHigh": "Very High",
+    "extreme": "Extreme",
+    "unknown": "Unknown"
+  },
+  "errors": {
+    "geolocationUnsupported": "Geolocation is not supported by your browser",
+    "locationFailed": "Unable to retrieve your location"
+  }
+}

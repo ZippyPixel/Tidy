@@ -3,7 +3,7 @@
     <!-- location-time -->
     <div class="w-full flex flex-row justify-between items-end mb-2">
       <div class="w-fit">
-        <p class="text-gray-500 dark:text-night-muted text-sm md:text-base">Current Location</p>
+        <p class="text-gray-500 dark:text-night-muted text-sm md:text-base">{{ $t('weather.currentLocation') }}</p>
         <p class="text-slate-800 dark:text-night-text font-medium text-xl md:text-2xl">{{ location }}</p>
       </div>
       <div class="w-fit">
@@ -41,7 +41,7 @@
               </div>
               <div class="hidden sm:block">
                 <p class="mb-1 md:mb-2 font-normal text-xl md:text-2xl">{{ condition }}</p>
-                <p class="text-sm md:text-base text-gray-500">Feels like {{ temperature.feelsLike }}</p>
+                <p class="text-sm md:text-base text-gray-500">{{ $t('weather.feelsLike', { temp: temperature.feelsLike }) }}</p>
               </div>
             </div>
           </div>
@@ -52,38 +52,38 @@
         <!-- condition for mobile only -->
         <div class="sm:hidden -mt-4">
           <p class="font-normal text-xl">{{ condition }}</p>
-          <p class="text-sm text-gray-500">Feels like {{ temperature.feelsLike }}</p>
+          <p class="text-sm text-gray-500">{{ $t('weather.feelsLike', { temp: temperature.feelsLike }) }}</p>
         </div>
         <!-- bottom -->
         <div class="grid grid-cols-3 md:flex md:flex-row justify-between gap-4">
           <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">Humidity</p>
+            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.humidity') }}</p>
             <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ basicWeatherInfo.humidity }}%
+              {{ formatNumber(basicWeatherInfo.humidity) }}%
             </p>
           </div>
           <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">Visibility</p>
+            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.visibility') }}</p>
             <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ basicWeatherInfo.visibility }} km
+              {{ formatNumber(basicWeatherInfo.visibility) }} {{ $t('weather.km') }}
             </p>
           </div>
           <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">Pressure</p>
+            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.pressure') }}</p>
             <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ basicWeatherInfo.pressure }} hPa
+              {{ formatNumber(basicWeatherInfo.pressure) }} {{ $t('weather.hPa') }}
             </p>
           </div>
           <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">UV</p>
+            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.uv') }}</p>
             <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ basicWeatherInfo.uv }}
+              {{ uvLabel }}
             </p>
           </div>
           <div class="flex flex-col col-span-2 md:col-span-1">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">Air Quality</p>
+            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.airQuality') }}</p>
             <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ basicWeatherInfo.airQuality }}
+              {{ airQualityLabel }}
             </p>
           </div>
         </div>
@@ -96,6 +96,7 @@
 import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import useUnitStore from '@/stores/unit'
+import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { getWeatherIcon } from '@/constants/weatherIcons'
 
@@ -104,6 +105,7 @@ export default {
   components: {
     AppIcon
   },
+  mixins: [weatherMixin],
   computed: {
     ...mapState(useWeatherStore, [
       'location',
@@ -118,6 +120,14 @@ export default {
     ...mapState(useUnitStore, ['unit']),
     unitLabel() {
       return this.unit === 'celsius' ? 'C' : 'F'
+    },
+    uvLabel() {
+      return this.basicWeatherInfo.uv ? this.$t(`uvLevels.${this.basicWeatherInfo.uv}`) : ''
+    },
+    airQualityLabel() {
+      return this.basicWeatherInfo.airQuality
+        ? this.$t(`airQualityLevels.${this.basicWeatherInfo.airQuality}`)
+        : ''
     },
     weatherIcon() {
       return getWeatherIcon(this.conditionCode, this.isDay === 1)

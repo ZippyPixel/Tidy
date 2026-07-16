@@ -1,0 +1,64 @@
+{
+  "languageName": "বাংলা",
+  "loading": "আবহাওয়ার তথ্য লোড হচ্ছে...",
+  "header": {
+    "searchPlaceholder": "শহর খুঁজুন",
+    "noMatchingCities": "কোনো শহর পাওয়া যায়নি",
+    "settings": "সেটিংস",
+    "openSettings": "সেটিংস মেনু খুলুন",
+    "lightMode": "লাইট মোড",
+    "darkMode": "ডার্ক মোড",
+    "switchToLight": "লাইট মোডে যান",
+    "switchToDark": "ডার্ক মোডে যান",
+    "temperature": "তাপমাত্রা",
+    "switchToUnit": "{unit}-এ পরিবর্তন করুন",
+    "celsius": "সেলসিয়াস",
+    "fahrenheit": "ফারেনহাইট",
+    "language": "ভাষা",
+    "switchLanguage": "Switch to English",
+    "getCurrentLocation": "বর্তমান অবস্থানের আবহাওয়া দেখুন",
+    "getLocation": "অবস্থান শনাক্ত করুন"
+  },
+  "weather": {
+    "currentLocation": "বর্তমান অবস্থান",
+    "feelsLike": "অনুভূত হচ্ছে {temp}",
+    "humidity": "আর্দ্রতা",
+    "visibility": "দৃশ্যমানতা",
+    "pressure": "বায়ুচাপ",
+    "uv": "ইউভি",
+    "airQuality": "বায়ুর মান",
+    "km": "কিমি",
+    "hPa": "hPa"
+  },
+  "forecast": {
+    "dayCount": "{count} দিনের পূর্বাভাস | {count} দিনের পূর্বাভাস"
+  },
+  "chart": {
+    "dailySummary": "দৈনিক সারসংক্ষেপ",
+    "noData": "কোনো তথ্য নেই"
+  },
+  "planetary": {
+    "sunriseSunset": "সূর্যোদয় ও সূর্যাস্ত",
+    "moonriseMoonset": "চন্দ্রোদয় ও চন্দ্রাস্ত"
+  },
+  "airQualityLevels": {
+    "good": "ভালো",
+    "moderate": "মাঝারি",
+    "unhealthy": "অস্বাস্থ্যকর",
+    "veryUnhealthy": "খুবই অস্বাস্থ্যকর",
+    "hazardous": "বিপজ্জনক",
+    "unknown": "অজানা"
+  },
+  "uvLevels": {
+    "low": "কম",
+    "moderate": "মাঝারি",
+    "high": "বেশি",
+    "veryHigh": "খুব বেশি",
+    "extreme": "চরম",
+    "unknown": "অজানা"
+  },
+  "errors": {
+    "geolocationUnsupported": "আপনার ব্রাউজার জিওলোকেশন সমর্থন করে না",
+    "locationFailed": "আপনার অবস্থান শনাক্ত করা যায়নি"
+  }
+}

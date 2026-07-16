@@ -1,9 +1,15 @@
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        // Bengali glyphs fall through the Latin stack to Noto Sans Bengali
+        sans: [...defaultTheme.fontFamily.sans, '"Noto Sans Bengali"']
+      },
       colors: {
         night: {
           bg: '#0d1117',

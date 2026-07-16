@@ -2,7 +2,7 @@
   <div class="relative inline-flex select-none">
     <UiSwitch
       :model-value="unit === 'fahrenheit'"
-      :title="`Switch to ${unit === 'celsius' ? 'Fahrenheit' : 'Celsius'}`"
+      :title="$t('header.switchToUnit', { unit: $t(unit === 'celsius' ? 'header.fahrenheit' : 'header.celsius') })"
       aria-label="Toggle temperature unit"
       class="h-7 w-20 border-0 p-1 shadow-none data-[state=checked]:bg-gray-200 data-[state=unchecked]:bg-gray-200 dark:data-[state=checked]:bg-night-surface dark:data-[state=unchecked]:bg-night-surface"
       thumb-class="h-5 w-9 bg-white shadow-sm duration-300 ease-in-out data-[state=checked]:translate-x-9 dark:bg-night-bg"

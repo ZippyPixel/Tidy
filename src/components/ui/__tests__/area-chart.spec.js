@@ -20,6 +20,7 @@ if (!SVGElement.prototype.getComputedTextLength) {
 
 import { AreaChart } from '@/components/ui/chart-area'
 import DailyChart from '@/components/weather/DailyChart.vue'
+import i18n from '@/i18n'
 import useWeatherStore from '@/stores/weather'
 
 const sampleData = [
@@ -57,7 +58,7 @@ describe('AreaChart', () => {
 describe('DailyChart', () => {
   it('renders the area chart from store data', async () => {
     const pinia = createPinia()
-    const wrapper = mount(DailyChart, { global: { plugins: [pinia] } })
+    const wrapper = mount(DailyChart, { global: { plugins: [pinia, i18n] } })
     const store = useWeatherStore(pinia)
     store.date = '2026-07-15'
     store.dailySummary = {
