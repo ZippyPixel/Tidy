@@ -4,6 +4,7 @@ import { AIR_QUALITY_LEVELS, UV_INDEX_LEVELS } from '@/constants/weather'
 import { API_ENDPOINTS, API_CONFIG } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
+import { currentLocale } from '@/i18n'
 
 export default defineStore('weather', {
   state: () => ({
@@ -25,7 +26,8 @@ export default defineStore('weather', {
     weatherByDate: [],
     selectedForecastDate: null,
     userLocation: null,
-    locationError: null
+    locationError: null,
+    lastQuery: null
   }),
   getters: {
     temperature(state) {
@@ -44,7 +46,7 @@ export default defineStore('weather', {
     async detectUserLocation() {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-          this.locationError = 'Geolocation is not supported by your browser'
+          this.locationError = 'errors.geolocationUnsupported'
           reject(new Error(this.locationError))
           return
         }
@@ -61,7 +63,7 @@ export default defineStore('weather', {
             }
           },
           (error) => {
-            this.locationError = 'Unable to retrieve your location'
+            this.locationError = 'errors.locationFailed'
             reject(error)
           }
         )
@@ -69,37 +71,34 @@ export default defineStore('weather', {
     },
 
     async getWeatherByCoords(latitude, longitude) {
+      await this.fetchForecast(`${latitude},${longitude}`)
+    },
+
+    async getCityWeather(cityName) {
+      await this.fetchForecast(cityName)
+    },
+
+    async fetchForecast(query) {
       this.isLoading = true
       const { BASE_URL, PARAMS } = API_ENDPOINTS.WEATHER
       const apiKey = import.meta.env.VITE_WEATHER_API_KEY
-      
+      const locale = currentLocale()
+      const langParam = locale === 'en' ? '' : `&lang=${locale}`
+
       try {
         const response = await axios.get(
-          `${BASE_URL}?key=${apiKey}&q=${latitude},${longitude}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
+          `${BASE_URL}?key=${apiKey}&q=${query}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}${langParam}`
         )
+        this.lastQuery = query
         await this.setValues(response.data)
-      } catch (error) {
-        throw error
       } finally {
         this.isLoading = false
       }
     },
 
-    async getCityWeather(cityName) {
-      this.isLoading = true
-      const { BASE_URL, PARAMS } = API_ENDPOINTS.WEATHER
-      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
-      
-      try {
-        const response = await axios.get(
-          `${BASE_URL}?key=${apiKey}&q=${cityName}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}`
-        )
-        await this.setValues(response.data)
-      } catch (error) {
-        throw error
-      } finally {
-        this.isLoading = false
-      }
+    async refetchWeather() {
+      if (!this.lastQuery) return
+      await this.fetchForecast(this.lastQuery)
     },
 
     async searchLocations(query) {
@@ -170,41 +169,43 @@ export default defineStore('weather', {
       })
     },
 
+    // returns an i18n key suffix (airQualityLevels.*) so components can translate it
     getAirQualityLevel(index) {
       switch (index) {
         case AIR_QUALITY_LEVELS.GOOD:
-          return 'Good'
+          return 'good'
         case AIR_QUALITY_LEVELS.MODERATE:
-          return 'Moderate'
+          return 'moderate'
         case AIR_QUALITY_LEVELS.UNHEALTHY:
         case AIR_QUALITY_LEVELS.UNHEALTHY + 1:
-          return 'Unhealthy'
+          return 'unhealthy'
         case AIR_QUALITY_LEVELS.VERY_UNHEALTHY:
-          return 'Very Unhealthy'
+          return 'veryUnhealthy'
         case AIR_QUALITY_LEVELS.HAZARDOUS:
-          return 'Hazardous'
+          return 'hazardous'
         default:
-          return 'Unknown'
+          return 'unknown'
       }
     },
 
+    // returns an i18n key suffix (uvLevels.*) so components can translate it
     getUVIndexLevel(index) {
       if (index >= UV_INDEX_LEVELS.LOW.min && index <= UV_INDEX_LEVELS.LOW.max) {
-        return 'Low'
+        return 'low'
       }
       if (index >= UV_INDEX_LEVELS.MODERATE.min && index <= UV_INDEX_LEVELS.MODERATE.max) {
-        return 'Moderate'
+        return 'moderate'
       }
       if (index >= UV_INDEX_LEVELS.HIGH.min && index <= UV_INDEX_LEVELS.HIGH.max) {
-        return 'High'
+        return 'high'
       }
       if (index >= UV_INDEX_LEVELS.VERY_HIGH.min && index <= UV_INDEX_LEVELS.VERY_HIGH.max) {
-        return 'Very High'
+        return 'veryHigh'
       }
       if (index >= UV_INDEX_LEVELS.EXTREME.min) {
-        return 'Extreme'
+        return 'extreme'
       }
-      return 'Unknown'
+      return 'unknown'
     },
 
     setSelectedForecastDate(date) {

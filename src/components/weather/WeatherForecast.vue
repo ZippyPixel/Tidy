@@ -69,7 +69,7 @@ export default {
   computed: {
     forecastDayCount() {
       const days = this.forecast?.length || 0
-      return `${days} ${days > 1 ? 'Days' : 'Day'} Forecast`
+      return this.$t('forecast.dayCount', { count: this.formatNumber(days) }, days)
     },
     ...mapState(useWeatherStore, ['forecast', 'selectedForecastDate']),
     ...mapState(useUnitStore, ['unit'])

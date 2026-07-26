@@ -14,11 +14,12 @@ export const UV_INDEX_LEVELS = {
   EXTREME: { min: 11, max: Infinity }
 }
 
+// Intl.DateTimeFormat option sets (locale-aware; replaces the old moment format strings)
 export const DATE_FORMATS = {
-  FULL: 'dddd, MMM D',
-  DAY: 'dddd',
-  SHORT_DATE: 'MMM D',
-  TIME: 'h a'
+  FULL: { weekday: 'long', month: 'short', day: 'numeric' },
+  DAY: { weekday: 'long' },
+  SHORT_DATE: { month: 'short', day: 'numeric' },
+  TIME: { hour: 'numeric', hour12: true }
 }
 
 export const TEMPERATURE = {
