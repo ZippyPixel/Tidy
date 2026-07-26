@@ -96,6 +96,7 @@
 <script>
 import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import { currentIntlTag } from '@/i18n'
 
 const ARC = { cx: 100, cy: 104, r: 94 }
 
@@ -121,7 +122,7 @@ export default {
       return [
         {
           key: 'sun',
-          title: 'Sunrise & Sunset',
+          title: this.$t('planetary.sunriseSunset'),
           riseTime: this.formatAstroTime(a.sunrise),
           setTime: this.formatAstroTime(a.sunset),
           show: this.sunTarget !== null,
@@ -129,7 +130,7 @@ export default {
         },
         {
           key: 'moon',
-          title: 'Moonrise & Moonset',
+          title: this.$t('planetary.moonriseMoonset'),
           riseTime: this.formatAstroTime(a.moonrise),
           setTime: this.formatAstroTime(a.moonset),
           show: this.moonTarget !== null,
@@ -174,9 +175,18 @@ export default {
         y: +(ARC.cy - ARC.r * Math.sin(theta)).toFixed(2)
       }
     },
+    // localize the API's "05:29 AM" using the active locale's digits and
+    // day-period markers; falls back to '--' for missing/"No moonrise" values
     formatAstroTime(str) {
-      if (!str) return '--'
-      return str.replace(/^0/, '')
+      const minutes = this.parseMinutes(str)
+      if (minutes === null) return '--'
+      const date = new Date()
+      date.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
+      return new Intl.DateTimeFormat(currentIntlTag(), {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(date)
     },
     prefersReducedMotion() {
       return typeof window !== 'undefined' && window.matchMedia
