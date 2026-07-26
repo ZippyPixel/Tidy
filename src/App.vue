@@ -9,6 +9,7 @@
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import useThemeStore from '@/stores/theme'
+import useLocaleStore from '@/stores/locale'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 
 export default {
@@ -34,6 +35,7 @@ export default {
     }
   },
   async mounted() {
+    useLocaleStore().initLocale()
     const themeStore = useThemeStore()
     themeStore.initTheme()
     await this.checkAndDetectLocation()

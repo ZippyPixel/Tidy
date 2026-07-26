@@ -19,30 +19,41 @@
             <DropdownMenuTrigger as-child>
               <button
                 class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-night-bg transition-colors dark:text-night-text"
-                title="Settings"
+                :title="$t('header.settings')"
                 aria-label="Open settings menu"
               >
                 <AppIcon name="settings" :size="24" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" class="w-60">
-              <DropdownMenuLabel>Settings</DropdownMenuLabel>
+              <DropdownMenuLabel>{{ $t('header.settings') }}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 class="justify-between cursor-pointer"
-                :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                :title="isDark ? $t('header.switchToLight') : $t('header.switchToDark')"
                 @select.prevent="toggleTheme"
               >
-                <span>{{ isDark ? 'Dark mode' : 'Light mode' }}</span>
+                <span>{{ isDark ? $t('header.darkMode') : $t('header.lightMode') }}</span>
                 <AppIcon :name="isDark ? 'moon' : 'sun'" :size="18" />
               </DropdownMenuItem>
               <DropdownMenuItem
                 class="justify-between cursor-pointer"
-                :title="`Switch to ${unit === 'celsius' ? 'Fahrenheit' : 'Celsius'}`"
+                :title="$t('header.switchToUnit', { unit: $t(unit === 'celsius' ? 'header.fahrenheit' : 'header.celsius') })"
                 @select.prevent="toggleUnit"
               >
-                <span>Temperature</span>
+                <span>{{ $t('header.temperature') }}</span>
                 <span @click.stop><UnitToggle /></span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                class="justify-between cursor-pointer"
+                :title="$t('header.switchLanguage')"
+                @select.prevent="toggleLocale"
+              >
+                <span>{{ $t('header.language') }}</span>
+                <span class="flex items-center gap-2">
+                  <AppIcon name="languages" :size="18" />
+                  {{ $t('languageName') }}
+                </span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -66,7 +77,7 @@
               <ComboboxInput
                 v-model="cityName"
                 class="h-auto rounded-none border-0 py-0 pl-2 pr-0 text-lg shadow-none focus-visible:ring-0 md:text-xl dark:text-night-text dark:placeholder:text-night-muted"
-                placeholder="Search City"
+                :placeholder="$t('header.searchPlaceholder')"
               />
               <button class="flex items-center justify-center dark:text-night-text" type="submit">
                 <AppIcon name="chevron-right" :size="28" />
@@ -78,7 +89,7 @@
             :side-offset="6"
             class="w-[--reka-combobox-trigger-width] max-h-72 overflow-y-auto p-1 bg-white/30 dark:bg-night-surface/30 backdrop-blur-lg"
           >
-            <ComboboxEmpty>No matching cities</ComboboxEmpty>
+            <ComboboxEmpty>{{ $t('header.noMatchingCities') }}</ComboboxEmpty>
             <ComboboxItem
               v-for="suggestion in suggestions"
               :key="suggestion.id"
@@ -96,10 +107,14 @@
         <button
           @click="handleLocationClick"
           :disabled="isLoading"
-          :title="locationError || 'Get current location'"
+          :title="locationError ? $t(locationError) : $t('header.getCurrentLocation')"
           class="flex-shrink-0"
         >
-          <img src="@/assets/icons/gps-location.svg" alt="Get location" class="p-2 w-10 md:w-12" />
+          <img
+            src="@/assets/icons/gps-location.svg"
+            :alt="$t('header.getLocation')"
+            class="p-2 w-10 md:w-12"
+          />
         </button>
       </div>
     </div>
@@ -113,6 +128,7 @@ import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import useThemeStore from '@/stores/theme'
 import useUnitStore from '@/stores/unit'
+import useLocaleStore from '@/stores/locale'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UnitToggle from '@/components/ui/UnitToggle.vue'
 import {
@@ -186,6 +202,7 @@ export default {
     }),
     ...mapActions(useThemeStore, ['toggleTheme']),
     ...mapActions(useUnitStore, ['setUnit']),
+    ...mapActions(useLocaleStore, ['toggleLocale']),
     toggleUnit() {
       this.setUnit(this.unit === 'celsius' ? 'fahrenheit' : 'celsius')
     },

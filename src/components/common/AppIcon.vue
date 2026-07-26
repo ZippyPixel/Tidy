@@ -3,13 +3,14 @@
 </template>
 
 <script>
-import { ChevronRight, CloudRain, Moon, Settings, Sun } from 'lucide-vue-next'
+import { ChevronRight, CloudRain, Languages, Moon, Settings, Sun } from 'lucide-vue-next'
 
 // Icons used in the app, keyed by their lucide name (kebab-case).
 // Add new icons here so only the ones we use end up in the bundle.
 const icons = {
   'chevron-right': ChevronRight,
   'cloud-rain': CloudRain,
+  languages: Languages,
   moon: Moon,
   settings: Settings,
   sun: Sun
