@@ -12,7 +12,7 @@
     </div>
     <!-- info -->
     <div
-      class="w-full h-auto min-h-[20rem] py-6 drop-shadow-xl bg-white dark:bg-night-surface rounded-3xl flex flex-col justify-around relative"
+      class="w-full h-auto min-h-[20rem] py-6 drop-shadow-xl bg-white dark:bg-night-surface rounded-3xl flex flex-col relative"
     >
       <!-- chance of rain -->
       <div
@@ -21,7 +21,7 @@
         <AppIcon name="cloud-rain" :size="18" class="text-blue-500 dark:text-night-muted" />
         <p class="text-sm md:text-base">{{ chanceOfRain }}</p>
       </div>
-      <div class="w-[90%] h-full mx-auto flex flex-col justify-around gap-6">
+      <div class="w-[90%] flex-1 mx-auto flex flex-col gap-6">
         <!-- top -->
         <div class="flex flex-row items-center justify-between">
           <div class="flex flex-col">
@@ -55,7 +55,7 @@
           <p class="text-sm text-gray-500">{{ $t('weather.feelsLike', { temp: temperature.feelsLike }) }}</p>
         </div>
         <!-- bottom -->
-        <div class="grid grid-cols-3 md:flex md:flex-row justify-between gap-4">
+        <div class="grid grid-cols-3 md:flex md:flex-row justify-between gap-4 mt-auto">
           <div class="flex flex-col">
             <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.humidity') }}</p>
             <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
