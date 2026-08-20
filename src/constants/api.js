@@ -1,16 +1,6 @@
+// Internal Nitro endpoints. The upstream WeatherAPI URL, the key, and the day count
+// all live in server/ and never reach the browser — see server/api/*.get.js
 export const API_ENDPOINTS = {
-  WEATHER: {
-    BASE_URL: 'http://api.weatherapi.com/v1/forecast.json',
-    PARAMS: {
-      AQI: 'yes',
-      ALERTS: 'yes'
-    }
-  },
-  SEARCH: {
-    BASE_URL: 'http://api.weatherapi.com/v1/search.json'
-  }
+  WEATHER: '/api/forecast',
+  SEARCH: '/api/search'
 }
-
-export const API_CONFIG = {
-  DAYS_COUNT: 7
-} 

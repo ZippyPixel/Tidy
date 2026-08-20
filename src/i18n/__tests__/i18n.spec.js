@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
-import i18n, { currentIntlTag } from '@/i18n'
+import { activeI18n, currentIntlTag, LOCALE_COOKIE_KEY } from '@/i18n'
 import en from '@/i18n/locales/en.json'
 import bn from '@/i18n/locales/bn.json'
 import useLocaleStore from '@/stores/locale'
@@ -15,10 +15,16 @@ function keyPaths(messages, prefix = '') {
   )
 }
 
+function readCookie(name) {
+  return document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith(`${name}=`))
+    ?.split('=')[1]
+}
+
 afterEach(() => {
-  i18n.global.locale.value = 'en'
-  localStorage.clear()
-  document.documentElement.lang = 'en'
+  activeI18n().global.locale.value = 'en'
+  document.cookie = `${LOCALE_COOKIE_KEY}=; path=/; max-age=0`
 })
 
 describe('locale messages', () => {
@@ -37,18 +43,19 @@ describe('locale messages', () => {
 })
 
 describe('locale store', () => {
-  it('switches i18n locale, persists it and sets the html lang attribute', () => {
+  it('switches i18n locale and persists it to a cookie', () => {
     setActivePinia(createPinia())
     const store = useLocaleStore()
 
     store.setLocale('bn')
-    expect(i18n.global.locale.value).toBe('bn')
-    expect(localStorage.getItem('tidy-locale')).toBe('bn')
-    expect(document.documentElement.lang).toBe('bn')
+    expect(store.locale).toBe('bn')
+    expect(activeI18n().global.locale.value).toBe('bn')
+    // a cookie, not localStorage, so the server can read it and render bn on first paint
+    expect(readCookie(LOCALE_COOKIE_KEY)).toBe('bn')
     expect(currentIntlTag()).toBe('bn-BD')
 
     store.toggleLocale()
-    expect(i18n.global.locale.value).toBe('en')
+    expect(activeI18n().global.locale.value).toBe('en')
   })
 
   it('ignores unsupported locales', () => {
@@ -56,7 +63,7 @@ describe('locale store', () => {
     const store = useLocaleStore()
     store.setLocale('fr')
     expect(store.locale).toBe('en')
-    expect(i18n.global.locale.value).toBe('en')
+    expect(activeI18n().global.locale.value).toBe('en')
   })
 })
 
@@ -67,7 +74,7 @@ describe('locale-aware formatting', () => {
   })
 
   it('formats dates and digits in Bangla when the locale is bn', () => {
-    i18n.global.locale.value = 'bn'
+    activeI18n().global.locale.value = 'bn'
     expect(weatherMixin.methods.formatDate('2026-07-16')).toContain('বৃহস্পতিবার')
     expect(weatherMixin.methods.formatTemp(31.2)).toBe('৩২°')
     expect(weatherMixin.methods.formatRainChance(80)).toBe('৮০%')

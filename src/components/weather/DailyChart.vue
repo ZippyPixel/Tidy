@@ -5,15 +5,21 @@
       <p class="font-semibold text-gray-600 dark:text-night-muted">{{ $t('chart.dailySummary') }}</p>
     </div>
     <div class="w-full mt-5">
-      <AreaChart
-        class="h-64 md:h-[17rem]"
-        index="hour"
-        :data="chartData"
-        :categories="['temperature']"
-        :show-legend="false"
-        :show-grid-line="false"
-        :y-formatter="formatTemperature"
-      />
+      <!-- unovis draws through d3 and needs a real DOM, so keep it off the server -->
+      <ClientOnly>
+        <AreaChart
+          class="h-64 md:h-[17rem]"
+          index="hour"
+          :data="chartData"
+          :categories="['temperature']"
+          :show-legend="false"
+          :show-grid-line="false"
+          :y-formatter="formatTemperature"
+        />
+        <template #fallback>
+          <div class="h-64 md:h-[17rem]" />
+        </template>
+      </ClientOnly>
     </div>
   </div>
   <div v-else>

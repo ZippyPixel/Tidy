@@ -3,35 +3,46 @@ import en from './locales/en.json'
 import bn from './locales/bn.json'
 
 export const SUPPORTED_LOCALES = ['en', 'bn']
-export const LOCALE_STORAGE_KEY = 'tidy-locale'
+export const LOCALE_COOKIE_KEY = 'tidy-locale'
 
 // BCP 47 tags used for Intl date/number formatting ('bn-BD' uses Bengali digits)
 const INTL_TAGS = { en: 'en-US', bn: 'bn-BD' }
 
-function initialLocale() {
-  try {
-    const saved = localStorage.getItem(LOCALE_STORAGE_KEY)
-    if (SUPPORTED_LOCALES.includes(saved)) return saved
-  } catch {
-    /* localStorage unavailable (SSR/tests) */
-  }
-  return 'en'
+export function resolveLocale(value) {
+  return SUPPORTED_LOCALES.includes(value) ? value : 'en'
 }
 
-const i18n = createI18n({
-  legacy: false,
-  globalInjection: true,
-  locale: initialLocale(),
-  fallbackLocale: 'en',
-  messages: { en, bn }
-})
+export function createI18nInstance(locale = 'en') {
+  return createI18n({
+    legacy: false,
+    globalInjection: true,
+    locale: resolveLocale(locale),
+    fallbackLocale: 'en',
+    messages: { en, bn }
+  })
+}
+
+// The instance the non-component callers (the weather store, weatherMixin,
+// utils/astro consumers) read the active locale from. plugins/preferences.js
+// installs a fresh one per request so SSR renders the locale from the cookie.
+let active = createI18nInstance()
+
+export function setActiveI18n(instance) {
+  active = instance
+}
+
+export function activeI18n() {
+  return active
+}
 
 export function currentLocale() {
-  return i18n.global.locale.value
+  return active.global.locale.value
+}
+
+export function intlTagFor(locale) {
+  return INTL_TAGS[resolveLocale(locale)]
 }
 
 export function currentIntlTag() {
-  return INTL_TAGS[currentLocale()] || INTL_TAGS.en
+  return intlTagFor(currentLocale())
 }
-
-export default i18n

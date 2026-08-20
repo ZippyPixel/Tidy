@@ -1,6 +1,6 @@
 # Tidy Weather App
 
-A modern, responsive weather application built with Vue 3, providing real-time weather information and forecasts with a beautiful user interface.
+A modern, responsive weather application built with Nuxt 4, providing real-time weather information and forecasts with a beautiful user interface.
 
 ## Features
 
@@ -18,16 +18,16 @@ A modern, responsive weather application built with Vue 3, providing real-time w
 
 ## Tech Stack
 
-- Vue 3
-- Vuex (Pinia)
-- Vue Router
-- Tailwind CSS
-- Chart.js
-- Weather API Integration
+- Nuxt 4 (Vue 3, SSR) with a Nitro server layer
+- Pinia
+- vue-i18n (English / Bangla)
+- Tailwind CSS + shadcn-vue (reka-ui)
+- unovis charts
+- WeatherAPI.com integration, proxied server-side
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js 22.19+ or 24+ (Nuxt 4 requirement — see `.nvmrc`)
 - npm or yarn
 - Git
 - WeatherAPI.com account and API key
@@ -61,36 +61,54 @@ yarn install
    ```bash
    cp example.env .env
    ```
-   - Open the `.env` file and replace `your_api_key_here` with your actual WeatherAPI.com API key
+   - Open the `.env` file and set `NUXT_WEATHER_API_KEY` to your WeatherAPI.com key
+   - `NUXT_WEATHER_API_BASE` is optional — it defaults to the WeatherAPI v1 URL and
+     only needs setting to point at a mock or a proxy
 
-4. Start the development server:
+   These are read only by the Nitro routes in `server/api/` and are never sent to
+   the browser. The client talks to `/api/forecast` and `/api/search` instead.
+
+4. Start the development server (http://localhost:3000):
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-5. Build for production:
+5. Build and run for production:
 ```bash
 npm run build
-# or
-yarn build
+npm run preview
 ```
+
+`npm run build` produces a Node server in `.output/`. Because the API key is read at
+runtime, the deploy target must supply `NUXT_WEATHER_API_KEY` as an environment
+variable. `npm run generate` (fully static) will not work — the `/api/*` routes need
+a running server.
 
 ## Project Structure
 
 ```
+server/
+├── api/             # Nitro routes that proxy WeatherAPI (hold the API key)
+└── utils/           # Shared server helpers
 src/
-├── assets/          # Static assets (icons, images)
+├── assets/          # Static assets (icons, images) and global CSS
 ├── components/      # Vue components
 │   ├── common/      # Shared components
 │   ├── layout/      # Layout components
+│   ├── ui/          # Generated shadcn-vue components
 │   └── weather/     # Weather-specific components
 ├── constants/       # Application constants
+├── i18n/            # vue-i18n setup and en/bn message catalogues
+├── layouts/         # Nuxt layouts
+├── mixins/          # Intl-based formatting helpers
+├── pages/           # Nuxt file-based routes
+├── plugins/         # Nuxt plugins (theme + locale bootstrap)
 ├── stores/          # Pinia stores
 ├── utils/           # Utility functions
-└── App.vue          # Root component
+└── app.vue          # Root component
 ```
+
+Nuxt's `srcDir` points at `src/`, so the `@`/`~` aliases resolve there.
 
 ## Component Overview
 

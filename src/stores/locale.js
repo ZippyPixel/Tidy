@@ -1,23 +1,26 @@
 import { defineStore } from 'pinia'
-import i18n, { SUPPORTED_LOCALES, LOCALE_STORAGE_KEY } from '@/i18n'
+import { activeI18n, resolveLocale, SUPPORTED_LOCALES, LOCALE_COOKIE_KEY } from '@/i18n'
+import { writePreferenceCookie } from '@/utils/preferences'
 import useWeatherStore from '@/stores/weather'
 
 const useLocaleStore = defineStore('locale', {
   state: () => ({
-    // i18n already resolved the persisted locale at startup
-    locale: i18n.global.locale.value
+    locale: 'en'
   }),
 
   actions: {
-    initLocale() {
-      this._applyLocale(this.locale)
+    // called once by plugins/preferences.js, before the app renders
+    setInitialLocale(locale) {
+      this.locale = resolveLocale(locale)
+      activeI18n().global.locale.value = this.locale
     },
 
     setLocale(locale) {
       if (!SUPPORTED_LOCALES.includes(locale) || locale === this.locale) return
       this.locale = locale
-      localStorage.setItem(LOCALE_STORAGE_KEY, locale)
-      this._applyLocale(locale)
+      writePreferenceCookie(LOCALE_COOKIE_KEY, locale)
+      // <html lang> follows this.locale via useHead in plugins/preferences.js
+      activeI18n().global.locale.value = locale
       // re-fetch so API-provided texts (condition) arrive in the new language
       useWeatherStore()
         .refetchWeather()
@@ -26,11 +29,6 @@ const useLocaleStore = defineStore('locale', {
 
     toggleLocale() {
       this.setLocale(this.locale === 'en' ? 'bn' : 'en')
-    },
-
-    _applyLocale(locale) {
-      i18n.global.locale.value = locale
-      document.documentElement.lang = locale
     }
   }
 })

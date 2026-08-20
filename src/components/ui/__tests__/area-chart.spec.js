@@ -20,8 +20,10 @@ if (!SVGElement.prototype.getComputedTextLength) {
 
 import { AreaChart } from '@/components/ui/chart-area'
 import DailyChart from '@/components/weather/DailyChart.vue'
-import i18n from '@/i18n'
+import { activeI18n } from '@/i18n'
 import useWeatherStore from '@/stores/weather'
+
+const i18n = activeI18n()
 
 const sampleData = [
   { hour: '12 AM', temperature: 21 },
