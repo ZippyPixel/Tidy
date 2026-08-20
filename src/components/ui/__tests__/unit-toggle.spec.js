@@ -3,8 +3,10 @@ import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 
 import UnitToggle from '@/components/ui/UnitToggle.vue'
-import i18n from '@/i18n'
+import { activeI18n } from '@/i18n'
 import useUnitStore from '@/stores/unit'
+
+const i18n = activeI18n()
 
 function mountToggle() {
   const pinia = createPinia()

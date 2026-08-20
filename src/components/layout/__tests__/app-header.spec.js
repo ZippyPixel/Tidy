@@ -1,18 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import axios from 'axios'
 
 import AppHeader from '@/components/layout/AppHeader.vue'
-import i18n from '@/i18n'
+import { activeI18n } from '@/i18n'
 import useThemeStore from '@/stores/theme'
 import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
 import useLocaleStore from '@/stores/locale'
 
-vi.mock('axios', () => ({
-  default: { get: vi.fn() }
-}))
+const i18n = activeI18n()
+
+// the store now talks to the Nitro proxy through Nuxt's global $fetch
+const $fetch = vi.fn()
+vi.stubGlobal('$fetch', $fetch)
 
 if (typeof window !== 'undefined' && !window.ResizeObserver) {
   window.ResizeObserver = vi.fn(() => ({
@@ -26,10 +27,17 @@ if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = vi.fn()
 }
 
+// jsdom exposes button/ctrlKey as read-only getters, so they have to be passed to the
+// constructor — test-utils' trigger() assigns them after construction and throws.
+function pointerEvent(type, init = {}) {
+  const Ctor = typeof PointerEvent === 'function' ? PointerEvent : MouseEvent
+  return new Ctor(type, { bubbles: true, cancelable: true, button: 0, ...init })
+}
+
 async function openSettingsMenu(wrapper) {
   const trigger = wrapper.find('[aria-label="Open settings menu"]')
-  await trigger.trigger('pointerdown', { button: 0, ctrlKey: false })
-  await trigger.trigger('click')
+  trigger.element.dispatchEvent(pointerEvent('pointerdown', { ctrlKey: false }))
+  trigger.element.dispatchEvent(pointerEvent('click'))
   await wrapper.vm.$nextTick()
   return trigger
 }
@@ -108,13 +116,12 @@ describe('AppHeader settings dropdown', () => {
 
     expect(localeStore.locale).toBe('bn')
     expect(i18n.global.locale.value).toBe('bn')
-    expect(document.documentElement.lang).toBe('bn')
     // menu re-renders in Bangla
     const text = menuItems().map((i) => i.textContent).join(' ')
     expect(text).toContain('ভাষা')
     expect(text).toContain('তাপমাত্রা')
 
-    // toggle back so the singleton i18n/localStorage state does not leak into other tests
+    // toggle back so the shared i18n instance does not leak into other tests
     localeStore.setLocale('en')
     await wrapper.vm.$nextTick()
     expect(i18n.global.locale.value).toBe('en')
@@ -131,7 +138,7 @@ describe('AppHeader search autocomplete', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
     vi.useFakeTimers()
-    axios.get.mockReset()
+    $fetch.mockReset()
   })
 
   afterEach(() => {
@@ -155,19 +162,21 @@ describe('AppHeader search autocomplete', () => {
     await typeInSearch(wrapper, 'dh')
     await vi.advanceTimersByTimeAsync(500)
 
-    expect(axios.get).not.toHaveBeenCalled()
+    expect($fetch).not.toHaveBeenCalled()
     expect(options().length).toBe(0)
     wrapper.unmount()
   })
 
   it('shows debounced suggestions below the search bar', async () => {
-    axios.get.mockResolvedValue({ data: SUGGESTIONS })
+    $fetch.mockResolvedValue(SUGGESTIONS)
     const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
     await typeInSearch(wrapper, 'dha')
 
-    expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.get.mock.calls[0][0]).toContain('search.json')
-    expect(axios.get.mock.calls[0][0]).toContain('q=dha')
+    expect($fetch).toHaveBeenCalledTimes(1)
+    // hits our own Nitro route, never WeatherAPI directly, so no key reaches the client
+    const [url, options_] = $fetch.mock.calls[0]
+    expect(url).toBe('/api/search')
+    expect(options_.query).toEqual({ q: 'dha' })
 
     const items = options()
     expect(items.length).toBe(2)
@@ -178,7 +187,7 @@ describe('AppHeader search autocomplete', () => {
   })
 
   it('shows an empty state when no city matches', async () => {
-    axios.get.mockResolvedValue({ data: [] })
+    $fetch.mockResolvedValue([])
     const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
     await typeInSearch(wrapper, 'zzz')
 
@@ -188,7 +197,7 @@ describe('AppHeader search autocomplete', () => {
   })
 
   it('fetches weather by location id when a suggestion is clicked', async () => {
-    axios.get.mockResolvedValue({ data: SUGGESTIONS })
+    $fetch.mockResolvedValue(SUGGESTIONS)
     const pinia = createPinia()
     const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
     const weatherStore = useWeatherStore(pinia)

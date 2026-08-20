@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
 import { AIR_QUALITY_LEVELS, UV_INDEX_LEVELS } from '@/constants/weather'
-import { API_ENDPOINTS, API_CONFIG } from '@/constants/api'
+import { API_ENDPOINTS } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
 import { currentLocale } from '@/i18n'
@@ -80,17 +79,12 @@ export default defineStore('weather', {
 
     async fetchForecast(query) {
       this.isLoading = true
-      const { BASE_URL, PARAMS } = API_ENDPOINTS.WEATHER
-      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
-      const locale = currentLocale()
-      const langParam = locale === 'en' ? '' : `&lang=${locale}`
-
       try {
-        const response = await axios.get(
-          `${BASE_URL}?key=${apiKey}&q=${query}&days=${API_CONFIG.DAYS_COUNT}&aqi=${PARAMS.AQI}&alerts=${PARAMS.ALERTS}${langParam}`
-        )
+        const data = await $fetch(API_ENDPOINTS.WEATHER, {
+          query: { q: query, lang: currentLocale() }
+        })
         this.lastQuery = query
-        await this.setValues(response.data)
+        await this.setValues(data)
       } finally {
         this.isLoading = false
       }
@@ -102,10 +96,8 @@ export default defineStore('weather', {
     },
 
     async searchLocations(query) {
-      const { BASE_URL } = API_ENDPOINTS.SEARCH
-      const apiKey = import.meta.env.VITE_WEATHER_API_KEY
-      const response = await axios.get(`${BASE_URL}?key=${apiKey}&q=${encodeURIComponent(query)}`)
-      return response.data || []
+      const results = await $fetch(API_ENDPOINTS.SEARCH, { query: { q: query } })
+      return results || []
     },
 
     async setValues(response) {

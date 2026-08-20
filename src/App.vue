@@ -1,15 +1,15 @@
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-night-bg">
     <LoadingOverlay />
-    <router-view></router-view>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
-import useThemeStore from '@/stores/theme'
-import useLocaleStore from '@/stores/locale'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 
 export default {
@@ -34,10 +34,9 @@ export default {
       }
     }
   },
+  // theme and locale are seeded before render by plugins/preferences.js, so all
+  // that is left here is the geolocation probe (browser-only by nature)
   async mounted() {
-    useLocaleStore().initLocale()
-    const themeStore = useThemeStore()
-    themeStore.initTheme()
     await this.checkAndDetectLocation()
   }
 }

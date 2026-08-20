@@ -75,6 +75,12 @@ export default {
         this.animatedProgress = 0
         return
       }
+      // this watcher is immediate, so it also runs during SSR where there is no
+      // requestAnimationFrame — render the final position and let the client animate
+      if (typeof requestAnimationFrame === 'undefined') {
+        this.animatedProgress = target
+        return
+      }
       if (prefersReducedMotion()) {
         this.animatedProgress = target
         return
