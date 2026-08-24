@@ -11,6 +11,19 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt'],
 
+  // vue-i18n ships the esm-bundler build, which references Vue's compile-time flags
+  // (__VUE_PROD_DEVTOOLS__) as bare identifiers and expects the bundler to replace them.
+  // Nitro externalises node_modules by default, so on the server that file is loaded
+  // as-is and the flag stays undefined. The guard reads
+  //   if (process.env.NODE_ENV !== 'production' || __VUE_PROD_DEVTOOLS__)
+  // which short-circuits in dev but *evaluates* the identifier once NODE_ENV=production
+  // — i.e. on any real deploy — and throws ReferenceError inside `vueApp.use(i18n)`.
+  // The plugin then aborts before $t is injected and every template dies with
+  // "_ctx.$t is not a function". Transpiling pulls vue-i18n into the bundle so Vite
+  // substitutes the flags. This is what @nuxtjs/i18n does; pinia needs no such help
+  // because it guards its own flag reads with `typeof`.
+  build: { transpile: ['vue-i18n'] },
+
   // shadcn-vue ships a barrel index.js beside each component, which collides with
   // Nuxt's file-name-derived auto-import names. Everything under ui/ is imported
   // explicitly from those barrels, so keep it out of the scan entirely.

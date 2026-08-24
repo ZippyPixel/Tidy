@@ -6,7 +6,7 @@ import useLocaleStore from '@/stores/locale'
 
 // Runs on both server and client before the app renders, so the very first paint
 // already has the right language and theme. Replaces the localStorage reads that
-// used to happen in App.vue's mounted() hook.
+// used to happen in app.vue's mounted() hook.
 export default defineNuxtPlugin((nuxtApp) => {
   const themeCookie = useCookie(THEME_COOKIE_KEY)
   const localeCookie = useCookie(LOCALE_COOKIE_KEY)

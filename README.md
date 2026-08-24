@@ -84,6 +84,19 @@ runtime, the deploy target must supply `NUXT_WEATHER_API_KEY` as an environment
 variable. `npm run generate` (fully static) will not work — the `/api/*` routes need
 a running server.
 
+### Deploying
+
+Any Node host works; Vercel needs no config file (Nitro detects the platform and emits
+`.vercel/output`). Two things the deploy needs that `npm run dev` does not:
+
+- `NUXT_WEATHER_API_KEY` set in the host's environment settings. Without it the page
+  renders but every `/api/*` call returns 500.
+- Node 22.19+ (Node 20 cannot install the native rolldown binary).
+
+Note that hosts run the server with `NODE_ENV=production`, which local `npm run preview`
+does not set by default. To reproduce a deploy faithfully, run
+`NODE_ENV=production node .output/server/index.mjs`.
+
 ## Project Structure
 
 ```

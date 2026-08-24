@@ -19,6 +19,7 @@ coverage
 .output
 .nitro
 .cache
+.vercel
 
 /cypress/videos/
 /cypress/screenshots/
