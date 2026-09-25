@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380" fill="none" role="img">
+  <title>The day's temperature plotted hour by hour, each hour lighting up in turn</title>
+  <style>
+    @keyframes tdy-hour { 0%, 62%, 100% { opacity: .55; transform: scale(1) } 12% { opacity: 1; transform: scale(1.5) } }
+    @keyframes tdy-halo { 0%, 100% { opacity: .55; transform: scale(1) } 50% { opacity: .9; transform: scale(1.07) } }
+    .tdy-hour, .tdy-halo { transform-box: fill-box; transform-origin: center }
+    .tdy-hour { animation: tdy-hour 6s ease-in-out infinite }
+    .tdy-halo { animation: tdy-halo 8s ease-in-out infinite }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important } }
+  </style>
+  <defs>
+    <linearGradient id="hours-stroke" x1="54" y1="0" x2="366" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7FAAD4" />
+      <stop offset=".3" stop-color="#9DBEDC" />
+      <stop offset=".6" stop-color="#FFB65C" />
+      <stop offset=".8" stop-color="#F79A63" />
+      <stop offset="1" stop-color="#93B3D8" />
+    </linearGradient>
+    <linearGradient id="hours-fill" x1="0" y1="106" x2="0" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC776" stop-opacity=".45" />
+      <stop offset=".5" stop-color="#CFE1F1" stop-opacity=".3" />
+      <stop offset="1" stop-color="#CFE1F1" stop-opacity="0" />
+    </linearGradient>
+    <radialGradient id="hours-peak" cx="0" cy="0" r="1"
+      gradientTransform="translate(250 122) scale(126 112)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFBE63" stop-opacity=".36" />
+      <stop offset="1" stop-color="#FFBE63" stop-opacity="0" />
+    </radialGradient>
+    <!-- keeps the area fill from ending on a hard vertical edge at either end of the day -->
+    <linearGradient id="hours-fadeGrad" x1="54" y1="0" x2="366" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000000" />
+      <stop offset=".18" stop-color="#FFFFFF" />
+      <stop offset=".82" stop-color="#FFFFFF" />
+      <stop offset="1" stop-color="#000000" />
+    </linearGradient>
+    <mask id="hours-fade" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="380">
+      <rect x="0" y="0" width="420" height="380" fill="url(#hours-fadeGrad)" />
+    </mask>
+  </defs>
+
+  <ellipse class="tdy-halo" cx="250" cy="122" rx="126" ry="112" fill="url(#hours-peak)" />
+
+  <path d="M54 210.6C56.3 212.4 63 218.2 67.6 221.6C72.1 225.1 76.6 228.3 81.1 231.3C85.7 234.3 90.2 237.1 94.7 239.6C99.2 242.1 103.7 244.4 108.3 246.5C112.8 248.6 117.3 252.2 121.8 252C126.3 251.8 130.9 248.8 135.4 245.1C139.9 241.4 144.4 235.7 149 229.9C153.5 224.2 158 217.3 162.5 210.6C167 203.9 171.6 196.8 176.1 189.9C180.6 183 185.1 175.4 189.7 169.2C194.2 163 198.7 157.9 203.2 152.6C207.7 147.4 212.3 142.1 216.8 137.5C221.3 132.9 225.8 128.5 230.3 125C234.9 121.6 239.4 118.6 243.9 116.8C248.4 114.9 253 113.5 257.5 114C262 114.5 266.5 116.8 271 119.5C275.6 122.3 280.1 126 284.6 130.6C289.1 135.2 293.7 141.4 298.2 147.1C302.7 152.9 307.2 160 311.7 165.1C316.3 170.1 320.8 173.6 325.3 177.5C329.8 181.4 334.3 185.3 338.9 188.5C343.4 191.7 347.9 194.3 352.4 196.8C357 199.3 363.7 202.5 366 203.7L366 300L54 300Z" fill="url(#hours-fill)" mask="url(#hours-fade)" />
+  <path d="M54 210.6C56.3 212.4 63 218.2 67.6 221.6C72.1 225.1 76.6 228.3 81.1 231.3C85.7 234.3 90.2 237.1 94.7 239.6C99.2 242.1 103.7 244.4 108.3 246.5C112.8 248.6 117.3 252.2 121.8 252C126.3 251.8 130.9 248.8 135.4 245.1C139.9 241.4 144.4 235.7 149 229.9C153.5 224.2 158 217.3 162.5 210.6C167 203.9 171.6 196.8 176.1 189.9C180.6 183 185.1 175.4 189.7 169.2C194.2 163 198.7 157.9 203.2 152.6C207.7 147.4 212.3 142.1 216.8 137.5C221.3 132.9 225.8 128.5 230.3 125C234.9 121.6 239.4 118.6 243.9 116.8C248.4 114.9 253 113.5 257.5 114C262 114.5 266.5 116.8 271 119.5C275.6 122.3 280.1 126 284.6 130.6C289.1 135.2 293.7 141.4 298.2 147.1C302.7 152.9 307.2 160 311.7 165.1C316.3 170.1 320.8 173.6 325.3 177.5C329.8 181.4 334.3 185.3 338.9 188.5C343.4 191.7 347.9 194.3 352.4 196.8C357 199.3 363.7 202.5 366 203.7" stroke="url(#hours-stroke)" stroke-width="6"
+    stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- one dot per hour of the day; every sixth runs larger -->
+  <g fill="#FFFFFF" stroke="url(#hours-stroke)" stroke-width="2.5">
+    <circle class="tdy-hour" cx="54" cy="210.6" r="3" style="animation-delay:0.00s" />
+    <circle class="tdy-hour" cx="67.6" cy="221.6" r="3" style="animation-delay:-0.24s" />
+    <circle class="tdy-hour" cx="81.1" cy="231.3" r="3" style="animation-delay:-0.48s" />
+    <circle class="tdy-hour" cx="94.7" cy="239.6" r="4.5" style="animation-delay:-0.72s" />
+    <circle class="tdy-hour" cx="108.3" cy="246.5" r="3" style="animation-delay:-0.96s" />
+    <circle class="tdy-hour" cx="121.8" cy="252" r="3" style="animation-delay:-1.20s" />
+    <circle class="tdy-hour" cx="135.4" cy="245.1" r="3" style="animation-delay:-1.44s" />
+    <circle class="tdy-hour" cx="149" cy="229.9" r="3" style="animation-delay:-1.68s" />
+    <circle class="tdy-hour" cx="162.5" cy="210.6" r="3" style="animation-delay:-1.92s" />
+    <circle class="tdy-hour" cx="176.1" cy="189.9" r="4.5" style="animation-delay:-2.16s" />
+    <circle class="tdy-hour" cx="189.7" cy="169.2" r="3" style="animation-delay:-2.40s" />
+    <circle class="tdy-hour" cx="203.2" cy="152.6" r="3" style="animation-delay:-2.64s" />
+    <circle class="tdy-hour" cx="216.8" cy="137.5" r="3" style="animation-delay:-2.88s" />
+    <circle class="tdy-hour" cx="230.3" cy="125" r="3" style="animation-delay:-3.12s" />
+    <circle class="tdy-hour" cx="243.9" cy="116.8" r="3" style="animation-delay:-3.36s" />
+    <circle class="tdy-hour" cx="257.5" cy="114" r="4.5" style="animation-delay:-3.60s" />
+    <circle class="tdy-hour" cx="271" cy="119.5" r="3" style="animation-delay:-3.84s" />
+    <circle class="tdy-hour" cx="284.6" cy="130.6" r="3" style="animation-delay:-4.08s" />
+    <circle class="tdy-hour" cx="298.2" cy="147.1" r="3" style="animation-delay:-4.32s" />
+    <circle class="tdy-hour" cx="311.7" cy="165.1" r="3" style="animation-delay:-4.56s" />
+    <circle class="tdy-hour" cx="325.3" cy="177.5" r="3" style="animation-delay:-4.80s" />
+    <circle class="tdy-hour" cx="338.9" cy="188.5" r="4.5" style="animation-delay:-5.04s" />
+    <circle class="tdy-hour" cx="352.4" cy="196.8" r="3" style="animation-delay:-5.28s" />
+    <circle class="tdy-hour" cx="366" cy="203.7" r="3" style="animation-delay:-5.52s" />
+  </g>
+</svg>

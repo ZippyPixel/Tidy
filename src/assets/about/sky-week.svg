@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380" fill="none" role="img">
+  <title>A rain cloud with the coming days queued up behind it, each smaller and fainter</title>
+  <style>
+    @keyframes tdy-drift { 0%, 100% { transform: translateX(-8px) } 50% { transform: translateX(8px) } }
+    @keyframes tdy-fall { 0% { transform: translateY(-8px); opacity: 0 } 30%, 65% { opacity: .85 } 100% { transform: translateY(38px); opacity: 0 } }
+    @keyframes tdy-halo { 0%, 100% { opacity: .5; transform: scale(1) } 50% { opacity: .75; transform: scale(1.05) } }
+    .tdy-day, .tdy-drop, .tdy-halo { transform-box: fill-box; transform-origin: center }
+    .tdy-halo { animation: tdy-halo 12s ease-in-out infinite }
+    /* parallax: the nearer the day, the faster it crosses. Periods are set per
+       element rather than by nth-of-type, which would count across parents. */
+    .tdy-day { animation: tdy-drift 15s ease-in-out infinite }
+    .tdy-drop { animation: tdy-fall 2.4s ease-in infinite }
+    .tdy-drop:nth-of-type(2) { animation-delay: -.5s; animation-duration: 2.1s }
+    .tdy-drop:nth-of-type(3) { animation-delay: -1.5s; animation-duration: 2.7s }
+    .tdy-drop:nth-of-type(4) { animation-delay: -.9s }
+    .tdy-drop:nth-of-type(5) { animation-delay: -1.9s; animation-duration: 2.2s }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important } }
+  </style>
+  <defs>
+    <linearGradient id="week-front" x1="80" y1="160" x2="200" y2="304" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" />
+      <stop offset=".42" stop-color="#EAF2F8" />
+      <stop offset="1" stop-color="#A8C6DE" />
+    </linearGradient>
+    <linearGradient id="week-back" x1="200" y1="70" x2="330" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" />
+      <stop offset="1" stop-color="#BED3E4" />
+    </linearGradient>
+    <radialGradient id="week-ambient" cx="0" cy="0" r="1"
+      gradientTransform="translate(190 206) scale(212 176)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C6DCEE" stop-opacity=".8" />
+      <stop offset="1" stop-color="#C6DCEE" stop-opacity="0" />
+    </radialGradient>
+    <filter id="week-soft" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="20" />
+    </filter>
+    <filter id="week-grain">
+      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer><feFuncA type="linear" slope=".14" /></feComponentTransfer>
+    </filter>
+
+    <g id="week-cloud">
+      <circle cx="0" cy="-24" r="64" />
+      <circle cx="-66" cy="14" r="43" />
+      <circle cx="60" cy="8" r="50" />
+      <rect x="-109" y="10" width="218" height="56" rx="28" />
+    </g>
+    <!-- a mask, not a clipPath: clipPath children may not be groups -->
+    <mask id="week-frontMask" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="380">
+      <use href="#week-cloud" transform="translate(152 232)" fill="#FFFFFF" />
+    </mask>
+  </defs>
+
+  <ellipse class="tdy-halo" cx="190" cy="206" rx="212" ry="176" fill="url(#week-ambient)" />
+
+  <!-- the days still to come, queued up and receding -->
+  <g fill="url(#week-back)">
+    <g class="tdy-day" opacity=".24" style="animation-duration: 32s; animation-direction: reverse">
+      <use href="#week-cloud" transform="translate(360 84) scale(.34)" />
+    </g>
+    <g class="tdy-day" opacity=".42" style="animation-duration: 26s">
+      <use href="#week-cloud" transform="translate(310 124) scale(.5)" />
+    </g>
+    <g class="tdy-day" opacity=".68" style="animation-duration: 20s; animation-direction: reverse">
+      <use href="#week-cloud" transform="translate(242 176) scale(.7)" />
+    </g>
+  </g>
+
+  <ellipse cx="150" cy="298" rx="140" ry="30" fill="#7BA3C2" opacity=".32" filter="url(#week-soft)" />
+
+  <!-- today, in front and already raining -->
+  <g class="tdy-day">
+    <use href="#week-cloud" transform="translate(152 232)" fill="url(#week-front)" />
+    <g mask="url(#week-frontMask)">
+      <rect x="0" y="0" width="420" height="380" filter="url(#week-grain)" opacity=".5" />
+    </g>
+    <g fill="#6E9BC0">
+      <rect class="tdy-drop" x="76" y="304" width="6" height="24" rx="3" />
+      <rect class="tdy-drop" x="116" y="310" width="6" height="19" rx="3" />
+      <rect class="tdy-drop" x="156" y="306" width="6" height="26" rx="3" />
+      <rect class="tdy-drop" x="196" y="312" width="6" height="20" rx="3" />
+      <rect class="tdy-drop" x="234" y="304" width="6" height="23" rx="3" />
+    </g>
+  </g>
+</svg>

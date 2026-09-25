@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { createPinia } from 'pinia'
+import { createRouter, createMemoryHistory } from 'vue-router'
 import axios from 'axios'
 
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -26,6 +28,27 @@ if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = vi.fn()
 }
 
+const stub = { template: '<div />' }
+const TEST_ROUTES = [
+  { path: '/', name: 'home', component: stub },
+  { path: '/about', name: 'about', component: stub }
+]
+
+// Kept module-level so tests can assert where the header navigated to.
+let router
+
+async function mountHeader(pinia = createPinia(), start = '/') {
+  router = createRouter({ history: createMemoryHistory(), routes: TEST_ROUTES })
+  router.push(start)
+  await router.isReady()
+  const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n, router] } })
+  // ComboboxInput resets its search term through an immediate watcher plus a
+  // nextTick; let that settle before a test types into the box.
+  await nextTick()
+  await nextTick()
+  return wrapper
+}
+
 async function openSettingsMenu(wrapper) {
   const trigger = wrapper.find('[aria-label="Open settings menu"]')
   await trigger.trigger('pointerdown', { button: 0, ctrlKey: false })
@@ -43,8 +66,8 @@ describe('AppHeader settings dropdown', () => {
     document.body.innerHTML = ''
   })
 
-  it('renders a settings trigger instead of standalone toggles', () => {
-    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+  it('renders a settings trigger instead of standalone toggles', async () => {
+    const wrapper = await mountHeader()
     expect(wrapper.find('[aria-label="Open settings menu"]').exists()).toBe(true)
     expect(wrapper.find('[aria-label="Open settings menu"] svg.lucide-settings-icon').exists()).toBe(true)
     // unit pill and theme button only live inside the (closed) menu
@@ -52,24 +75,35 @@ describe('AppHeader settings dropdown', () => {
     wrapper.unmount()
   })
 
-  it('opens the menu with theme, temperature and language entries', async () => {
-    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+  it('opens the menu with theme, temperature, language and about entries', async () => {
+    const wrapper = await mountHeader()
     await openSettingsMenu(wrapper)
 
     const items = menuItems()
-    expect(items.length).toBe(3)
+    expect(items.length).toBe(4)
     const text = items.map((i) => i.textContent).join(' ')
     expect(text).toContain('Light mode')
     expect(text).toContain('Temperature')
     expect(text).toContain('Language')
     expect(text).toContain('English')
+    expect(text).toContain('About Tidy')
     expect(document.body.querySelector('[role="switch"]')).toBeTruthy()
+    wrapper.unmount()
+  })
+
+  it('links the about entry at /about', async () => {
+    const wrapper = await mountHeader()
+    await openSettingsMenu(wrapper)
+
+    const about = menuItems().find((i) => i.textContent.includes('About Tidy'))
+    expect(about.tagName).toBe('A')
+    expect(about.getAttribute('href')).toBe('/about')
     wrapper.unmount()
   })
 
   it('toggles the theme from the menu without closing it', async () => {
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = await mountHeader(pinia)
     const themeStore = useThemeStore(pinia)
     await openSettingsMenu(wrapper)
 
@@ -78,13 +112,13 @@ describe('AppHeader settings dropdown', () => {
     await wrapper.vm.$nextTick()
 
     expect(themeStore.isDark).toBe(true)
-    expect(menuItems().length).toBe(3)
+    expect(menuItems().length).toBe(4)
     wrapper.unmount()
   })
 
   it('toggles the unit from the menu row', async () => {
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = await mountHeader(pinia)
     const unitStore = useUnitStore(pinia)
     await openSettingsMenu(wrapper)
 
@@ -98,7 +132,7 @@ describe('AppHeader settings dropdown', () => {
 
   it('switches the app language to Bangla from the menu row', async () => {
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = await mountHeader(pinia)
     const localeStore = useLocaleStore(pinia)
     await openSettingsMenu(wrapper)
 
@@ -151,7 +185,7 @@ describe('AppHeader search autocomplete', () => {
   }
 
   it('does not query the API for fewer than 3 characters', async () => {
-    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+    const wrapper = await mountHeader()
     await typeInSearch(wrapper, 'dh')
     await vi.advanceTimersByTimeAsync(500)
 
@@ -162,7 +196,7 @@ describe('AppHeader search autocomplete', () => {
 
   it('shows debounced suggestions below the search bar', async () => {
     axios.get.mockResolvedValue({ data: SUGGESTIONS })
-    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+    const wrapper = await mountHeader()
     await typeInSearch(wrapper, 'dha')
 
     expect(axios.get).toHaveBeenCalledTimes(1)
@@ -179,7 +213,7 @@ describe('AppHeader search autocomplete', () => {
 
   it('shows an empty state when no city matches', async () => {
     axios.get.mockResolvedValue({ data: [] })
-    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+    const wrapper = await mountHeader()
     await typeInSearch(wrapper, 'zzz')
 
     expect(options().length).toBe(0)
@@ -190,7 +224,7 @@ describe('AppHeader search autocomplete', () => {
   it('fetches weather by location id when a suggestion is clicked', async () => {
     axios.get.mockResolvedValue({ data: SUGGESTIONS })
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = await mountHeader(pinia)
     const weatherStore = useWeatherStore(pinia)
     const getCityWeather = vi.spyOn(weatherStore, 'getCityWeather').mockResolvedValue()
 
@@ -202,6 +236,23 @@ describe('AppHeader search autocomplete', () => {
     expect(getCityWeather).toHaveBeenCalledWith('id:1283240')
     expect(options().length).toBe(0)
     expect(input.element.value).toBe('')
+    wrapper.unmount()
+  })
+
+  it('returns to the weather screen when searching from another route', async () => {
+    const pinia = createPinia()
+    const wrapper = await mountHeader(pinia, '/about')
+    const weatherStore = useWeatherStore(pinia)
+    vi.spyOn(weatherStore, 'getCityWeather').mockResolvedValue()
+    expect(router.currentRoute.value.name).toBe('about')
+
+    const input = wrapper.find('input[placeholder="Search City"]')
+    await input.setValue('Dhaka')
+    await wrapper.find('form').trigger('submit')
+    await vi.advanceTimersByTimeAsync(0)
+    await wrapper.vm.$nextTick()
+
+    expect(router.currentRoute.value.name).toBe('home')
     wrapper.unmount()
   })
 })

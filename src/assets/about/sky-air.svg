@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380" fill="none" role="img">
+  <title>A warm core ringed by pulses of light, with particles drifting through the air</title>
+  <style>
+    @keyframes tdy-ripple { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.13) } }
+    @keyframes tdy-core { 0%, 100% { transform: scale(1); opacity: .92 } 50% { transform: scale(1.06); opacity: 1 } }
+    @keyframes tdy-mote { 0% { transform: translate(0, 0) } 50% { transform: translate(16px, -26px) } 100% { transform: translate(0, 0) } }
+    @keyframes tdy-twinkle { 0%, 100% { opacity: .35 } 50% { opacity: .95 } }
+    .tdy-ring, .tdy-core, .tdy-mote { transform-box: fill-box; transform-origin: center }
+    .tdy-ring { animation: tdy-ripple 7s ease-in-out infinite }
+    .tdy-ring:nth-of-type(2) { animation-delay: -1.75s }
+    .tdy-ring:nth-of-type(3) { animation-delay: -3.5s }
+    .tdy-ring:nth-of-type(4) { animation-delay: -5.25s }
+    .tdy-core { animation: tdy-core 5s ease-in-out infinite }
+    .tdy-mote { animation: tdy-mote 14s ease-in-out infinite, tdy-twinkle 6s ease-in-out infinite }
+    .tdy-mote:nth-of-type(2n) { animation-duration: 18s, 7.5s; animation-delay: -4s, -2s }
+    .tdy-mote:nth-of-type(3n) { animation-duration: 11s, 5s; animation-delay: -7s, -3.5s }
+    .tdy-mote:nth-of-type(5n) { animation-duration: 21s, 9s; animation-delay: -2s, -1s }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important } }
+  </style>
+  <defs>
+    <radialGradient id="air-core" cx="0" cy="0" r="1"
+      gradientTransform="translate(206 172) scale(88)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF3D2" />
+      <stop offset=".38" stop-color="#FFC65E" />
+      <stop offset="1" stop-color="#EE8140" />
+    </radialGradient>
+    <radialGradient id="air-bloom" cx="0" cy="0" r="1"
+      gradientTransform="translate(214 188) scale(200)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFA745" stop-opacity=".4" />
+      <stop offset=".5" stop-color="#D9702F" stop-opacity=".13" />
+      <stop offset="1" stop-color="#D9702F" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <circle cx="214" cy="188" r="200" fill="url(#air-bloom)" />
+
+  <!-- UV leaving the source, ring after ring -->
+  <g stroke="#FFC46A" fill="none">
+    <circle class="tdy-ring" cx="214" cy="188" r="84" stroke-width="2.5" opacity=".5" />
+    <circle class="tdy-ring" cx="214" cy="188" r="112" stroke-width="2" opacity=".34" />
+    <circle class="tdy-ring" cx="214" cy="188" r="142" stroke-width="1.6" opacity=".2" />
+    <circle class="tdy-ring" cx="214" cy="188" r="174" stroke-width="1.2" opacity=".11" />
+  </g>
+
+  <circle class="tdy-core" cx="214" cy="188" r="58" fill="url(#air-core)" />
+
+  <!-- what you are actually breathing -->
+  <g fill="#EFE0C9">
+    <circle class="tdy-mote" cx="64" cy="288" r="3.4" />
+    <circle class="tdy-mote" cx="118" cy="332" r="2.2" />
+    <circle class="tdy-mote" cx="166" cy="300" r="2.8" />
+    <circle class="tdy-mote" cx="312" cy="318" r="3.6" />
+    <circle class="tdy-mote" cx="366" cy="266" r="2.1" />
+    <circle class="tdy-mote" cx="38" cy="206" r="2.6" />
+    <circle class="tdy-mote" cx="390" cy="170" r="3" />
+    <circle class="tdy-mote" cx="88" cy="118" r="2.3" />
+    <circle class="tdy-mote" cx="340" cy="88" r="2.7" />
+    <circle class="tdy-mote" cx="256" cy="336" r="2.4" />
+    <circle class="tdy-mote" cx="146" cy="66" r="2" />
+    <circle class="tdy-mote" cx="30" cy="122" r="1.9" />
+  </g>
+</svg>

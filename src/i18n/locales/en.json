@@ -17,7 +17,48 @@
     "language": "Language",
     "switchLanguage": "Switch to বাংলা",
     "getCurrentLocation": "Get current location",
-    "getLocation": "Get location"
+    "getLocation": "Get location",
+    "about": "About Tidy"
+  },
+  "about": {
+    "eyebrow": "About",
+    "titleLead": "Everything about today,",
+    "titleTail": "on one screen.",
+    "intro": "Tidy shows the weather where you are — right now, hour by hour, and a week ahead — without an account, ads or a setup flow. Here is what each panel on that screen is for.",
+    "cards": {
+      "now": {
+        "eyebrow": "Current conditions",
+        "titleLead": "Right now,",
+        "titleTail": "where you are",
+        "body": "Tidy asks once for your location and opens on it: temperature, what it actually feels like, humidity, wind, pressure and visibility. Search any city to look somewhere else."
+      },
+      "night": {
+        "eyebrow": "Sun & moon",
+        "titleLead": "The sky keeps",
+        "titleTail": "a schedule",
+        "body": "Sunrise, sunset, moonrise and moonset for whichever day you are viewing, so you know how much light is left before you head out."
+      },
+      "week": {
+        "eyebrow": "Seven-day forecast",
+        "titleLead": "Seven days,",
+        "titleTail": "one glance",
+        "body": "A week of highs, lows and rain chance as cards. Pick any day and the rest of the screen follows it — the same detail you get for today, for next Tuesday."
+      },
+      "air": {
+        "eyebrow": "Air & UV",
+        "titleLead": "What you",
+        "titleTail": "cannot see",
+        "body": "Air quality and UV index, read back as plain words instead of raw index numbers: good, moderate, unhealthy. Worth a look before a long run or an afternoon outside."
+      },
+      "hours": {
+        "eyebrow": "Hourly trend",
+        "titleLead": "Every hour,",
+        "titleTail": "plotted",
+        "body": "The day's temperature as a single curve. See when the heat peaks and when it drops, and time the walk, the ride or the laundry around it."
+      }
+    },
+    "settingsNote": "Tidy also speaks বাংলা, switches between °C and °F, and follows your system's light or dark theme. Change any of it from Settings.",
+    "dataSource": "Weather data from WeatherAPI.com."
   },
   "weather": {
     "currentLocation": "Current Location",

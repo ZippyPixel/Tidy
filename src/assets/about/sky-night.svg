@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380" fill="none" role="img">
+  <title>A cratered moon surrounded by slow-blinking stars</title>
+  <style>
+    @keyframes tdy-float { 0%, 100% { transform: translateY(-6px) } 50% { transform: translateY(6px) } }
+    @keyframes tdy-halo { 0%, 100% { opacity: .45; transform: scale(1) } 50% { opacity: .75; transform: scale(1.05) } }
+    @keyframes tdy-sheen { 0% { transform: translateX(-210px) } 100% { transform: translateX(240px) } }
+    @keyframes tdy-twinkle { 0%, 100% { opacity: .25; transform: scale(.8) } 50% { opacity: 1; transform: scale(1.15) } }
+    .tdy-float, .tdy-halo, .tdy-sheen, .tdy-star { transform-box: fill-box; transform-origin: center }
+    .tdy-float { animation: tdy-float 14s ease-in-out infinite }
+    .tdy-halo { animation: tdy-halo 9s ease-in-out infinite }
+    .tdy-sheen { animation: tdy-sheen 16s ease-in-out infinite }
+    .tdy-star { animation: tdy-twinkle 4s ease-in-out infinite }
+    .tdy-star:nth-of-type(2n) { animation-duration: 5.5s; animation-delay: -1.4s }
+    .tdy-star:nth-of-type(3n) { animation-duration: 6.5s; animation-delay: -2.9s }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important } }
+  </style>
+  <defs>
+    <radialGradient id="night-body" cx="0" cy="0" r="1"
+      gradientTransform="translate(180 122) scale(228)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F2F3F5" />
+      <stop offset=".42" stop-color="#C3C7CD" />
+      <stop offset=".76" stop-color="#83888F" />
+      <stop offset="1" stop-color="#3C3F45" />
+    </radialGradient>
+    <radialGradient id="night-halo" cx="0" cy="0" r="1"
+      gradientTransform="translate(238 186) scale(200)" gradientUnits="userSpaceOnUse">
+      <stop offset=".55" stop-color="#D8DEE8" stop-opacity=".28" />
+      <stop offset="1" stop-color="#D8DEE8" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="night-sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset=".5" stop-color="#FFFFFF" stop-opacity=".22" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+    <filter id="night-soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" />
+    </filter>
+    <filter id="night-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="4" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer><feFuncA type="linear" slope=".22" /></feComponentTransfer>
+    </filter>
+    <clipPath id="night-clip"><circle cx="238" cy="186" r="126" /></clipPath>
+  </defs>
+
+  <!-- stars: same field of light the moon sits in -->
+  <g fill="#E7ECF5">
+    <circle class="tdy-star" cx="46" cy="72" r="2.6" />
+    <circle class="tdy-star" cx="108" cy="38" r="1.8" />
+    <circle class="tdy-star" cx="72" cy="168" r="2.2" />
+    <circle class="tdy-star" cx="30" cy="262" r="1.6" />
+    <circle class="tdy-star" cx="132" cy="316" r="2.4" />
+    <circle class="tdy-star" cx="196" cy="46" r="1.7" />
+    <circle class="tdy-star" cx="386" cy="322" r="2.1" />
+    <circle class="tdy-star" cx="352" cy="58" r="1.9" />
+    <circle class="tdy-star" cx="18" cy="140" r="1.5" />
+  </g>
+
+  <g class="tdy-float">
+    <circle class="tdy-halo" cx="238" cy="186" r="200" fill="url(#night-halo)" />
+    <circle cx="238" cy="186" r="126" fill="url(#night-body)" />
+
+    <g clip-path="url(#night-clip)">
+      <!-- maria and craters -->
+      <g fill="#5C6067" opacity=".42">
+        <ellipse cx="196" cy="140" rx="42" ry="34" />
+        <ellipse cx="268" cy="118" rx="24" ry="20" />
+        <ellipse cx="286" cy="212" rx="34" ry="28" />
+        <ellipse cx="176" cy="238" rx="28" ry="22" />
+        <ellipse cx="236" cy="182" rx="16" ry="14" />
+        <ellipse cx="140" cy="188" rx="18" ry="15" />
+        <ellipse cx="302" cy="150" rx="13" ry="11" />
+        <ellipse cx="222" cy="272" rx="20" ry="15" />
+      </g>
+      <!-- lit crater rims, offset up-left toward the light -->
+      <g fill="#F4F6F8" opacity=".3">
+        <ellipse cx="192" cy="132" rx="40" ry="30" />
+        <ellipse cx="283" cy="205" rx="31" ry="24" />
+        <ellipse cx="173" cy="232" rx="26" ry="19" />
+      </g>
+      <rect x="0" y="0" width="420" height="380" filter="url(#night-grain)" opacity=".55" />
+      <!-- light travelling across the surface -->
+      <g transform="rotate(14 190 190)">
+        <rect class="tdy-sheen" x="150" y="30" width="80" height="320" fill="url(#night-sheen)"
+          filter="url(#night-soft)" />
+      </g>
+    </g>
+  </g>
+</svg>

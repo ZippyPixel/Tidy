@@ -9,9 +9,12 @@
       <div class="w-full flex flex-row items-center justify-between md:contents">
         <!-- title -->
         <div class="flex-shrink-0 md:order-1">
-          <p class="font-semibold text-2xl md:text-4xl text-slate-800 dark:text-night-text tracking-[0.2em] md:tracking-[0.5em]">
+          <RouterLink
+            to="/"
+            class="font-semibold text-2xl md:text-4xl text-slate-800 dark:text-night-text tracking-[0.2em] md:tracking-[0.5em]"
+          >
             TIDY
-          </p>
+          </RouterLink>
         </div>
         <!-- controls -->
         <div class="flex flex-row items-center md:order-3">
@@ -54,6 +57,13 @@
                   <AppIcon name="languages" :size="18" />
                   {{ $t('languageName') }}
                 </span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem as-child class="justify-between cursor-pointer">
+                <RouterLink to="/about">
+                  <span>{{ $t('header.about') }}</span>
+                  <AppIcon name="info" :size="18" />
+                </RouterLink>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -225,11 +235,17 @@ export default {
     suggestionDetail(suggestion) {
       return [suggestion.region, suggestion.country].filter(Boolean).join(', ')
     },
+    // The header follows the user onto other routes, but only home renders
+    // weather — take them back there once new data has landed.
+    showResults() {
+      if (this.$route.name !== 'home') this.$router.push({ name: 'home' })
+    },
     async selectSuggestion(suggestion) {
       this.showSuggestions = false
       this.cityName = ''
       try {
         await this.getCityWeather(`id:${suggestion.id}`)
+        this.showResults()
       } catch (error) {
         console.error('Failed to fetch city weather:', error)
       }
@@ -241,6 +257,7 @@ export default {
       try {
         await this.getCityWeather(cityName)
         this.cityName = '' // Clear input after successful fetch
+        this.showResults()
       } catch (error) {
         console.error('Failed to fetch city weather:', error)
       }
@@ -248,6 +265,7 @@ export default {
     async handleLocationClick() {
       try {
         await this.detectUserLocation()
+        this.showResults()
       } catch (error) {
         console.error('Location detection failed:', error)
       }
