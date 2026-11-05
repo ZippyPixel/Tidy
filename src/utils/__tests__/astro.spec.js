@@ -12,7 +12,9 @@ import {
   moonPhase,
   splitDuration,
   zoneOffsetMs,
-  locationClock
+  locationClock,
+  sunState,
+  moonState
 } from '@/utils/astro'
 
 describe('parseMinutes', () => {
@@ -149,5 +151,55 @@ describe('location clock', () => {
   it('splits durations', () => {
     expect(splitDuration(134)).toEqual({ hours: 2, minutes: 14 })
     expect(splitDuration(-5)).toEqual({ hours: 0, minutes: 0 })
+  })
+})
+
+describe('sunState', () => {
+  const sun = { rise: 348, set: 1071 } // 5:48 AM, 5:51 PM
+
+  it('counts down to sunset during the day', () => {
+    const s = sunState({ ...sun, now: 937 })
+    expect(s.status).toEqual({ key: 'setsIn', minutes: 134 })
+    expect(s.daylight).toBe(723)
+    expect(s.window.up).toBe(true)
+  })
+
+  it('counts down to the next sunrise after dark', () => {
+    expect(sunState({ ...sun, now: 1360, nextRise: 349 }).status).toEqual({ key: 'risesIn', minutes: 429 })
+    expect(sunState({ ...sun, now: 200 }).status).toEqual({ key: 'risesIn', minutes: 148 })
+  })
+
+  it('has no countdown for another day', () => {
+    expect(sunState({ ...sun }).status).toBeNull()
+    expect(sunState({ ...sun }).live).toBe(false)
+  })
+})
+
+describe('moonState', () => {
+  it('moves a set before the rise to tomorrow', () => {
+    // rises 5:04 PM, sets 4:27 AM; it is 3:37 PM
+    const m = moonState({ rise: 1024, set: 267, now: 937 })
+    expect(m.set).toEqual({ minutes: 267 + 1440, day: 'tomorrow', known: true })
+    expect(m.status).toEqual({ key: 'risesIn', minutes: 87 })
+  })
+
+  it('treats a morning moon as up since yesterday', () => {
+    const m = moonState({ rise: 1024, set: 267, now: 120 })
+    expect(m.rise.day).toBe('yesterday')
+    expect(m.rise.known).toBe(false)
+    expect(m.window.up).toBe(true)
+    expect(m.status).toEqual({ key: 'setsIn', minutes: 147 })
+  })
+
+  it('notes a missing moonrise with tomorrow’s rise', () => {
+    const m = moonState({ rise: null, set: 800, now: 900, nextRise: 14 })
+    expect(m.note).toEqual({ key: 'noMoonriseNext', time: 14 })
+    expect(m.rise.known).toBe(false)
+    expect(m.status).toEqual({ key: 'risesIn', minutes: 14 + 1440 - 900 })
+  })
+
+  it('takes a missing moonset from tomorrow', () => {
+    const m = moonState({ rise: 1400, set: null, now: 600, nextSet: 690 })
+    expect(m.set).toEqual({ minutes: 690 + 1440, day: 'tomorrow', known: true })
   })
 })

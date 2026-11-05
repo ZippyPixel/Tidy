@@ -1,92 +1,79 @@
 <template>
-  <CelestialArc
-    :title="$t('planetary.sunriseSunset')"
-    :rise-time="riseTime"
-    :set-time="setTime"
-    :progress="progress"
-  >
-    <defs>
-      <radialGradient id="grad-sun" cx="35%" cy="30%" r="75%">
-        <stop offset="0" stop-color="#ffe08a" />
-        <stop offset="1" stop-color="#f5a623" />
-      </radialGradient>
-    </defs>
-    <circle class="glow" r="7" fill="#f5a623" opacity="0.25" />
-    <g class="rays">
-      <line
-        v-for="n in 8"
-        :key="n"
-        x1="0"
-        y1="-7.5"
-        x2="0"
-        y2="-10"
-        :transform="`rotate(${n * 45})`"
-        stroke="#f5a623"
-        stroke-width="1.4"
-        stroke-linecap="round"
-      />
-    </g>
-    <circle r="5" fill="url(#grad-sun)" />
-  </CelestialArc>
+  <div class="flex min-w-0 flex-1 flex-col gap-2">
+    <div class="flex h-10 items-end justify-between gap-3">
+      <template v-if="!loading">
+        <div class="flex min-w-0 flex-col">
+          <span class="text-[13px] leading-4 text-muted-foreground">{{ $t('astro.sun') }}</span>
+          <span class="whitespace-nowrap text-base font-semibold leading-6 tabular-nums">{{ status }}</span>
+        </div>
+        <span v-if="extra" class="pb-1 text-right text-[13px] leading-4 tabular-nums text-muted-foreground">{{ extra }}</span>
+      </template>
+      <div v-else class="flex flex-col gap-2" aria-hidden="true">
+        <div class="h-2.5 w-8 rounded bg-muted" />
+        <div class="h-4 w-[120px] rounded bg-muted" />
+      </div>
+    </div>
+    <CelestialArc
+      :window="state && state.window"
+      :show-marker="!!state && state.live"
+      :loading="loading"
+      lit-class="stroke-sun-arc"
+      :rise-label="$t('astro.sunrise')"
+      :rise-time="time(astro.sunrise)"
+      :set-label="$t('astro.sunset')"
+      :set-time="time(astro.sunset)"
+    >
+      <template #marker="{ up }">
+        <div class="relative flex size-11 items-center justify-center">
+          <span v-if="up" class="absolute inset-0 rounded-full bg-[radial-gradient(hsl(var(--sun)/0.6),hsl(var(--sun)/0)_70%)]" />
+          <span class="relative size-[18px] rounded-full border-2 border-card" :class="up ? 'bg-sun' : 'bg-horizon'" />
+        </div>
+      </template>
+    </CelestialArc>
+  </div>
 </template>
 
 <script>
-import { mapState } from 'pinia'
-import useWeatherStore from '@/stores/weather'
 import { currentIntlTag } from '@/i18n'
-import { progressBetween, formatAstroTime } from '@/utils/astro'
+import { formatAstroTime, parseMinutes, sunState } from '@/utils/astro'
+import durationMixin from '@/mixins/durationMixin'
 import CelestialArc from './CelestialArc.vue'
 
 export default {
   name: 'SunArc',
   components: { CelestialArc },
+  mixins: [durationMixin],
+  props: {
+    astro: { type: Object, default: () => ({}) },
+    /** the next day's astro, for the countdown after sunset */
+    nextAstro: { type: Object, default: null },
+    /** minutes since the location's midnight; null for a day other than today */
+    now: { type: Number, default: null },
+    loading: { type: Boolean, default: false }
+  },
   computed: {
-    ...mapState(useWeatherStore, ['astro']),
-    progress() {
-      const a = this.astro || {}
-      return progressBetween(a.sunrise, a.sunset)
+    state() {
+      return sunState({
+        rise: parseMinutes(this.astro.sunrise),
+        set: parseMinutes(this.astro.sunset),
+        now: this.now,
+        nextRise: parseMinutes(this.nextAstro?.sunrise)
+      })
     },
-    riseTime() {
-      return formatAstroTime((this.astro || {}).sunrise, currentIntlTag())
+    status() {
+      if (!this.state) return '—'
+      if (!this.state.status) return this.$t('astro.risesAt', { time: this.time(this.astro.sunrise) })
+      return this.$t(`astro.${this.state.status.key}`, { d: this.duration(this.state.status.minutes) })
     },
-    setTime() {
-      return formatAstroTime((this.astro || {}).sunset, currentIntlTag())
+    extra() {
+      return this.state ? this.$t('astro.daylight', { d: this.duration(this.state.daylight) }) : ''
+    }
+  },
+  methods: {
+    time(value) {
+      const t = formatAstroTime(value, currentIntlTag())
+      return t === '--' ? '—' : t
     }
   }
 }
 </script>
-
-<style scoped>
-.glow,
-.rays {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .rays {
-    animation: spin 26s linear infinite;
-  }
-  .glow {
-    animation: glow 3.2s ease-in-out infinite;
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes glow {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.22;
-  }
-  50% {
-    transform: scale(1.28);
-    opacity: 0.4;
-  }
-}
-</style>

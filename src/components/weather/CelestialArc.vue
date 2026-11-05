@@ -1,107 +1,120 @@
 <template>
-  <div class="bg-white dark:bg-night-surface rounded-3xl p-3 md:p-4 flex-1 flex flex-col justify-center">
-    <p class="text-gray-500 dark:text-night-muted text-xs md:text-sm mb-0.5">{{ title }}</p>
-
-    <!-- arc + celestial body -->
-    <div class="text-slate-900 dark:text-night-text">
-      <svg class="w-full overflow-visible" viewBox="0 0 200 65" fill="none" aria-hidden="true">
-        <!-- dashed trajectory -->
-        <path
-          :d="path"
-          stroke="currentColor"
-          stroke-opacity="0.35"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-dasharray="0.5 11"
-        />
-        <!-- horizon -->
-        <line
-          :x1="arc.cx - arc.halfWidth"
-          :y1="arc.baseY"
-          :x2="arc.cx + arc.halfWidth"
-          :y2="arc.baseY"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <!-- marker graphic supplied by Sun/Moon, centered at the origin -->
-        <g v-if="show" class="marker" :transform="`translate(${pos.x} ${pos.y})`">
-          <slot />
-        </g>
+  <div class="flex min-h-0 flex-col gap-2 lg:flex-1">
+    <!-- 24-hour day curve: faded full curve, the rise→set stretch lit, marker in the slot.
+         The SVG stretches to its box (fixed height below lg, fills the card from lg);
+         the marker and labels are HTML so they keep their shape. -->
+    <div class="relative h-[110px] md:h-[126px] lg:h-auto lg:min-h-[126px] lg:flex-1">
+      <svg
+        class="absolute inset-0 size-full overflow-visible"
+        :viewBox="`0 0 ${W} ${H}`"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient :id="fadeId" gradientUnits="userSpaceOnUse" x1="0" y1="0" :x2="W" y2="0">
+            <stop offset="0" class="[stop-color:hsl(var(--horizon))]" stop-opacity="0" />
+            <stop offset="0.1" class="[stop-color:hsl(var(--horizon))]" stop-opacity="1" />
+            <stop offset="0.9" class="[stop-color:hsl(var(--horizon))]" stop-opacity="1" />
+            <stop offset="1" class="[stop-color:hsl(var(--horizon))]" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <template v-if="loading">
+          <path :d="fullPath" fill="none" class="stroke-muted" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+        </template>
+        <template v-else>
+          <path :d="fullPath" fill="none" :stroke="`url(#${fadeId})`" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+          <path v-if="window" :d="litPath" fill="none" :class="litClass" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+        </template>
       </svg>
+      <div
+        v-if="window && showMarker && !loading"
+        class="marker absolute -translate-x-1/2 -translate-y-1/2"
+        :style="{ left: `${window.now * 100}%`, top: `${(markerY / H) * 100}%` }"
+      >
+        <slot name="marker" :up="window.up" />
+      </div>
     </div>
 
-    <!-- times -->
-    <div class="flex flex-row justify-between text-xs md:text-sm font-regular -mt-1">
-      <p class="text-slate-700 dark:text-night-text">{{ riseTime }}</p>
-      <p class="text-slate-700 dark:text-night-text">{{ setTime }}</p>
+    <div class="relative h-10">
+      <template v-if="loading">
+        <div class="flex h-full items-end justify-around" aria-hidden="true">
+          <div class="h-4 w-[72px] rounded bg-muted" />
+          <div class="h-4 w-[72px] rounded bg-muted" />
+        </div>
+      </template>
+      <template v-else-if="window">
+        <div
+          v-for="edge in edges"
+          :key="edge.key"
+          class="absolute top-0 flex w-[136px] flex-col items-center text-center"
+          :style="{ left: `clamp(0px, calc(${edge.at * 100}% - 68px), calc(100% - 136px))` }"
+        >
+          <span class="whitespace-nowrap text-[13px] leading-4 text-muted-foreground">{{ edge.label }}</span>
+          <span class="whitespace-nowrap text-xl font-semibold leading-6 tabular-nums">{{ edge.time }}</span>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script>
-import { ARC, pointOnArc, arcPath, prefersReducedMotion } from '@/utils/astro'
+import { curveDepth, curvePath } from '@/utils/astro'
+
+// viewBox units; the curve runs from TOP (peak) to H - BOTTOM (troughs)
+const W = 1000
+const H = 126
+const TOP = 22
+const BOTTOM = 8
+
+let uid = 0
 
 export default {
   name: 'CelestialArc',
   props: {
-    title: { type: String, default: '' },
-    riseTime: { type: String, default: '--' },
-    setTime: { type: String, default: '--' },
-    // target progress 0..1 (0 = rise, 1 = set); null hides the marker
-    progress: { type: Number, default: null }
+    /** celestialWindow() result: { rise, set, now, up } as 0..1 fractions; null hides the arc */
+    window: { type: Object, default: null },
+    /** rise / set labels and display times */
+    riseLabel: { type: String, default: '' },
+    riseTime: { type: String, default: '—' },
+    setLabel: { type: String, default: '' },
+    setTime: { type: String, default: '—' },
+    /** marker only for today (a picked day has no "now") */
+    showMarker: { type: Boolean, default: true },
+    /** Tailwind stroke class for the lit stretch */
+    litClass: { type: String, default: 'stroke-sun-arc' },
+    loading: { type: Boolean, default: false }
   },
   data() {
-    return { arc: ARC, animatedProgress: 0 }
+    return { W, H, fadeId: `arc-fade-${++uid}` }
   },
   computed: {
-    show() {
-      return this.progress !== null && this.progress !== undefined
+    box() {
+      return { width: W, height: H, top: TOP, bottom: BOTTOM }
     },
-    path() {
-      return arcPath(this.arc)
+    fullPath() {
+      return curvePath(0, 1, this.box)
     },
-    pos() {
-      return pointOnArc(this.animatedProgress, this.arc)
-    }
-  },
-  watch: {
-    progress: { handler(value) { this.tween(value) }, immediate: true }
-  },
-  methods: {
-    // glide the marker from the horizon to its current position on mount/update
-    tween(target) {
-      if (target === null || target === undefined) {
-        this.animatedProgress = 0
-        return
-      }
-      // this watcher is immediate, so it also runs during SSR where there is no
-      // requestAnimationFrame — render the final position and let the client animate
-      if (typeof requestAnimationFrame === 'undefined') {
-        this.animatedProgress = target
-        return
-      }
-      if (prefersReducedMotion()) {
-        this.animatedProgress = target
-        return
-      }
-      const duration = 1100
-      const start = performance.now()
-      const step = (now) => {
-        const t = Math.min(1, (now - start) / duration)
-        const eased = 1 - Math.pow(1 - t, 3)
-        this.animatedProgress = target * eased
-        if (t < 1) requestAnimationFrame(step)
-      }
-      requestAnimationFrame(step)
+    litPath() {
+      return curvePath(this.window.rise, this.window.set, this.box)
+    },
+    markerY() {
+      return TOP + (H - TOP - BOTTOM) * curveDepth(this.window.now)
+    },
+    edges() {
+      return [
+        { key: 'rise', at: this.window.rise, label: this.riseLabel, time: this.riseTime },
+        { key: 'set', at: this.window.set, label: this.setLabel, time: this.setTime }
+      ]
     }
   }
 }
 </script>
 
 <style scoped>
-.marker {
-  animation: marker-in 0.6s ease-out both;
+@media (prefers-reduced-motion: no-preference) {
+  .marker {
+    animation: marker-in 0.6s ease-out both;
+  }
 }
 
 @keyframes marker-in {

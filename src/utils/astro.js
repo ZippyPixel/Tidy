@@ -176,3 +176,68 @@ export function locationClock(offsetMs, nowMs = Date.now()) {
     minutes: d.getUTCHours() * 60 + d.getUTCMinutes()
   }
 }
+
+// Average time the moon spends above the horizon; only used to place an arc when
+// the API reports no moonrise (or moonset) for the day.
+const MOON_SPAN = 745
+
+// What the sun card says and draws. Times are minutes since the location's
+// midnight; `now` is null for a day other than today (no marker, no countdown).
+// `nextRise` is tomorrow's sunrise, used for the countdown after sunset.
+export function sunState({ rise, set, now = null, nextRise = null }) {
+  if (rise === null || set === null) return null
+  const state = {
+    rise: { minutes: rise, day: null, known: true },
+    set: { minutes: set, day: null, known: true },
+    daylight: set - rise,
+    window: celestialWindow(rise, set, now ?? rise),
+    live: now !== null,
+    status: null
+  }
+  if (now === null) return state
+  if (now < rise) state.status = { key: 'risesIn', minutes: rise - now }
+  else if (now <= set) state.status = { key: 'setsIn', minutes: set - now }
+  else state.status = { key: 'risesIn', minutes: (nextRise ?? rise) + DAY - now }
+  return state
+}
+
+// Same for the moon, whose span often crosses midnight or misses a rise/set:
+//  - set before rise: it sets tomorrow, unless it is still up from yesterday's rise
+//  - no moonrise: it rose yesterday (time unknown); `nextRise` is tomorrow's rise
+//  - no moonset: it sets tomorrow at `nextSet`
+export function moonState({ rise, set, now = null, nextRise = null, nextSet = null }) {
+  if (rise === null && set === null) return null
+  let r = { minutes: rise, day: null, known: rise !== null }
+  let s = { minutes: set, day: null, known: set !== null }
+  let note = null
+
+  if (rise === null) {
+    r = { minutes: set - MOON_SPAN, day: 'yesterday', known: false }
+    note = { key: nextRise === null ? 'noMoonrise' : 'noMoonriseNext', time: nextRise }
+  } else if (set === null) {
+    s = nextSet === null
+      ? { minutes: rise + MOON_SPAN, day: 'tomorrow', known: false }
+      : { minutes: nextSet + DAY, day: 'tomorrow', known: true }
+  } else if (set < rise) {
+    if (now !== null && now < set) {
+      // still up from last night: the rise that matters was yesterday
+      r = { minutes: set - MOON_SPAN, day: 'yesterday', known: false }
+    } else {
+      s = { minutes: set + DAY, day: 'tomorrow', known: true }
+    }
+  }
+
+  const state = {
+    rise: r,
+    set: s,
+    window: celestialWindow(r.minutes, s.minutes, now ?? r.minutes),
+    live: now !== null,
+    note,
+    status: null
+  }
+  if (now === null) return state
+  if (now < r.minutes) state.status = { key: 'risesIn', minutes: r.minutes - now }
+  else if (now <= s.minutes) state.status = { key: 'setsIn', minutes: s.minutes - now }
+  else if (nextRise !== null) state.status = { key: 'risesIn', minutes: nextRise + DAY - now }
+  return state
+}

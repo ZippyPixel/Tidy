@@ -102,5 +102,36 @@
     "kmh": "km/h",
     "mph": "mph",
     "noData": "No hourly data"
+  },
+  "astro": {
+    "title": "Sun & Moon",
+    "sun": "Sun",
+    "moon": "Moon",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "moonrise": "Moonrise",
+    "moonset": "Moonset",
+    "withDay": "{label} · {day}",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "risesIn": "Rises in {d}",
+    "setsIn": "Sets in {d}",
+    "risesAt": "Rises at {time}",
+    "daylight": "{d} of daylight",
+    "duration": "{h}h {m}m",
+    "durationMinutes": "{m}m",
+    "illuminated": "{phase} · {n}% illuminated",
+    "noMoonrise": "No moonrise today",
+    "noMoonriseNext": "No moonrise today · next rise tomorrow, {time}"
+  },
+  "moonPhases": {
+    "newMoon": "New Moon",
+    "waxingCrescent": "Waxing Crescent",
+    "firstQuarter": "First Quarter",
+    "waxingGibbous": "Waxing Gibbous",
+    "fullMoon": "Full Moon",
+    "waningGibbous": "Waning Gibbous",
+    "lastQuarter": "Last Quarter",
+    "waningCrescent": "Waning Crescent"
   }
 }

@@ -102,5 +102,36 @@
     "kmh": "কিমি/ঘ",
     "mph": "মাইল/ঘ",
     "noData": "ঘণ্টাভিত্তিক তথ্য নেই"
+  },
+  "astro": {
+    "title": "সূর্য ও চাঁদ",
+    "sun": "সূর্য",
+    "moon": "চাঁদ",
+    "sunrise": "সূর্যোদয়",
+    "sunset": "সূর্যাস্ত",
+    "moonrise": "চন্দ্রোদয়",
+    "moonset": "চন্দ্রাস্ত",
+    "withDay": "{label} · {day}",
+    "yesterday": "গতকাল",
+    "tomorrow": "আগামীকাল",
+    "risesIn": "{d} পর উঠবে",
+    "setsIn": "{d} পর অস্ত যাবে",
+    "risesAt": "{time}-এ উঠবে",
+    "daylight": "{d} দিনের আলো",
+    "duration": "{h} ঘ {m} মি",
+    "durationMinutes": "{m} মি",
+    "illuminated": "{phase} · {n}% আলোকিত",
+    "noMoonrise": "আজ চন্দ্রোদয় নেই",
+    "noMoonriseNext": "আজ চন্দ্রোদয় নেই · পরের উদয় আগামীকাল, {time}"
+  },
+  "moonPhases": {
+    "newMoon": "অমাবস্যা",
+    "waxingCrescent": "শুক্লপক্ষের বাঁকা চাঁদ",
+    "firstQuarter": "শুক্লপক্ষের অর্ধচন্দ্র",
+    "waxingGibbous": "শুক্লপক্ষের কুব্জ চাঁদ",
+    "fullMoon": "পূর্ণিমা",
+    "waningGibbous": "কৃষ্ণপক্ষের কুব্জ চাঁদ",
+    "lastQuarter": "কৃষ্ণপক্ষের অর্ধচন্দ্র",
+    "waningCrescent": "কৃষ্ণপক্ষের বাঁকা চাঁদ"
   }
 }
