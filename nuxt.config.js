@@ -49,7 +49,7 @@ export default defineNuxtConfig({
     head: {
       title: 'Tidy',
       htmlAttrs: { lang: 'en' },
-      bodyAttrs: { class: 'bg-gray-100 dark:bg-night-bg dark:text-night-text font-sans' },
+      bodyAttrs: { class: 'bg-background text-foreground font-sans antialiased' },
       meta: [
         { charset: 'UTF-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }
@@ -60,7 +60,7 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700'
+          href: 'https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap'
         },
         {
           rel: 'stylesheet',

@@ -7,8 +7,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Bengali glyphs fall through the Latin stack to Noto Sans Bengali
-        sans: [...defaultTheme.fontFamily.sans, '"Noto Sans Bengali"']
+        // Roboto Flex for Latin; Bengali glyphs fall through to Noto Sans Bengali
+        sans: ['"Roboto Flex"', ...defaultTheme.fontFamily.sans, '"Noto Sans Bengali"']
       },
       colors: {
         night: {
@@ -50,13 +50,44 @@ module.exports = {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
+        },
+        // V3 weather semantics (assets/style.css)
+        'surface-raised': 'hsl(var(--surface-raised))',
+        sun: 'hsl(var(--sun))',
+        rain: 'hsl(var(--rain))',
+        'cloud-highlight': 'hsl(var(--cloud-highlight))',
+        'cloud-shade': 'hsl(var(--cloud-shade))',
+        horizon: 'hsl(var(--horizon))',
+        'sun-arc': {
+          DEFAULT: 'hsl(var(--sun-arc))',
+          ahead: 'hsl(var(--sun-arc-ahead))'
+        },
+        'moon-arc': {
+          DEFAULT: 'hsl(var(--moon-arc))',
+          ahead: 'hsl(var(--moon-arc-ahead))'
+        },
+        'moon-lit': 'hsl(var(--moon-lit))',
+        'moon-shadow': 'hsl(var(--moon-shadow))',
+        chart: {
+          line: 'hsl(var(--chart-line))',
+          fill: 'hsl(var(--chart-fill))',
+          grid: 'hsl(var(--chart-grid))',
+          temperature: 'hsl(var(--chart-temperature))',
+          feels: 'hsl(var(--chart-feels))',
+          rain: 'hsl(var(--chart-rain))',
+          wind: 'hsl(var(--chart-wind))',
+          humidity: 'hsl(var(--chart-humidity))'
         }
       },
       borderRadius: {
         xl: 'calc(var(--radius) + 4px)',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        sm: 'calc(var(--radius) - 4px)',
+        // V3 card (20px) and tile (16px) radii; kept apart from lg/xl so the
+        // shadcn primitives keep their meaning
+        card: 'var(--radius-xl)',
+        tile: 'var(--radius-lg)'
       },
       keyframes: {
         'accordion-down': {
