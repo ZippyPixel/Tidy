@@ -74,5 +74,33 @@
   "errors": {
     "geolocationUnsupported": "Geolocation is not supported by your browser",
     "locationFailed": "Unable to retrieve your location"
+  },
+  "hourly": {
+    "title": "Hourly",
+    "view": "Hourly view",
+    "summary": "Summary",
+    "trends": "Trends",
+    "metric": "Metric",
+    "metrics": {
+      "temp": "Temperature",
+      "feels": "Feels like",
+      "rain": "Chance of rain",
+      "wind": "Wind",
+      "hum": "Humidity"
+    },
+    "now": "Now",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "onDay": "{day}, {time}",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "earlier": "Earlier hours",
+    "later": "Later hours",
+    "scrollRegion": "Hourly forecast, scrolls sideways",
+    "chartHint": "Hourly chart. Hover, tap or drag to read values.",
+    "windFrom": "from {dir}",
+    "kmh": "km/h",
+    "mph": "mph",
+    "noData": "No hourly data"
   }
 }
