@@ -58,6 +58,7 @@
 </template>
 
 <script>
+import { useId } from 'vue'
 import { curveDepth, curvePath } from '@/utils/astro'
 
 // viewBox units; the curve runs from TOP (peak) to H - BOTTOM (troughs)
@@ -65,8 +66,6 @@ const W = 1000
 const H = 126
 const TOP = 22
 const BOTTOM = 8
-
-let uid = 0
 
 export default {
   name: 'CelestialArc',
@@ -84,8 +83,11 @@ export default {
     litClass: { type: String, default: 'stroke-sun-arc' },
     loading: { type: Boolean, default: false }
   },
+  setup() {
+    return { fadeId: useId() }
+  },
   data() {
-    return { W, H, fadeId: `arc-fade-${++uid}` }
+    return { W, H }
   },
   computed: {
     box() {

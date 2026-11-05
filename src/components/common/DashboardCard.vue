@@ -13,15 +13,17 @@
 </template>
 
 <script>
-let uid = 0
+import { useId } from 'vue'
 
 export default {
   name: 'DashboardCard',
   props: {
     title: { type: String, default: '' }
   },
-  data() {
-    return { titleId: `card-title-${++uid}` }
+  setup() {
+    // useId, not a module counter: the counter keeps climbing on the server across
+    // requests, so SSR and hydration would disagree
+    return { titleId: useId() }
   }
 }
 </script>

@@ -14,7 +14,7 @@
     <AppIcon name="settings" :size="21" :stroke-width="1.75" />
   </button>
 
-  <Popover v-if="isMd" :open="open" @update:open="open = $event">
+  <Popover v-if="mounted && isMd" :open="open" @update:open="open = $event">
     <PopoverContent
       :reference="$refs.trigger"
       align="end"
@@ -28,7 +28,7 @@
     </PopoverContent>
   </Popover>
 
-  <DialogRoot v-else :open="open" @update:open="open = $event">
+  <DialogRoot v-else-if="mounted" :open="open" @update:open="open = $event">
     <DialogPortal>
       <DialogOverlay
         class="fixed inset-0 z-40 bg-[hsl(220_30%_4%/0.5)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
@@ -85,11 +85,15 @@ export default {
     DialogTitle
   },
   setup() {
-    // false on the server and in jsdom, so the sheet is the default surface
+    // false on the server and in jsdom; the surface is only rendered after mount so
+    // SSR (always "phone") and hydration on a wide screen cannot disagree
     return { isMd: useMediaQuery('(min-width: 768px)') }
   },
   data() {
-    return { open: false }
+    return { open: false, mounted: false }
+  },
+  mounted() {
+    this.mounted = true
   },
   methods: {
     // a press on the trigger is "outside" the popover; let the trigger's own

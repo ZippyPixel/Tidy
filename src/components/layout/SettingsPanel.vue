@@ -42,15 +42,14 @@ import useThemeStore from '@/stores/theme'
 import useLocaleStore from '@/stores/locale'
 import AppIcon from '@/components/common/AppIcon.vue'
 import UnitToggle from '@/components/ui/UnitToggle.vue'
+import { useId } from 'vue'
 import { Switch } from '@/components/ui/switch'
-
-let uid = 0
 
 export default {
   name: 'SettingsPanel',
   components: { AppIcon, UnitToggle, UiSwitch: Switch },
-  data() {
-    return { themeLabelId: `settings-theme-${++uid}` }
+  setup() {
+    return { themeLabelId: useId() }
   },
   computed: {
     ...mapState(useThemeStore, ['isDark'])

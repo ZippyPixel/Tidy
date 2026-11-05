@@ -204,6 +204,7 @@
 </template>
 
 <script>
+import { useId } from 'vue'
 import { mapState } from 'pinia'
 import useUnitStore from '@/stores/unit'
 import weatherMixin from '@/mixins/weatherMixin'
@@ -223,8 +224,6 @@ const COLORS = {
   hum: 'hsl(var(--chart-humidity))'
 }
 
-let uid = 0
-
 export default {
   name: 'HourlyTrends',
   components: { AppIcon },
@@ -238,8 +237,11 @@ export default {
     metric: { type: String, default: 'temp' }
   },
   emits: ['update:metric'],
+  setup() {
+    return { gradientId: useId() }
+  },
   data() {
-    return { W, H, gradientId: `hourly-fill-${++uid}`, scrubIndex: null, scrubTouch: false }
+    return { W, H, scrubIndex: null, scrubTouch: false }
   },
   computed: {
     ...mapState(useUnitStore, ['unit']),
