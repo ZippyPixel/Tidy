@@ -18,6 +18,7 @@ export const UV_INDEX_LEVELS = {
 export const DATE_FORMATS = {
   FULL: { weekday: 'long', month: 'short', day: 'numeric' },
   DAY: { weekday: 'long' },
+  SHORT_DAY: { weekday: 'short' },
   SHORT_DATE: { month: 'short', day: 'numeric' },
   TIME: { hour: 'numeric', hour12: true }
 }
