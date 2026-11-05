@@ -92,11 +92,11 @@
               v-for="suggestion in suggestions"
               :key="suggestion.id"
               :value="suggestion"
-              class="flex min-h-16 cursor-pointer flex-col justify-center gap-0.5 rounded-[var(--radius)] px-3.5 py-2.5 outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+              class="flex min-h-16 cursor-pointer flex-col items-start justify-center gap-0.5 rounded-[var(--radius)] px-3.5 py-2.5 text-left outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
               @select="selectSuggestion(suggestion)"
             >
-              <span class="truncate text-base">{{ suggestion.name }}</span>
-              <span class="truncate text-[13px] opacity-80">{{ suggestionDetail(suggestion) }}</span>
+              <span class="w-full truncate text-base">{{ suggestion.name }}</span>
+              <span class="w-full truncate text-[13px] opacity-80">{{ suggestionDetail(suggestion) }}</span>
             </ComboboxItem>
           </ComboboxViewport>
         </ComboboxContent>
