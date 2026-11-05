@@ -17,7 +17,14 @@
     "language": "Language",
     "switchLanguage": "Switch to বাংলা",
     "getCurrentLocation": "Get current location",
-    "getLocation": "Get location"
+    "getLocation": "Get location",
+    "searchCity": "Search city",
+    "closeSearch": "Close search",
+    "clearSearch": "Clear search",
+    "suggestions": "Suggestions",
+    "close": "Close",
+    "settingsDescription": "Theme, temperature unit and language",
+    "submitSearch": "Show weather for this city"
   },
   "weather": {
     "currentLocation": "Current Location",

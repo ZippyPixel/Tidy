@@ -17,7 +17,14 @@
     "language": "ভাষা",
     "switchLanguage": "Switch to English",
     "getCurrentLocation": "বর্তমান অবস্থানের আবহাওয়া দেখুন",
-    "getLocation": "অবস্থান শনাক্ত করুন"
+    "getLocation": "অবস্থান শনাক্ত করুন",
+    "searchCity": "শহর খুঁজুন",
+    "closeSearch": "অনুসন্ধান বন্ধ করুন",
+    "clearSearch": "লেখা মুছুন",
+    "suggestions": "পরামর্শ",
+    "close": "বন্ধ করুন",
+    "settingsDescription": "থিম, তাপমাত্রার একক ও ভাষা",
+    "submitSearch": "এই শহরের আবহাওয়া দেখুন"
   },
   "weather": {
     "currentLocation": "বর্তমান অবস্থান",

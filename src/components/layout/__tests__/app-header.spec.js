@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -27,103 +27,164 @@ if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = vi.fn()
 }
 
-// jsdom exposes button/ctrlKey as read-only getters, so they have to be passed to the
-// constructor — test-utils' trigger() assigns them after construction and throws.
-function pointerEvent(type, init = {}) {
-  const Ctor = typeof PointerEvent === 'function' ? PointerEvent : MouseEvent
-  return new Ctor(type, { bubbles: true, cancelable: true, button: 0, ...init })
+async function openSettings(wrapper) {
+  await wrapper.find('[aria-label="Open settings menu"]').trigger('click')
+  await flushPromises()
 }
 
-async function openSettingsMenu(wrapper) {
-  const trigger = wrapper.find('[aria-label="Open settings menu"]')
-  trigger.element.dispatchEvent(pointerEvent('pointerdown', { ctrlKey: false }))
-  trigger.element.dispatchEvent(pointerEvent('click'))
-  await wrapper.vm.$nextTick()
-  return trigger
+function settingsSurface() {
+  return document.body.querySelector('[role="dialog"]')
 }
 
-function menuItems() {
-  return [...document.body.querySelectorAll('[role="menuitem"]')]
+function row(text) {
+  return [...settingsSurface().querySelectorAll('div, button')].find(
+    (el) => el.textContent.trim().startsWith(text) && el.className.includes('min-h-14')
+  )
 }
 
-describe('AppHeader settings dropdown', () => {
+function stubMatchMedia(matches) {
+  vi.stubGlobal('matchMedia', (query) => ({
+    matches,
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {}
+  }))
+}
+
+describe('AppHeader layout', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
   })
 
+  it('has 44px search, locate and settings buttons for phones', () => {
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+    const search = wrapper.find('[aria-label="Search city"]')
+    expect(search.classes()).toContain('size-11')
+    expect(search.classes()).toContain('md:hidden')
+    expect(wrapper.findAll('[aria-label="Get current location"]').length).toBe(2)
+    expect(wrapper.find('[aria-label="Open settings menu"]').classes()).toContain('size-11')
+    wrapper.unmount()
+  })
+
+  it('opens the full-screen search from the phone search button', async () => {
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] }, attachTo: document.body })
+    await wrapper.find('[aria-label="Search city"]').trigger('click')
+    await flushPromises()
+    const dialog = settingsSurface()
+    expect(dialog).toBeTruthy()
+    expect(dialog.querySelector('[aria-label="Close search"]')).toBeTruthy()
+    expect(dialog.querySelector('input[placeholder="Search City"]')).toBeTruthy()
+
+    dialog.querySelector('[aria-label="Close search"]').click()
+    await flushPromises()
+    expect(settingsSurface()).toBeNull()
+    wrapper.unmount()
+  })
+})
+
+describe('AppHeader settings', () => {
+  beforeEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.stubGlobal('$fetch', $fetch)
+  })
+
   it('renders a settings trigger instead of standalone toggles', () => {
     const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
-    expect(wrapper.find('[aria-label="Open settings menu"]').exists()).toBe(true)
     expect(wrapper.find('[aria-label="Open settings menu"] svg.lucide-settings-icon').exists()).toBe(true)
-    // unit pill and theme button only live inside the (closed) menu
-    expect(wrapper.find('[role="switch"]').exists()).toBe(false)
+    // switch and unit control only live inside the (closed) settings surface
+    expect(document.body.querySelector('[role="switch"]')).toBeNull()
+    expect(document.body.querySelector('[role="radiogroup"]')).toBeNull()
     wrapper.unmount()
   })
 
-  it('opens the menu with theme, temperature and language entries', async () => {
-    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
-    await openSettingsMenu(wrapper)
+  it('opens a bottom sheet below md with theme, temperature and language rows', async () => {
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] }, attachTo: document.body })
+    await openSettings(wrapper)
 
-    const items = menuItems()
-    expect(items.length).toBe(3)
-    const text = items.map((i) => i.textContent).join(' ')
-    expect(text).toContain('Light mode')
-    expect(text).toContain('Temperature')
-    expect(text).toContain('Language')
-    expect(text).toContain('English')
-    expect(document.body.querySelector('[role="switch"]')).toBeTruthy()
+    const sheet = settingsSurface()
+    expect(sheet).toBeTruthy()
+    expect(sheet.className).toContain('rounded-t-[28px]')
+    expect(sheet.textContent).toContain('Settings')
+    expect(sheet.querySelector('[aria-label="Close"]')).toBeTruthy()
+    expect(sheet.textContent).toContain('Dark mode')
+    expect(sheet.textContent).toContain('Temperature')
+    expect(sheet.textContent).toContain('Language')
+    expect(sheet.textContent).toContain('English')
+    expect(sheet.querySelector('[role="switch"]')).toBeTruthy()
+    expect(sheet.querySelectorAll('[role="radio"]').length).toBe(2)
     wrapper.unmount()
   })
 
-  it('toggles the theme from the menu without closing it', async () => {
+  it('opens a popover from md', async () => {
+    stubMatchMedia(true)
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] }, attachTo: document.body })
+    await openSettings(wrapper)
+
+    const popover = settingsSurface()
+    expect(popover).toBeTruthy()
+    expect(popover.className).not.toContain('rounded-t-[28px]')
+    expect(popover.className).toContain('w-80')
+    expect(popover.textContent).toContain('Dark mode')
+    wrapper.unmount()
+  })
+
+  it('toggles the theme from its row without closing the sheet', async () => {
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] }, attachTo: document.body })
     const themeStore = useThemeStore(pinia)
-    await openSettingsMenu(wrapper)
+    await openSettings(wrapper)
 
-    const themeItem = menuItems().find((i) => i.textContent.includes('mode'))
-    themeItem.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    await wrapper.vm.$nextTick()
-
+    row('Dark mode').click()
+    await flushPromises()
     expect(themeStore.isDark).toBe(true)
-    expect(menuItems().length).toBe(3)
+    expect(settingsSurface().querySelector('[role="switch"]').getAttribute('aria-checked')).toBe('true')
+
+    // the switch itself toggles exactly once
+    settingsSurface().querySelector('[role="switch"]').click()
+    await flushPromises()
+    expect(themeStore.isDark).toBe(false)
+    expect(settingsSurface()).toBeTruthy()
     wrapper.unmount()
   })
 
-  it('toggles the unit from the menu row', async () => {
+  it('sets the unit from the °C / °F control', async () => {
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] }, attachTo: document.body })
     const unitStore = useUnitStore(pinia)
-    await openSettingsMenu(wrapper)
+    await openSettings(wrapper)
 
-    const unitItem = menuItems().find((i) => i.textContent.includes('Temperature'))
-    unitItem.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    await wrapper.vm.$nextTick()
-
+    const [, fahrenheit] = settingsSurface().querySelectorAll('[role="radio"]')
+    fahrenheit.click()
+    await flushPromises()
     expect(unitStore.unit).toBe('fahrenheit')
     wrapper.unmount()
   })
 
-  it('switches the app language to Bangla from the menu row', async () => {
+  it('switches the app language to Bangla from its row', async () => {
     const pinia = createPinia()
-    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] }, attachTo: document.body })
     const localeStore = useLocaleStore(pinia)
-    await openSettingsMenu(wrapper)
+    await openSettings(wrapper)
 
-    const languageItem = menuItems().find((i) => i.textContent.includes('Language'))
-    languageItem.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    await wrapper.vm.$nextTick()
+    row('Language').click()
+    await flushPromises()
 
     expect(localeStore.locale).toBe('bn')
     expect(i18n.global.locale.value).toBe('bn')
-    // menu re-renders in Bangla
-    const text = menuItems().map((i) => i.textContent).join(' ')
+    // sheet re-renders in Bangla
+    const text = settingsSurface().textContent
     expect(text).toContain('ভাষা')
     expect(text).toContain('তাপমাত্রা')
 
     // toggle back so the shared i18n instance does not leak into other tests
     localeStore.setLocale('en')
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(i18n.global.locale.value).toBe('en')
     wrapper.unmount()
   })

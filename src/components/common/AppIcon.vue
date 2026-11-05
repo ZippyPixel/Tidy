@@ -3,17 +3,46 @@
 </template>
 
 <script>
-import { ChevronRight, CloudRain, Languages, Moon, Settings, Sun } from 'lucide-vue-next'
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CloudRain,
+  Droplet,
+  Languages,
+  LocateFixed,
+  Moon,
+  Search,
+  Settings,
+  Sun,
+  Sunrise,
+  Sunset,
+  X
+} from 'lucide-vue-next'
 
 // Icons used in the app, keyed by their lucide name (kebab-case).
 // Add new icons here so only the ones we use end up in the bundle.
 const icons = {
+  'arrow-down': ArrowDown,
+  'arrow-left': ArrowLeft,
+  'arrow-up': ArrowUp,
+  check: Check,
+  'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
   'cloud-rain': CloudRain,
+  droplet: Droplet,
   languages: Languages,
+  'locate-fixed': LocateFixed,
   moon: Moon,
+  search: Search,
   settings: Settings,
-  sun: Sun
+  sun: Sun,
+  sunrise: Sunrise,
+  sunset: Sunset,
+  x: X
 }
 
 export default {

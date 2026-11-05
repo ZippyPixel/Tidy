@@ -10,40 +10,52 @@ const i18n = activeI18n()
 
 function mountToggle() {
   const pinia = createPinia()
-  const wrapper = mount(UnitToggle, { global: { plugins: [pinia, i18n] } })
+  const wrapper = mount(UnitToggle, { global: { plugins: [pinia, i18n] }, attachTo: document.body })
   return { wrapper, store: useUnitStore(pinia) }
 }
 
+const radios = (wrapper) => wrapper.findAll('[role="radio"]')
+
 describe('UnitToggle', () => {
-  it('renders both unit labels with celsius active by default', () => {
+  it('renders a °C / °F radio group with celsius checked by default', () => {
     const { wrapper } = mountToggle()
-    expect(wrapper.text()).toContain('°C')
-    expect(wrapper.text()).toContain('°F')
-    expect(wrapper.find('[role="switch"]').attributes('aria-checked')).toBe('false')
+    expect(wrapper.find('[role="radiogroup"]').attributes('aria-label')).toBe('Temperature')
+    const [c, f] = radios(wrapper)
+    expect(c.text()).toBe('°C')
+    expect(f.text()).toBe('°F')
+    expect(c.attributes('aria-checked')).toBe('true')
+    expect(f.attributes('aria-checked')).toBe('false')
+    wrapper.unmount()
   })
 
-  it('switches to fahrenheit on click', async () => {
+  it('switches to fahrenheit and back on click', async () => {
     const { wrapper, store } = mountToggle()
-    await wrapper.find('[role="switch"]').trigger('click')
+    await radios(wrapper)[1].trigger('click')
     expect(store.unit).toBe('fahrenheit')
-    expect(wrapper.find('[role="switch"]').attributes('aria-checked')).toBe('true')
-  })
-
-  it('switches back to celsius on second click', async () => {
-    const { wrapper, store } = mountToggle()
-    await wrapper.find('[role="switch"]').trigger('click')
-    await wrapper.find('[role="switch"]').trigger('click')
+    expect(radios(wrapper)[1].attributes('aria-checked')).toBe('true')
+    await radios(wrapper)[0].trigger('click')
     expect(store.unit).toBe('celsius')
+    wrapper.unmount()
   })
 
-  it('highlights the active unit label', async () => {
-    const { wrapper } = mountToggle()
-    const [celsius, fahrenheit] = wrapper.findAll('.pointer-events-none.absolute span')
-    expect(celsius.classes()).toContain('text-slate-800')
-    expect(fahrenheit.classes()).toContain('text-gray-400')
+  it('moves with arrow keys and keeps a single tab stop', async () => {
+    const { wrapper, store } = mountToggle()
+    expect(radios(wrapper).map((r) => r.attributes('tabindex'))).toEqual(['0', '-1'])
+    await wrapper.find('[role="radiogroup"]').trigger('keydown', { key: 'ArrowRight' })
+    expect(store.unit).toBe('fahrenheit')
+    expect(radios(wrapper).map((r) => r.attributes('tabindex'))).toEqual(['-1', '0'])
+    expect(document.activeElement).toBe(radios(wrapper)[1].element)
+    await wrapper.find('[role="radiogroup"]').trigger('keydown', { key: 'ArrowRight' })
+    expect(store.unit).toBe('celsius')
+    wrapper.unmount()
+  })
 
-    await wrapper.find('[role="switch"]').trigger('click')
-    expect(celsius.classes()).toContain('text-gray-400')
-    expect(fahrenheit.classes()).toContain('text-slate-800')
+  it('positions the thumb on the selected segment', async () => {
+    const { wrapper } = mountToggle()
+    const track = wrapper.find('[role="radiogroup"]')
+    expect(track.attributes('style')).toContain('--index: 0')
+    await radios(wrapper)[1].trigger('click')
+    expect(track.attributes('style')).toContain('--index: 1')
+    wrapper.unmount()
   })
 })
