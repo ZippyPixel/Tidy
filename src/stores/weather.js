@@ -4,6 +4,8 @@ import { API_ENDPOINTS } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
 import { currentLocale } from '@/i18n'
+import { normalizeHour } from '@/utils/hourly'
+import { zoneOffsetMs } from '@/utils/astro'
 
 export default defineStore('weather', {
   state: () => ({
@@ -14,7 +16,9 @@ export default defineStore('weather', {
     condition: '',
     conditionCode: null,
     isDay: 1,
-    hourlyData: {},
+    hourly: {}, // { [date]: normalized hour[] } for the Hourly card
+    today: '', // the location's current date, YYYY-MM-DD
+    zoneOffsetMs: null, // location UTC offset, for its wall clock (utils/astro locationClock)
     dailySummary: {},
     astro: {}, //sunrise, sunset, moonrise, moonset
     rawTemperature: {}, //stores raw C and F values from API
@@ -131,11 +135,18 @@ export default defineStore('weather', {
         minTemp_f: response.forecast.forecastday[0].day.mintemp_f,
       }
 
-      //current astronomical values
-      this.astro.sunrise = response.forecast.forecastday[0].astro.sunrise
-      this.astro.sunset = response.forecast.forecastday[0].astro.sunset
-      this.astro.moonrise = response.forecast.forecastday[0].astro.moonrise
-      this.astro.moonset = response.forecast.forecastday[0].astro.moonset
+      //location clock: today's date and zone offset, so "now" is the city's, not the browser's
+      this.today = this.date
+      this.zoneOffsetMs = zoneOffsetMs(response.location.localtime, response.location.localtime_epoch)
+
+      //current astronomical values: the whole API object (rise/set times, moon phase and
+      //illumination), the same shape setSelectedForecastDate assigns
+      this.astro = { ...response.forecast.forecastday[0].astro }
+
+      //hourly values per day, both units kept like rawTemperature
+      this.hourly = Object.fromEntries(
+        this.forecast.map((day) => [day.date, (day.hour || []).map(normalizeHour)])
+      )
 
       //current basic weather info
       this.basicWeatherInfo.humidity = response.current.humidity
