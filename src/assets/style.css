@@ -66,8 +66,27 @@
   }
 }
 
-*,
-*::before,
-*::after {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* Light/dark switch. stores/theme.js puts .theme-transition on <html> for
+   THEME_TRANSITION_MS around a toggle, so every element cross-fades on one clock.
+   !important beats per-component transition/duration-* utilities for that window
+   only. Never replace this with a global `* { transition }`. */
+:root {
+  --theme-transition-duration: 300ms;
+  --theme-transition-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+  transition-duration: var(--theme-transition-duration) !important;
+  transition-timing-function: var(--theme-transition-ease) !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition-duration: 0ms;
+  }
 }
