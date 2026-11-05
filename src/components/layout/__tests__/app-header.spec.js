@@ -166,6 +166,25 @@ describe('AppHeader settings', () => {
     wrapper.unmount()
   })
 
+  it('links to About from the sheet and closes it on the way', async () => {
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] }, attachTo: document.body })
+    await openSettings(wrapper)
+    const link = [...settingsSurface().querySelectorAll('a')].find((a) => a.textContent.includes('About Tidy'))
+    expect(link.getAttribute('href')).toBe('/about')
+    link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+    await flushPromises()
+    expect(settingsSurface()).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('makes the wordmark a link home', () => {
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+    const home = wrapper.find('a[aria-label="Tidy home"]')
+    expect(home.attributes('href')).toBe('/')
+    expect(home.text()).toBe('TIDY')
+    wrapper.unmount()
+  })
+
   it('switches the app language to Bangla from its row', async () => {
     const pinia = createPinia()
     const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] }, attachTo: document.body })

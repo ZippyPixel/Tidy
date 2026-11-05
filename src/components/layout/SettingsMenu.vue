@@ -24,7 +24,7 @@
       @close-auto-focus.prevent="$refs.trigger?.focus()"
     >
       <p class="px-3 pb-1 pt-2 text-sm font-medium text-muted-foreground">{{ $t('header.settings') }}</p>
-      <SettingsPanel />
+      <SettingsPanel @navigate="open = false" />
     </PopoverContent>
   </Popover>
 
@@ -48,7 +48,7 @@
           </DialogClose>
         </div>
         <DialogDescription class="sr-only">{{ $t('header.settingsDescription') }}</DialogDescription>
-        <SettingsPanel />
+        <SettingsPanel @navigate="open = false" />
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

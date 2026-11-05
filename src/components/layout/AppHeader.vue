@@ -8,11 +8,13 @@
     <div
       class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(4px,env(safe-area-inset-right))] md:grid md:h-[68px] md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6 md:page-gutter xl:grid-cols-[1fr_minmax(0,600px)_1fr]"
     >
-      <p
-        class="whitespace-nowrap text-xl font-semibold tracking-[0.45em] md:text-2xl md:tracking-[0.5em]"
+      <NuxtLink
+        to="/"
+        class="whitespace-nowrap rounded-sm text-xl font-semibold tracking-[0.45em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-2xl md:tracking-[0.5em]"
+        :aria-label="$t('header.home')"
       >
         TIDY
-      </p>
+      </NuxtLink>
 
       <!-- md+: inline search and locate -->
       <div class="hidden min-w-0 items-center gap-2 md:flex">
@@ -77,6 +79,7 @@ import useWeatherStore from '@/stores/weather'
 import AppIcon from '@/components/common/AppIcon.vue'
 import CitySearch from '@/components/layout/CitySearch.vue'
 import SettingsMenu from '@/components/layout/SettingsMenu.vue'
+import { showWeather } from '@/utils/navigation'
 
 export default {
   name: 'AppHeader',
@@ -106,6 +109,7 @@ export default {
     async handleLocationClick() {
       try {
         await this.detectUserLocation()
+        showWeather(this.$router)
       } catch (error) {
         console.error('Location detection failed:', error)
       }

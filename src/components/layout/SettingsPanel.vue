@@ -33,6 +33,15 @@
         <AppIcon name="chevron-right" :size="18" class="text-muted-foreground" />
       </span>
     </button>
+    <div aria-hidden="true" class="mx-3 my-1.5 h-px bg-border" />
+    <NuxtLink
+      to="/about"
+      class="flex min-h-14 items-center justify-between gap-4 rounded-[var(--radius)] pl-3 pr-2 hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      @click="$emit('navigate')"
+    >
+      <span>{{ $t('header.about') }}</span>
+      <AppIcon name="chevron-right" :size="18" class="text-muted-foreground" />
+    </NuxtLink>
   </div>
 </template>
 
@@ -48,6 +57,8 @@ import { Switch } from '@/components/ui/switch'
 export default {
   name: 'SettingsPanel',
   components: { AppIcon, UnitToggle, UiSwitch: Switch },
+  // navigate: a link row was followed, so the surrounding sheet/popover should close
+  emits: ['navigate'],
   setup() {
     return { themeLabelId: useId() }
   },
