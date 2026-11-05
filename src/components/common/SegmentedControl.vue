@@ -11,7 +11,7 @@
          width (grid 1fr), so the thumb slides by its own width with no measuring. -->
     <span aria-hidden="true" class="segmented-thumb pointer-events-none absolute bottom-0.5 left-0.5 top-0.5 rounded-full bg-primary" />
     <button
-      v-for="(option, i) in options"
+      v-for="option in options"
       :key="option.value"
       ref="segments"
       type="button"

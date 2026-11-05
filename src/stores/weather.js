@@ -19,7 +19,6 @@ export default defineStore('weather', {
     hourly: {}, // { [date]: normalized hour[] } for the Hourly card
     today: '', // the location's current date, YYYY-MM-DD
     zoneOffsetMs: null, // location UTC offset, for its wall clock (utils/astro locationClock)
-    dailySummary: {},
     astro: {}, //sunrise, sunset, moonrise, moonset
     rawTemperature: {}, //stores raw C and F values from API
     chanceOfRain: '',
@@ -156,20 +155,6 @@ export default defineStore('weather', {
       this.basicWeatherInfo.airQuality = this.getAirQualityLevel(
         response.current.air_quality['us-epa-index']
       )
-
-      //Daily Summary
-      await response.forecast.forecastday.map((day) => {
-        this.dailySummary[day.date] = {
-          hours: [],
-          tempDataC: [],
-          tempDataF: []
-        }
-        day.hour.map((hour, index) => {
-          this.dailySummary[day.date].hours.push(weatherMixin.methods.formatTime(index))
-          this.dailySummary[day.date].tempDataC.push(hour.temp_c)
-          this.dailySummary[day.date].tempDataF.push(hour.temp_f)
-        })
-      })
     },
 
     // returns an i18n key suffix (airQualityLevels.*) so components can translate it

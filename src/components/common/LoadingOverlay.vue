@@ -1,9 +1,9 @@
 <template>
   <Transition name="fade">
-    <div v-if="isLoading" class="fixed inset-0 bg-white/80 dark:bg-night-bg/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div class="flex flex-col items-center">
-        <div class="w-16 h-16 border-4 border-blue-500 dark:border-night-accent border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 text-gray-600 dark:text-night-muted font-medium">{{ $t('loading') }}</p>
+        <div class="size-16 animate-spin rounded-full border-4 border-primary border-t-transparent motion-reduce:animate-none"></div>
+        <p class="mt-4 font-medium text-muted-foreground">{{ $t('loading') }}</p>
       </div>
     </div>
   </Transition>

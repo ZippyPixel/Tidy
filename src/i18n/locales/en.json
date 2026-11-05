@@ -6,18 +6,13 @@
     "noMatchingCities": "No matching cities",
     "settings": "Settings",
     "openSettings": "Open settings menu",
-    "lightMode": "Light mode",
     "darkMode": "Dark mode",
-    "switchToLight": "Switch to light mode",
-    "switchToDark": "Switch to dark mode",
     "temperature": "Temperature",
-    "switchToUnit": "Switch to {unit}",
     "celsius": "Celsius",
     "fahrenheit": "Fahrenheit",
     "language": "Language",
     "switchLanguage": "Switch to বাংলা",
     "getCurrentLocation": "Get current location",
-    "getLocation": "Get location",
     "searchCity": "Search city",
     "closeSearch": "Close search",
     "clearSearch": "Clear search",
@@ -46,14 +41,6 @@
   },
   "forecast": {
     "dayCount": "{count} Day Forecast | {count} Days Forecast"
-  },
-  "chart": {
-    "dailySummary": "Daily Summary",
-    "noData": "No Data"
-  },
-  "planetary": {
-    "sunriseSunset": "Sunrise & Sunset",
-    "moonriseMoonset": "Moonrise & Moonset"
   },
   "airQualityLevels": {
     "good": "Good",

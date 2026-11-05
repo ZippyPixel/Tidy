@@ -11,13 +11,6 @@ module.exports = {
         sans: ['"Roboto Flex"', ...defaultTheme.fontFamily.sans, '"Noto Sans Bengali"']
       },
       colors: {
-        night: {
-          bg: '#0d1117',
-          surface: '#0D0106',
-          text: '#F8FFE5',
-          muted: '#8EA8C3',
-          accent: '#4C956C'
-        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
