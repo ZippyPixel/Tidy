@@ -178,7 +178,7 @@ export default {
     },
     temp(item) {
       const v = this.celsius ? item.tempC : item.tempF
-      return typeof v === 'number' ? `${this.formatNumber(Math.round(v))}°` : '—'
+      return typeof v === 'number' ? this.formatTemp(v) : '—'
     },
     wind(item) {
       return this.celsius ? item.windKph : item.windMph

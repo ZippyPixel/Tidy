@@ -40,7 +40,7 @@ export default {
     },
     formatNumber,
     formatTemp(temp) {
-      return `${formatNumber(Math.ceil(temp))}${TEMPERATURE.DEGREE_SYMBOL}`
+      return `${formatNumber(Math.round(temp))}${TEMPERATURE.DEGREE_SYMBOL}`
     },
     formatRainChance(chance) {
       return `${formatNumber(chance)}${RAIN_CHANCE.PERCENTAGE_SYMBOL}`

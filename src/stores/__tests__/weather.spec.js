@@ -109,3 +109,18 @@ describe('weather store setValues', () => {
     expect(store.astro.moon_illumination).toBe(69)
   })
 })
+
+describe('UV level', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('rounds into the whole-number bands instead of falling between them', () => {
+    const store = useWeatherStore()
+    expect(store.getUVIndexLevel(0)).toBe('low')
+    expect(store.getUVIndexLevel(0.4)).toBe('low')
+    expect(store.getUVIndexLevel(2.6)).toBe('moderate')
+    expect(store.getUVIndexLevel(5.6)).toBe('high')
+    expect(store.getUVIndexLevel(7.5)).toBe('veryHigh')
+    expect(store.getUVIndexLevel(10.6)).toBe('extreme')
+    expect(store.getUVIndexLevel(undefined)).toBe('unknown')
+  })
+})

@@ -55,7 +55,7 @@ describe('BasicWeatherInfo', () => {
     const { wrapper, unit } = setup(BasicWeatherInfo)
     unit.setUnit('fahrenheit')
     await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toContain('85°')
+    expect(wrapper.text()).toContain('84°') // 84.2 rounds down
     expect(wrapper.text()).toContain('Feels like 93°')
   })
 

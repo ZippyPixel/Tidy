@@ -178,22 +178,15 @@ export default defineStore('weather', {
 
     // returns an i18n key suffix (uvLevels.*) so components can translate it
     getUVIndexLevel(index) {
-      if (index >= UV_INDEX_LEVELS.LOW.min && index <= UV_INDEX_LEVELS.LOW.max) {
-        return 'low'
-      }
-      if (index >= UV_INDEX_LEVELS.MODERATE.min && index <= UV_INDEX_LEVELS.MODERATE.max) {
-        return 'moderate'
-      }
-      if (index >= UV_INDEX_LEVELS.HIGH.min && index <= UV_INDEX_LEVELS.HIGH.max) {
-        return 'high'
-      }
-      if (index >= UV_INDEX_LEVELS.VERY_HIGH.min && index <= UV_INDEX_LEVELS.VERY_HIGH.max) {
-        return 'veryHigh'
-      }
-      if (index >= UV_INDEX_LEVELS.EXTREME.min) {
-        return 'extreme'
-      }
-      return 'unknown'
+      if (typeof index !== 'number' || Number.isNaN(index) || index < 0) return 'unknown'
+      // the bands are whole numbers (WHO scale): round first, so 5.6 is "high" and 0.4
+      // is "low" instead of falling between two bands
+      const uv = Math.round(index)
+      if (uv <= UV_INDEX_LEVELS.LOW.max) return 'low'
+      if (uv <= UV_INDEX_LEVELS.MODERATE.max) return 'moderate'
+      if (uv <= UV_INDEX_LEVELS.HIGH.max) return 'high'
+      if (uv <= UV_INDEX_LEVELS.VERY_HIGH.max) return 'veryHigh'
+      return 'extreme'
     },
 
     setSelectedForecastDate(date) {
