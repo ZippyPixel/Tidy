@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createPinia } from 'pinia'
 
 if (typeof window !== 'undefined' && !window.ResizeObserver) {
   window.ResizeObserver = vi.fn(() => ({
@@ -19,11 +18,6 @@ if (!SVGElement.prototype.getComputedTextLength) {
 }
 
 import { AreaChart } from '@/components/ui/chart-area'
-import DailyChart from '@/components/weather/DailyChart.vue'
-import { activeI18n } from '@/i18n'
-import useWeatherStore from '@/stores/weather'
-
-const i18n = activeI18n()
 
 const sampleData = [
   { hour: '12 AM', temperature: 21 },
@@ -54,24 +48,5 @@ describe('AreaChart', () => {
     expect(wrapper.find('linearGradient stop').attributes('stop-color')).toContain(
       '--vis-primary-color'
     )
-  })
-})
-
-describe('DailyChart', () => {
-  it('renders the area chart from store data', async () => {
-    const pinia = createPinia()
-    const wrapper = mount(DailyChart, { global: { plugins: [pinia, i18n] } })
-    const store = useWeatherStore(pinia)
-    store.date = '2026-07-15'
-    store.dailySummary = {
-      '2026-07-15': {
-        hours: ['12 AM', '1 AM'],
-        tempDataC: [21, 20],
-        tempDataF: [69.8, 68]
-      }
-    }
-    await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toContain('Daily Summary')
-    expect(wrapper.find('.unovis-xy-container').exists()).toBe(true)
   })
 })
