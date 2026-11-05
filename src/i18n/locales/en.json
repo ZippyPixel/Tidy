@@ -19,7 +19,9 @@
     "suggestions": "Suggestions",
     "close": "Close",
     "settingsDescription": "Theme, temperature unit and language",
-    "submitSearch": "Show weather for this city"
+    "submitSearch": "Show weather for this city",
+    "about": "About Tidy",
+    "home": "Tidy home"
   },
   "weather": {
     "currentLocation": "Current Location",
@@ -120,5 +122,45 @@
     "waningGibbous": "Waning Gibbous",
     "lastQuarter": "Last Quarter",
     "waningCrescent": "Waning Crescent"
+  },
+  "about": {
+    "eyebrow": "About",
+    "titleLead": "Everything about today,",
+    "titleTail": "on one screen.",
+    "intro": "Tidy shows the weather where you are — right now, hour by hour, and the next few days — without an account, ads or a setup flow. Here is what each panel on that screen is for.",
+    "cards": {
+      "now": {
+        "eyebrow": "Current conditions",
+        "titleLead": "Right now,",
+        "titleTail": "where you are",
+        "body": "Tidy asks once for your location and opens on it: temperature, what it actually feels like, chance of rain, humidity, pressure and visibility. Search any city to look somewhere else."
+      },
+      "hours": {
+        "eyebrow": "Hourly",
+        "titleLead": "The next 24 hours,",
+        "titleTail": "two ways",
+        "body": "Summary lays the day out as hour cards — temperature, rain, wind, and when the sun rises or sets. Trends plots temperature, feels-like, rain, wind or humidity as a curve you can tap or drag to read."
+      },
+      "week": {
+        "eyebrow": "Three-day forecast",
+        "titleLead": "The days ahead,",
+        "titleTail": "at a glance",
+        "body": "Highs, lows and rain chance for the next three days, on one shared scale so warmer days really look warmer. Pick a day and the rest of the screen follows it."
+      },
+      "night": {
+        "eyebrow": "Sun & moon",
+        "titleLead": "The sky keeps",
+        "titleTail": "a schedule",
+        "body": "How long until sunset or the next moonrise, how much daylight there is, and tonight’s moon phase — counted in the city’s own time, wherever you are looking from."
+      },
+      "air": {
+        "eyebrow": "Air & UV",
+        "titleLead": "What you",
+        "titleTail": "cannot see",
+        "body": "Air quality and UV index, read back as plain words instead of raw index numbers: good, moderate, unhealthy. Worth a look before a long run or an afternoon outside."
+      }
+    },
+    "settingsNote": "Tidy also speaks বাংলা, switches between °C and °F, and follows your system’s light or dark theme. Change any of it from Settings.",
+    "dataSource": "Weather data from WeatherAPI.com."
   }
 }
