@@ -35,7 +35,14 @@
     "uv": "ইউভি",
     "airQuality": "বায়ুর মান",
     "km": "কিমি",
-    "hPa": "hPa"
+    "hPa": "hPa",
+    "currentConditions": "বর্তমান অবস্থা",
+    "details": "বিস্তারিত",
+    "chanceOfRain": "বৃষ্টির সম্ভাবনা",
+    "low": "সর্বনিম্ন",
+    "high": "সর্বোচ্চ",
+    "nowBetween": "এখন, দিনের সর্বনিম্ন ও সর্বোচ্চের মাঝে",
+    "uvUnavailable": "ইউভি সূচক পাওয়া যায়নি"
   },
   "forecast": {
     "dayCount": "{count} দিনের পূর্বাভাস | {count} দিনের পূর্বাভাস"

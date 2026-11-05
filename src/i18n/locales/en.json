@@ -35,7 +35,14 @@
     "uv": "UV",
     "airQuality": "Air Quality",
     "km": "km",
-    "hPa": "hPa"
+    "hPa": "hPa",
+    "currentConditions": "Current Conditions",
+    "details": "Details",
+    "chanceOfRain": "Chance of rain",
+    "low": "Low",
+    "high": "High",
+    "nowBetween": "Now, between the day’s low and high",
+    "uvUnavailable": "UV index not available"
   },
   "forecast": {
     "dayCount": "{count} Day Forecast | {count} Days Forecast"

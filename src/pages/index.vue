@@ -15,6 +15,9 @@
       <PlanetaryInfo
         class="col-span-12 row-start-4 lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 xl:col-span-4 xl:col-start-9"
       />
+      <DashboardCard :title="$t('weather.details')" class="col-span-12 row-start-5 md:hidden">
+        <WeatherDetails variant="tiles" />
+      </DashboardCard>
     </div>
   </div>
 </template>
@@ -25,9 +28,19 @@ import BasicWeatherInfo from '@/components/weather/BasicWeatherInfo.vue'
 import WeatherForecast from '@/components/weather/WeatherForecast.vue'
 import PlanetaryInfo from '@/components/weather/PlanetaryInfo.vue'
 import LocationHeading from '@/components/weather/LocationHeading.vue'
+import WeatherDetails from '@/components/weather/WeatherDetails.vue'
+import DashboardCard from '@/components/common/DashboardCard.vue'
 
 export default {
   name: 'HomeView',
-  components: { DailyChart, BasicWeatherInfo, WeatherForecast, PlanetaryInfo, LocationHeading }
+  components: {
+    DailyChart,
+    BasicWeatherInfo,
+    WeatherForecast,
+    PlanetaryInfo,
+    LocationHeading,
+    WeatherDetails,
+    DashboardCard
+  }
 }
 </script>

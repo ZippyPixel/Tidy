@@ -1,6 +1,4 @@
 <template>
-  <!-- design/TidySegmented: pill track, sliding primary thumb. Segments are equal
-       width (grid 1fr), so the thumb slides by its own width with no measuring. -->
   <div
     :role="kind === 'tabs' ? 'tablist' : 'radiogroup'"
     :aria-label="ariaLabel"
@@ -9,6 +7,8 @@
     :style="{ '--count': options.length, '--index': selectedIndex }"
     @keydown="onKeydown"
   >
+    <!-- design/TidySegmented: pill track, sliding primary thumb. Segments are equal
+         width (grid 1fr), so the thumb slides by its own width with no measuring. -->
     <span aria-hidden="true" class="segmented-thumb pointer-events-none absolute bottom-0.5 left-0.5 top-0.5 rounded-full bg-primary" />
     <button
       v-for="(option, i) in options"

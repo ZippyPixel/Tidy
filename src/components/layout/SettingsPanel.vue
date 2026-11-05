@@ -1,7 +1,7 @@
 <template>
-  <!-- Settings rows, shared by the phone bottom sheet and the md+ popover.
-       Rows are 56px tap targets; the whole row toggles its setting. -->
   <div class="flex flex-col text-base">
+    <!-- Settings rows, shared by the phone bottom sheet and the md+ popover.
+         Rows are 56px tap targets; the whole row toggles its setting. -->
     <div
       class="flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-[var(--radius)] pl-3 pr-2 hover:bg-foreground/[0.06]"
       @click="toggleTheme"

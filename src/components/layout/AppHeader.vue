@@ -1,10 +1,10 @@
 <template>
-  <!-- V3 header. Phone: wordmark + search / locate / settings icon buttons (56px bar).
-       md+: wordmark · search pill + locate · settings on a 68px grid, search column
-       capped at 600px from xl. Sticky, except on short (landscape phone) screens. -->
   <header
     class="sticky top-0 z-30 border-b bg-background pt-[env(safe-area-inset-top)] [@media(max-height:500px)]:static"
   >
+    <!-- V3 header. Phone: wordmark + search / locate / settings icon buttons (56px bar).
+         md+: wordmark · search pill + locate · settings on a 68px grid, search column
+         capped at 600px from xl. Sticky, except on short (landscape phone) screens. -->
     <div
       class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(4px,env(safe-area-inset-right))] md:grid md:h-[68px] md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-6 md:page-gutter xl:grid-cols-[1fr_minmax(0,600px)_1fr]"
     >
