@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import useThemeStore, { THEME_TRANSITION_CLASS, THEME_TRANSITION_MS } from '@/stores/theme'
 
-const css = readFileSync(fileURLToPath(new URL('../../assets/style.css', import.meta.url)), 'utf8')
+// vitest.config sets root to the project, so cwd is stable for reading the stylesheet
+const css = readFileSync(resolve(process.cwd(), 'src/assets/style.css'), 'utf8')
 // comments mention the forbidden pattern by name; only check real rules
 const rules = css.replace(/\/\*[\s\S]*?\*\//g, '')
 
