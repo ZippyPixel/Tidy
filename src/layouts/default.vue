@@ -1,7 +1,9 @@
 <template>
   <div>
     <AppHeader />
-    <main>
+    <main
+      class="page-gutter mx-auto w-full max-w-7xl pb-[calc(3rem+env(safe-area-inset-bottom))] pt-4 md:pt-6 xl:pt-8"
+    >
       <slot />
     </main>
   </div>

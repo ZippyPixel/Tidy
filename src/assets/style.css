@@ -152,3 +152,28 @@
     --theme-transition-duration: 0ms;
   }
 }
+
+/* Page gutter: 16 / 24 (md) / 32 (xl), never inside the notch or home indicator.
+   Shared by the header bar and <main> so their edges line up. */
+:root {
+  --gutter: 1rem;
+}
+
+@screen md {
+  :root {
+    --gutter: 1.5rem;
+  }
+}
+
+@screen xl {
+  :root {
+    --gutter: 2rem;
+  }
+}
+
+@layer components {
+  .page-gutter {
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+}
