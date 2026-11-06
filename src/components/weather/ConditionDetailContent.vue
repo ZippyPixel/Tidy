@@ -68,7 +68,7 @@
         <div v-for="p in view.pollutants" :key="p.name" data-pollutant class="flex min-w-0 flex-col gap-0.5">
           <span class="text-xs font-medium leading-4 text-muted-foreground">{{ p.name }}</span>
           <!-- prettier-ignore -->
-          <span class="whitespace-nowrap text-[15px] font-medium leading-5 tabular-nums">{{ p.value }}<span class="text-[11px] font-normal text-muted-foreground"> {{ $t('conditionDetail.airQuality.unit') }}</span></span>
+          <span class="whitespace-nowrap text-[15px] font-medium leading-5 tabular-nums">{{ p.value }}<span class="text-[11px] font-normal text-muted-foreground">{{ ' ' + $t('conditionDetail.airQuality.unit') }}</span></span>
         </div>
       </div>
 
@@ -85,7 +85,7 @@
       >
         <span aria-hidden="true" class="mt-[5px] size-2.5 flex-none rounded-full" :style="{ background: row.color }" />
         <!-- prettier-ignore -->
-        <span class="text-sm leading-5"><span class="font-semibold tabular-nums">{{ row.range }}</span><span class="text-muted-foreground"> {{ row.advice }}</span></span>
+        <span class="text-sm leading-5"><span class="font-semibold tabular-nums">{{ row.range }}</span><span class="text-muted-foreground">{{ ' ' + row.advice }}</span></span>
       </div>
     </div>
 
@@ -109,18 +109,25 @@ import DetailScale from '@/components/weather/DetailScale.vue'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
-import { UV_LEVELS } from '@/constants/levelColors'
-import { uvLevelOf } from '@/utils/hourDetail'
+import { EPA_LEVELS, UV_LEVELS } from '@/constants/levelColors'
+import { uvLevelOf, visibilityLevel } from '@/utils/hourDetail'
 import {
   beaufortLabel,
   dewPointComfort,
   dewPointGuide,
+  epaCategory,
   humidityColumns,
+  lowestVisibility,
+  pollutants,
+  pressureChange,
+  pressureOutlook,
+  pressurePosition,
   rainBestChance,
   rainColumns,
   readings,
   uvColumns,
   uvPeak,
+  visibilityPosition,
   windColumns
 } from '@/utils/conditionDetail'
 
@@ -272,6 +279,103 @@ export default {
           advice: this.$t(`${T}.uv.guide.${key}.advice`)
         })),
         paragraphs: [this.$t(`${T}.uv.para`)]
+      }
+    },
+    visibilityView() {
+      const km = this.current.vis_km
+      const celsius = this.unit === 'celsius'
+      const lowest = lowestVisibility(km, this.next24Hours)
+      const scale = [
+        ['poor', 2, 'bg-foreground/55'],
+        ['hazy', 3, 'bg-foreground/[0.38]'],
+        ['good', 5, 'bg-foreground/[0.22]'],
+        ['clear', 2, 'bg-primary/70']
+      ]
+      return {
+        title: this.$t(`${T}.visibility.title`),
+        kicker: this.$t(`${T}.visibility.kicker`),
+        big: this.formatNumber(this.r.visibility),
+        unit: ` ${this.unitLabel(this.r.visibilityUnit)}`,
+        qualifier: this.$t(`hourly.detail.visibilityLevels.${visibilityLevel(km)}`),
+        sub: lowest
+          ? this.$t(`${T}.visibility.lowest`, {
+              value: this.formatNumber(Math.round(celsius ? lowest.visKm : lowest.visMi)),
+              unit: this.unitLabel(this.r.visibilityUnit),
+              time: this.formatHour(lowest.hour)
+            })
+          : this.$t(`${T}.visibility.staying`),
+        scale: {
+          segments: scale.map(([, flex, cls]) => ({ flex, class: cls })),
+          marker: { left: visibilityPosition(km), class: 'size-3.5 border-foreground bg-popover' },
+          labels: scale.map(([key, flex]) => ({ text: this.$t(`${T}.visibility.scale.${key}`), flex }))
+        },
+        paragraphs: [this.$t(`${T}.visibility.para1`), this.$t(`${T}.visibility.para2`)]
+      }
+    },
+    pressureSub({ trend, change }) {
+      if (!trend || trend === 'steady') return this.$t(`${T}.pressure.steady`)
+      const { negative, value } = pressureChange(change, this.unit)
+      return this.$t(`${T}.pressure.change`, {
+        sign: negative ? '−' : '+',
+        value: this.formatNumber(value),
+        unit: this.unitLabel(this.r.pressureUnit)
+      })
+    },
+    pressureView() {
+      const mb = this.current.pressure_mb
+      const outlook = pressureOutlook(mb, this.next24Hours)
+      const position = pressurePosition(mb)
+      const average = this.unit === 'celsius' ? 1013 : 29.92
+      return {
+        title: this.$t(`${T}.pressure.title`),
+        kicker: this.$t(`${T}.pressure.kicker`),
+        big: this.formatNumber(this.r.pressure),
+        unit: ` ${this.unitLabel(this.r.pressureUnit)}`,
+        qualifier: outlook.trend ? this.$t(`hourly.detail.trends.${outlook.trend}`) : '',
+        sub: this.pressureSub(outlook),
+        scale: {
+          segments: [
+            { flex: position, class: 'bg-primary' },
+            { flex: 100 - position, class: 'bg-foreground/[0.12]' }
+          ],
+          marker: { left: position, class: 'size-3.5 border-primary bg-popover' },
+          labels: [
+            { text: this.$t(`${T}.pressure.low`), flex: 1 },
+            { text: this.$t(`${T}.pressure.average`, { value: this.formatNumber(average) }), flex: 1, class: 'text-center' },
+            { text: this.$t(`${T}.pressure.high`), flex: 1, class: 'text-right' }
+          ]
+        },
+        paragraphs: [this.$t(`${T}.pressure.para1`), this.$t(`${T}.pressure.para2`)]
+      }
+    },
+    airQualityView() {
+      const airQuality = this.current.air_quality
+      const category = epaCategory(airQuality?.['us-epa-index'])
+      if (!category) return null
+      return {
+        title: this.$t(`${T}.airQuality.title`),
+        kicker: this.$t(`${T}.airQuality.kicker`),
+        big: this.$t(`${T}.airQuality.names.${category.key}`),
+        bigIsText: true,
+        sub: this.$t(`${T}.airQuality.sub`, { index: this.formatNumber(category.index) }),
+        advice: this.$t(`${T}.airQuality.advice.${category.key}`),
+        scale: {
+          segments: EPA_LEVELS.map(({ color }) => ({ flex: 1, color })),
+          marker: {
+            left: category.position,
+            color: category.color,
+            class: 'size-4 border-popover shadow-[0_0_0_1px_hsl(var(--foreground)/0.2)]'
+          },
+          labels: [
+            { text: this.$t(`${T}.airQuality.names.good`), flex: 1 },
+            { text: this.$t(`${T}.airQuality.names.hazardous`), flex: 1, class: 'text-right' }
+          ]
+        },
+        pollutants: pollutants(airQuality).map(({ name, value }) => ({
+          name,
+          value: value === null ? '—' : this.formatNumber(value)
+        })),
+        paragraphs: [this.$t(`${T}.airQuality.para1`), this.$t(`${T}.airQuality.para2`)]
       }
     }
   }

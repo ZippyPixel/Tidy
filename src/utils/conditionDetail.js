@@ -77,7 +77,7 @@ export function pressureChange(change, unit) {
   }
 }
 
-export const pressurePosition = (mb) => clamp(((mb - 970) / 80) * 100)
+export const pressurePosition = (mb) => clamp(((mb - 970) * 100) / 80)
 
 // Null without a reading: "Good" would be a claim about air we know nothing about.
 export function epaCategory(index) {

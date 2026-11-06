@@ -198,9 +198,80 @@ describe('condition detail modal', () => {
       await open('uv')
       const rows = [...dialog().querySelectorAll('[data-guide]')]
       expect(rows).toHaveLength(5)
-      expect(rows[2].textContent).toContain('6–7 High.')
+      expect(rows[2].textContent).toContain('6–7 High. Protection essential.')
       expect(rows[2].className).toContain('bg-accent')
       expect(rows.filter((row) => row.className.includes('bg-accent'))).toHaveLength(1)
+    })
+  })
+
+  describe('visibility', () => {
+    it('shows the reading, label and lowest ahead', async () => {
+      await open('visibility')
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('10 km')
+      expect(hero_).toContain('Clear view')
+      expect(hero_).toMatch(/Lowest in the next 24 h: 5 km around 3\sAM/)
+    })
+
+    it('uses miles in °F', async () => {
+      await open('visibility', { unit: 'fahrenheit' })
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('6 mi')
+    })
+
+    it('draws a 4-segment scale with a marker', async () => {
+      await open('visibility')
+      expect(dialog().querySelectorAll('[data-segment]')).toHaveLength(4)
+      expect(dialog().querySelector('[data-marker]').style.left).toMatch(/^83\.3/)
+      expect(hero().textContent).toContain('Poor')
+      expect(hero().textContent).toContain('Clear')
+    })
+  })
+
+  describe('pressure', () => {
+    it('shows the reading, trend and change', async () => {
+      await open('pressure')
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('1014 hPa')
+      expect(hero_).toContain('Falling')
+      expect(hero_).toContain('−3 hPa over the next 3 hours')
+      expect(hero_).toContain('Avg 1013')
+    })
+
+    it('uses inHg in °F', async () => {
+      await open('pressure', { unit: 'fahrenheit' })
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('29.94 inHg')
+      expect(hero_).toContain('−0.09 inHg over the next 3 hours')
+      expect(hero_).toContain('Avg 29.92')
+    })
+
+    it('places the marker on the 970–1050 gauge', async () => {
+      await open('pressure')
+      expect(dialog().querySelector('[data-marker]').style.left).toBe('55%')
+    })
+  })
+
+  describe('air quality', () => {
+    it('shows the category, advice and index', async () => {
+      await open('airQuality')
+      expect(hero().textContent).toContain('Moderate')
+      expect(hero().textContent).toContain('US EPA index 2 of 6')
+      expect(hero().textContent).toContain('Acceptable for most people.')
+    })
+
+    it('draws the 6-colour scale with a marker in the category colour', async () => {
+      await open('airQuality')
+      const segments = [...dialog().querySelectorAll('[data-segment]')]
+      expect(segments).toHaveLength(EPA_LEVELS.length)
+      expect(dialog().querySelector('[data-marker]').style.left).toMatch(/^25/)
+    })
+
+    it('lists six pollutants with units', async () => {
+      await open('airQuality')
+      const polls = [...dialog().querySelectorAll('[data-pollutant]')].map((p) => p.textContent.replace(/\s+/g, ' ').trim())
+      expect(polls).toHaveLength(6)
+      expect(polls[0]).toBe('PM2.540 µg/m³')
+      expect(polls[5]).toBe('CO407 µg/m³')
     })
   })
 
