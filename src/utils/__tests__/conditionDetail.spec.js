@@ -189,6 +189,10 @@ describe('rainBestChance', () => {
     expect(rainBestChance([{ rain: 10 }]).likely).toBe(true)
   })
 
+  it('has no chance to report without any hours', () => {
+    expect(rainBestChance([])).toMatchObject({ chance: 0, likely: false })
+  })
+
   it('knows when the best chance is right now', () => {
     expect(rainBestChance([{ rain: 50 }, { rain: 20 }]).isNow).toBe(true)
     expect(rainBestChance([{ rain: 20 }, { rain: 50 }]).isNow).toBe(false)

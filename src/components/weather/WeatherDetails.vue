@@ -15,6 +15,7 @@
       :aria-label="item.aria"
       :title="item.title"
       :disabled="item.disabled"
+      @click="open(item.key, $event)"
       class="flex min-w-0 flex-col gap-1 rounded-lg text-left outline-ring transition-colors duration-[120ms] ease-linear focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 enabled:hover:bg-foreground/5 enabled:active:bg-foreground/[0.09]"
       :class="[
         row ? '-mx-2 -my-1.5 px-2 py-1.5' : '-mx-3 -my-2.5 px-3 py-2.5',
@@ -48,11 +49,26 @@
         >{{ item.value }}{{ item.unit ? ' ' : '' }}<span v-if="item.unit" class="text-[13px] font-normal text-muted-foreground">{{ item.unit }}</span></span>
       </span>
     </button>
+
+    <!-- portalled, so it adds nothing to the grid -->
+    <DetailModalShell
+      :value="selected?.key ?? null"
+      :opener="selected?.opener"
+      max-width-class="max-w-[520px]"
+      history-key="tidyDetail"
+      @close="selected = null"
+    >
+      <template #default="{ value }">
+        <ConditionDetailContent :detail="value" />
+      </template>
+    </DetailModalShell>
   </div>
 </template>
 
 <script>
 import { mapState } from 'pinia'
+import DetailModalShell from '@/components/common/DetailModalShell.vue'
+import ConditionDetailContent from '@/components/weather/ConditionDetailContent.vue'
 import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
 import weatherMixin from '@/mixins/weatherMixin'
@@ -62,9 +78,16 @@ const MISSING = '—'
 
 export default {
   name: 'WeatherDetails',
+  components: { ConditionDetailContent, DetailModalShell },
   mixins: [weatherMixin],
   props: {
     variant: { type: String, default: 'row', validator: (v) => ['row', 'tiles'].includes(v) }
+  },
+  data() {
+    return {
+      // { key, opener }; each instance owns its modal, and only the visible one is clickable
+      selected: null
+    }
   },
   computed: {
     ...mapState(useWeatherStore, ['current', 'forecast']),
@@ -138,6 +161,11 @@ export default {
           disabled: !ready || !!item.disabled
         }
       })
+    }
+  },
+  methods: {
+    open(key, event) {
+      this.selected = { key, opener: event.currentTarget }
     }
   }
 }

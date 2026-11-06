@@ -30,6 +30,12 @@ export default {
       const time = new Date().setHours(hour, 0, 0, 0)
       return new Intl.DateTimeFormat(currentIntlTag(), DATE_FORMATS.TIME).format(time)
     },
+    // "12:45 PM" from an API 'YYYY-MM-DD HH:mm', read as written: it is the location's clock
+    formatClock(dateTime) {
+      const [hour, minute] = dateTime.split(' ')[1].split(':').map(Number)
+      const time = new Date().setHours(hour, minute, 0, 0)
+      return new Intl.DateTimeFormat(currentIntlTag(), DATE_FORMATS.CLOCK).format(time)
+    },
     // "Today" / "Tomorrow" / "Sat" for `date` relative to the location's `today`
     relativeDay(date, today) {
       if (!date || !today) return ''

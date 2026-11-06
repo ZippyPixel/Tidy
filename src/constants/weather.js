@@ -20,7 +20,8 @@ export const DATE_FORMATS = {
   DAY: { weekday: 'long' },
   SHORT_DAY: { weekday: 'short' },
   SHORT_DATE: { month: 'short', day: 'numeric' },
-  TIME: { hour: 'numeric', hour12: true }
+  TIME: { hour: 'numeric', hour12: true },
+  CLOCK: { hour: 'numeric', minute: '2-digit', hour12: true }
 }
 
 export const TEMPERATURE = {

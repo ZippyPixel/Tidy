@@ -35,6 +35,9 @@ export const beaufortLabel = (kph) => firstBelow(BEAUFORT, kph)
 
 export const dewPointComfort = (dewC) => firstBelow(DEW_POINT_COMFORT, dewC)
 
+// The dew points the explanation names: 16° and 21° C, in the chosen unit.
+export const dewPointGuide = (unit) => (unit === 'celsius' ? { comfortable: 16, muggy: 21 } : { comfortable: 61, muggy: 70 })
+
 // The strongest UV still ahead today; null once the sun has gone.
 export function uvPeak(hours, date) {
   const peak = hours.filter((h) => h.date === date).reduce((best, h) => (best && best.uv >= h.uv ? best : h), null)
@@ -42,6 +45,7 @@ export function uvPeak(hours, date) {
 }
 
 export function rainBestChance(hours) {
+  if (!hours.length) return { chance: 0, hour: null, isNow: false, likely: false }
   const index = hours.reduce((best, h, i) => (h.rain > hours[best].rain ? i : best), 0)
   const chance = hours[index].rain
   return { chance, hour: hours[index], isNow: index === 0, likely: chance >= 10 }
