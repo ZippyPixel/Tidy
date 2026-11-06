@@ -1,7 +1,7 @@
 <template>
   <div
     class="grid"
-    :class="row ? 'gap-4 border-t pt-4 md:grid-cols-7 lg:grid-cols-4 xl:grid-cols-7' : 'grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4'"
+    :class="row ? 'gap-4 border-t pt-4 md:grid-cols-[repeat(6,minmax(0,1fr))_minmax(96px,1fr)] lg:grid-cols-4 xl:grid-cols-7' : 'grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4'"
   >
     <!-- row:   the strip at the foot of the Current card (md+)
          tiles: the phone Details card, Air Quality spans 2 at base

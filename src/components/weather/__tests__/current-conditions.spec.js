@@ -74,7 +74,7 @@ describe('BasicWeatherInfo', () => {
     const { wrapper } = setup(BasicWeatherInfo)
     const row = wrapper.findComponent(WeatherDetails)
     expect(row.props('variant')).toBe('row')
-    expect(row.classes()).toEqual(expect.arrayContaining(['hidden', 'md:grid', 'md:grid-cols-7', 'lg:grid-cols-4', 'xl:grid-cols-7']))
+    expect(row.classes()).toEqual(expect.arrayContaining(['hidden', 'md:grid', 'md:grid-cols-[repeat(6,minmax(0,1fr))_minmax(96px,1fr)]', 'lg:grid-cols-4', 'xl:grid-cols-7']))
   })
 })
 
@@ -131,9 +131,10 @@ describe('WeatherDetails', () => {
     expect(tiles(wrapper)[0].attributes('aria-haspopup')).toBe('dialog')
   })
 
+  // md: Air Quality keeps enough width for its name, or "Moderate" truncates at 768px
   it('lays the row out in 7 columns, 4 at lg, offsetting its padding', () => {
     const { wrapper } = setup(WeatherDetails, { variant: 'row' })
-    expect(wrapper.classes()).toEqual(expect.arrayContaining(['md:grid-cols-7', 'lg:grid-cols-4', 'xl:grid-cols-7']))
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['md:grid-cols-[repeat(6,minmax(0,1fr))_minmax(96px,1fr)]', 'lg:grid-cols-4', 'xl:grid-cols-7']))
     expect(tiles(wrapper)[0].classes()).toEqual(expect.arrayContaining(['-mx-2', 'px-2', '-my-1.5', 'py-1.5']))
   })
 
