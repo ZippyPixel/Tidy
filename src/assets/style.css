@@ -153,6 +153,16 @@
   }
 }
 
+/* The bottom sheet slides by vaul's own injected CSS and inline transitions, which
+   ignore reduced motion and can't be reached with utility classes. */
+@media (prefers-reduced-motion: reduce) {
+  [data-vaul-drawer],
+  [data-vaul-overlay] {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Page gutter: 16 / 24 (md) / 32 (xl), never inside the notch or home indicator.
    Shared by the header bar and <main> so their edges line up. */
 :root {
