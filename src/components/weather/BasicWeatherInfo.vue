@@ -1,136 +1,107 @@
 <template>
-  <div class="flex-column w-full lg:max-w-[40rem]">
-    <!-- location-time -->
-    <div class="w-full flex flex-row justify-between items-end mb-2">
-      <div class="w-fit">
-        <p class="text-gray-500 dark:text-night-muted text-sm md:text-base">{{ $t('weather.currentLocation') }}</p>
-        <p class="text-slate-800 dark:text-night-text font-medium text-xl md:text-2xl">{{ location }}</p>
-      </div>
-      <div class="w-fit">
-        <p class="text-gray-500 dark:text-night-muted text-sm md:text-base">{{ day }}</p>
-      </div>
-    </div>
-    <!-- info -->
-    <div
-      class="w-full h-auto min-h-[20rem] py-6 drop-shadow-xl bg-white dark:bg-night-surface rounded-3xl flex flex-col relative"
-    >
-      <!-- chance of rain -->
+  <DashboardCard :title="$t('weather.currentConditions')">
+    <div class="flex flex-col gap-4 md:gap-6">
+      <!-- one markup, two arrangements:
+           phone  temp+condition beside a 128×96 icon, then feels/rain, then the range bar
+           md+    every line in a left column beside a 256×192 icon -->
       <div
-        class="w-20 md:w-24 absolute top-2.5 right-2.5 py-1 px-3 bg-gray-50 dark:bg-night-bg drop-shadow-sm rounded-3xl flex flex-row justify-between items-center"
+        class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 [grid-template-areas:'temp_media'_'cond_media'_'feels_feels'_'range_range'] md:gap-x-6 md:[grid-template-areas:'temp_media'_'cond_media'_'feels_media'_'range_media']"
       >
-        <AppIcon name="cloud-rain" :size="18" class="text-blue-500 dark:text-night-muted" />
-        <p class="text-sm md:text-base">{{ chanceOfRain }}</p>
-      </div>
-      <div class="w-[90%] flex-1 mx-auto flex flex-col gap-6">
-        <!-- top -->
-        <div class="flex flex-row items-center justify-between">
-          <div class="flex flex-col">
-            <div class="flex flex-row items-center">
-              <div class="pr-4 md:pr-5 flex flex-col">
-                <p class="text-6xl md:text-8xl font-black">{{ temperature.avgTemp }}</p>
-                <div class="flex flex-row justify-between text-sm md:text-base">
-                  <div class="flex flex-row mr-2">
-                    <img src="@/assets/icons/mdi_arrow-up.svg" alt="" class="w-4 md:w-5" />
-                    <p>{{ temperature.maxTemp }}{{ unitLabel }}</p>
-                  </div>
-                  <div class="flex flex-row">
-                    <img src="@/assets/icons/mdi_arrow-down.svg" alt="" class="w-4 md:w-5" />
-                    <p>{{ temperature.minTemp }}{{ unitLabel }}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="hidden sm:block">
-                <p class="mb-1 md:mb-2 font-normal text-xl md:text-2xl">{{ condition }}</p>
-                <p class="text-sm md:text-base text-gray-500">{{ $t('weather.feelsLike', { temp: temperature.feelsLike }) }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="w-24 md:w-32 lg:w-40">
-            <img class="w-full" :src="weatherIcon" :alt="condition" />
-          </div>
+        <p
+          class="-ml-[0.055em] text-[clamp(4rem,2.75rem+5vw,5.75rem)] font-light leading-[0.87] tracking-[-0.04em] tabular-nums [grid-area:temp]"
+        >
+          {{ temperature.avgTemp }}
+        </p>
+        <p class="text-lg font-medium leading-6 [grid-area:cond] md:text-xl md:leading-7">{{ condition }}</p>
+
+        <div
+          class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] leading-5 tabular-nums [grid-area:feels] md:mt-0"
+        >
+          <span class="text-muted-foreground">{{ $t('weather.feelsLike', { temp: temperature.feelsLike }) }}</span>
+          <span
+            v-if="chanceOfRain"
+            class="flex items-center gap-1 font-semibold text-rain"
+            :title="$t('weather.chanceOfRain')"
+          >
+            <AppIcon name="droplet" :size="15" />
+            <span class="sr-only">{{ $t('weather.chanceOfRain') }}</span>
+            <span>{{ chanceOfRain }}</span>
+          </span>
         </div>
-        <!-- condition for mobile only -->
-        <div class="sm:hidden -mt-4">
-          <p class="font-normal text-xl">{{ condition }}</p>
-          <p class="text-sm text-gray-500">{{ $t('weather.feelsLike', { temp: temperature.feelsLike }) }}</p>
+
+        <div
+          class="mt-2 flex items-center gap-2 text-[15px] font-medium leading-5 tabular-nums [grid-area:range] md:max-w-[360px]"
+        >
+          <span class="flex items-center gap-1">
+            <AppIcon name="arrow-down" :size="14" class="text-muted-foreground" />
+            <span class="sr-only">{{ $t('weather.low') }}</span>
+            <span>{{ temperature.minTemp }}</span>
+          </span>
+          <div
+            class="relative h-1.5 min-w-12 flex-1 rounded-full bg-primary"
+            role="img"
+            :aria-label="nowPosition === null ? undefined : $t('weather.nowBetween')"
+          >
+            <span
+              v-if="nowPosition !== null"
+              class="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-[2.5px] border-primary bg-card"
+              :style="{ left: `${nowPosition}%` }"
+            />
+          </div>
+          <span class="flex items-center gap-1">
+            <AppIcon name="arrow-up" :size="14" class="text-muted-foreground" />
+            <span class="sr-only">{{ $t('weather.high') }}</span>
+            <span>{{ temperature.maxTemp }}</span>
+          </span>
         </div>
-        <!-- bottom -->
-        <div class="grid grid-cols-3 md:flex md:flex-row justify-between gap-4 mt-auto">
-          <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.humidity') }}</p>
-            <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ formatNumber(basicWeatherInfo.humidity) }}%
-            </p>
-          </div>
-          <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.visibility') }}</p>
-            <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ formatNumber(basicWeatherInfo.visibility) }} {{ $t('weather.km') }}
-            </p>
-          </div>
-          <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.pressure') }}</p>
-            <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ formatNumber(basicWeatherInfo.pressure) }} {{ $t('weather.hPa') }}
-            </p>
-          </div>
-          <div class="flex flex-col">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.uv') }}</p>
-            <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ uvLabel }}
-            </p>
-          </div>
-          <div class="flex flex-col col-span-2 md:col-span-1">
-            <p class="text-[10px] md:text-xs font-regular text-gray-500 dark:text-night-muted">{{ $t('weather.airQuality') }}</p>
-            <p class="text-sm md:text-md font-regular text-black dark:text-night-text">
-              {{ airQualityLabel }}
-            </p>
-          </div>
+
+        <!-- illustration slot: 128×96 phone, 256×192 md+ (4:3) -->
+        <div class="flex h-24 w-32 items-center justify-center self-center [grid-area:media] md:h-48 md:w-64">
+          <img v-if="conditionCode" class="max-h-full max-w-full object-contain" :src="weatherIcon" :alt="condition" />
         </div>
       </div>
+
+      <WeatherDetails variant="row" class="hidden md:grid" />
     </div>
-  </div>
+  </DashboardCard>
 </template>
 
 <script>
 import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
-import useUnitStore from '@/stores/unit'
-import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
+import DashboardCard from '@/components/common/DashboardCard.vue'
+import WeatherDetails from '@/components/weather/WeatherDetails.vue'
 import { getWeatherIcon } from '@/constants/weatherIcons'
 
 export default {
   name: 'BasicWeatherInfo',
   components: {
-    AppIcon
+    AppIcon,
+    DashboardCard,
+    WeatherDetails
   },
-  mixins: [weatherMixin],
   computed: {
     ...mapState(useWeatherStore, [
-      'location',
-      'day',
       'chanceOfRain',
       'condition',
       'conditionCode',
       'isDay',
-      'basicWeatherInfo',
-      'temperature'
+      'temperature',
+      'rawTemperature',
+      'date',
+      'today'
     ]),
-    ...mapState(useUnitStore, ['unit']),
-    unitLabel() {
-      return this.unit === 'celsius' ? 'C' : 'F'
-    },
-    uvLabel() {
-      return this.basicWeatherInfo.uv ? this.$t(`uvLevels.${this.basicWeatherInfo.uv}`) : ''
-    },
-    airQualityLabel() {
-      return this.basicWeatherInfo.airQuality
-        ? this.$t(`airQualityLevels.${this.basicWeatherInfo.airQuality}`)
-        : ''
-    },
     weatherIcon() {
       return getWeatherIcon(this.conditionCode, this.isDay === 1)
+    },
+    // where the current reading sits between the day's low and high (0–100), only
+    // meaningful for today; unit-independent because it uses the raw °C values
+    nowPosition() {
+      const { avgTemp_c: now, minTemp_c: lo, maxTemp_c: hi } = this.rawTemperature || {}
+      if (this.date !== this.today || [now, lo, hi].some((v) => typeof v !== 'number')) return null
+      if (hi <= lo) return 50
+      return Math.max(0, Math.min(100, ((now - lo) / (hi - lo)) * 100))
     }
   }
 }

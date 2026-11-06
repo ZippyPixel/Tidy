@@ -4,6 +4,8 @@ import { API_ENDPOINTS } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
 import { currentLocale } from '@/i18n'
+import { normalizeHour } from '@/utils/hourly'
+import { zoneOffsetMs } from '@/utils/astro'
 
 export default defineStore('weather', {
   state: () => ({
@@ -14,8 +16,9 @@ export default defineStore('weather', {
     condition: '',
     conditionCode: null,
     isDay: 1,
-    hourlyData: {},
-    dailySummary: {},
+    hourly: {}, // { [date]: normalized hour[] } for the Hourly card
+    today: '', // the location's current date, YYYY-MM-DD
+    zoneOffsetMs: null, // location UTC offset, for its wall clock (utils/astro locationClock)
     astro: {}, //sunrise, sunset, moonrise, moonset
     rawTemperature: {}, //stores raw C and F values from API
     chanceOfRain: '',
@@ -131,11 +134,18 @@ export default defineStore('weather', {
         minTemp_f: response.forecast.forecastday[0].day.mintemp_f,
       }
 
-      //current astronomical values
-      this.astro.sunrise = response.forecast.forecastday[0].astro.sunrise
-      this.astro.sunset = response.forecast.forecastday[0].astro.sunset
-      this.astro.moonrise = response.forecast.forecastday[0].astro.moonrise
-      this.astro.moonset = response.forecast.forecastday[0].astro.moonset
+      //location clock: today's date and zone offset, so "now" is the city's, not the browser's
+      this.today = this.date
+      this.zoneOffsetMs = zoneOffsetMs(response.location.localtime, response.location.localtime_epoch)
+
+      //current astronomical values: the whole API object (rise/set times, moon phase and
+      //illumination), the same shape setSelectedForecastDate assigns
+      this.astro = { ...response.forecast.forecastday[0].astro }
+
+      //hourly values per day, both units kept like rawTemperature
+      this.hourly = Object.fromEntries(
+        this.forecast.map((day) => [day.date, (day.hour || []).map(normalizeHour)])
+      )
 
       //current basic weather info
       this.basicWeatherInfo.humidity = response.current.humidity
@@ -145,20 +155,6 @@ export default defineStore('weather', {
       this.basicWeatherInfo.airQuality = this.getAirQualityLevel(
         response.current.air_quality['us-epa-index']
       )
-
-      //Daily Summary
-      await response.forecast.forecastday.map((day) => {
-        this.dailySummary[day.date] = {
-          hours: [],
-          tempDataC: [],
-          tempDataF: []
-        }
-        day.hour.map((hour, index) => {
-          this.dailySummary[day.date].hours.push(weatherMixin.methods.formatTime(index))
-          this.dailySummary[day.date].tempDataC.push(hour.temp_c)
-          this.dailySummary[day.date].tempDataF.push(hour.temp_f)
-        })
-      })
     },
 
     // returns an i18n key suffix (airQualityLevels.*) so components can translate it
@@ -182,22 +178,15 @@ export default defineStore('weather', {
 
     // returns an i18n key suffix (uvLevels.*) so components can translate it
     getUVIndexLevel(index) {
-      if (index >= UV_INDEX_LEVELS.LOW.min && index <= UV_INDEX_LEVELS.LOW.max) {
-        return 'low'
-      }
-      if (index >= UV_INDEX_LEVELS.MODERATE.min && index <= UV_INDEX_LEVELS.MODERATE.max) {
-        return 'moderate'
-      }
-      if (index >= UV_INDEX_LEVELS.HIGH.min && index <= UV_INDEX_LEVELS.HIGH.max) {
-        return 'high'
-      }
-      if (index >= UV_INDEX_LEVELS.VERY_HIGH.min && index <= UV_INDEX_LEVELS.VERY_HIGH.max) {
-        return 'veryHigh'
-      }
-      if (index >= UV_INDEX_LEVELS.EXTREME.min) {
-        return 'extreme'
-      }
-      return 'unknown'
+      if (typeof index !== 'number' || Number.isNaN(index) || index < 0) return 'unknown'
+      // the bands are whole numbers (WHO scale): round first, so 5.6 is "high" and 0.4
+      // is "low" instead of falling between two bands
+      const uv = Math.round(index)
+      if (uv <= UV_INDEX_LEVELS.LOW.max) return 'low'
+      if (uv <= UV_INDEX_LEVELS.MODERATE.max) return 'moderate'
+      if (uv <= UV_INDEX_LEVELS.HIGH.max) return 'high'
+      if (uv <= UV_INDEX_LEVELS.VERY_HIGH.max) return 'veryHigh'
+      return 'extreme'
     },
 
     setSelectedForecastDate(date) {

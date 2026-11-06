@@ -70,13 +70,13 @@ describe('locale store', () => {
 describe('locale-aware formatting', () => {
   it('formats dates in English by default', () => {
     expect(weatherMixin.methods.formatDate('2026-07-16')).toBe('Thursday, Jul 16')
-    expect(weatherMixin.methods.formatTemp(31.2)).toBe('32°')
+    expect(weatherMixin.methods.formatTemp(31.2)).toBe('31°')
   })
 
   it('formats dates and digits in Bangla when the locale is bn', () => {
     activeI18n().global.locale.value = 'bn'
     expect(weatherMixin.methods.formatDate('2026-07-16')).toContain('বৃহস্পতিবার')
-    expect(weatherMixin.methods.formatTemp(31.2)).toBe('৩২°')
+    expect(weatherMixin.methods.formatTemp(31.2)).toBe('৩১°')
     expect(weatherMixin.methods.formatRainChance(80)).toBe('৮০%')
   })
 })

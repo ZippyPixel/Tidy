@@ -25,9 +25,22 @@ export default {
       const time = new Date().setHours(hour, 0, 0, 0)
       return new Intl.DateTimeFormat(currentIntlTag(), DATE_FORMATS.TIME).format(time).toLowerCase()
     },
+    // "3 PM" — hour labels for the hourly cards and chart (formatTime is the lowercase axis form)
+    formatHour(hour) {
+      const time = new Date().setHours(hour, 0, 0, 0)
+      return new Intl.DateTimeFormat(currentIntlTag(), DATE_FORMATS.TIME).format(time)
+    },
+    // "Today" / "Tomorrow" / "Sat" for `date` relative to the location's `today`
+    relativeDay(date, today) {
+      if (!date || !today) return ''
+      const days = Math.round((toLocalDate(date) - toLocalDate(today)) / 86400000)
+      if (days === 0) return this.$t('hourly.today')
+      if (days === 1) return this.$t('hourly.tomorrow')
+      return this.formatDate(date, DATE_FORMATS.SHORT_DAY)
+    },
     formatNumber,
     formatTemp(temp) {
-      return `${formatNumber(Math.ceil(temp))}${TEMPERATURE.DEGREE_SYMBOL}`
+      return `${formatNumber(Math.round(temp))}${TEMPERATURE.DEGREE_SYMBOL}`
     },
     formatRainChance(chance) {
       return `${formatNumber(chance)}${RAIN_CHANCE.PERCENTAGE_SYMBOL}`

@@ -1,70 +1,122 @@
 <template>
-  <CelestialArc
-    :title="$t('planetary.moonriseMoonset')"
-    :rise-time="riseTime"
-    :set-time="setTime"
-    :progress="progress"
-  >
-    <defs>
-      <radialGradient id="grad-moon" cx="35%" cy="28%" r="85%">
-        <stop offset="0" stop-color="#94a3b4" />
-        <stop offset="1" stop-color="#5b6b7a" />
-      </radialGradient>
-    </defs>
-    <g class="moon-body">
-      <circle r="7.5" fill="url(#grad-moon)" />
-      <circle cx="2.5" cy="-1.6" r="1.5" fill="#46545f" opacity="0.5" />
-      <circle cx="-1.6" cy="2.1" r="1.05" fill="#46545f" opacity="0.45" />
-      <circle cx="1.15" cy="3" r="0.8" fill="#46545f" opacity="0.4" />
-    </g>
-  </CelestialArc>
+  <div class="flex min-w-0 flex-1 flex-col gap-2">
+    <div class="flex items-center gap-4">
+      <!-- phase poster: 96 phone / 112 md+ -->
+      <div class="relative size-24 flex-none md:size-28">
+        <svg v-if="!loading" class="size-full" viewBox="-56 -56 112 112" aria-hidden="true">
+          <circle r="48" class="fill-moon-shadow" />
+          <path :d="posterLit" class="fill-moon-lit" />
+          <circle r="48" fill="none" class="stroke-moon-arc-ahead" stroke-width="1" />
+        </svg>
+        <div v-else class="absolute inset-2 rounded-full bg-muted" aria-hidden="true" />
+      </div>
+      <div v-if="!loading" class="flex min-w-0 flex-col gap-1">
+        <span class="text-[13px] leading-4 text-muted-foreground">{{ $t('astro.moon') }}</span>
+        <span class="text-base font-semibold leading-6 tabular-nums">{{ status }}</span>
+        <span v-if="phaseLine" class="text-sm leading-5 tabular-nums text-muted-foreground">{{ phaseLine }}</span>
+        <span v-if="note" class="text-[13px] font-semibold leading-4">{{ note }}</span>
+      </div>
+      <div v-else class="flex flex-col gap-2" aria-hidden="true">
+        <div class="h-2.5 w-10 rounded bg-muted" />
+        <div class="h-4 w-[120px] rounded bg-muted" />
+        <div class="h-3 w-40 rounded bg-muted" />
+      </div>
+    </div>
+    <CelestialArc
+      :window="state && state.window"
+      :show-marker="!!state && state.live"
+      :loading="loading"
+      lit-class="stroke-moon-arc"
+      :rise-label="edgeLabel('moonrise', state && state.rise.day)"
+      :rise-time="riseTime"
+      :set-label="edgeLabel('moonset', state && state.set.day)"
+      :set-time="setTime"
+    >
+      <template #marker="{ up }">
+        <svg viewBox="-14 -14 28 28" class="size-[26px]" :class="up ? '' : 'opacity-55'" aria-hidden="true">
+          <circle r="13" class="fill-card" />
+          <circle r="9" class="fill-moon-shadow" />
+          <path :d="glyphLit" class="fill-moon-lit" />
+          <circle r="9" fill="none" class="stroke-moon-arc" stroke-width="1" />
+        </svg>
+      </template>
+    </CelestialArc>
+  </div>
 </template>
 
 <script>
-import { mapState } from 'pinia'
-import useWeatherStore from '@/stores/weather'
 import { currentIntlTag } from '@/i18n'
-import { progressBetween, formatAstroTime } from '@/utils/astro'
+import { formatAstroTime, moonLitPath, moonPhase, moonState, parseMinutes } from '@/utils/astro'
+import durationMixin from '@/mixins/durationMixin'
+import weatherMixin from '@/mixins/weatherMixin'
 import CelestialArc from './CelestialArc.vue'
 
 export default {
   name: 'MoonArc',
   components: { CelestialArc },
+  mixins: [durationMixin, weatherMixin],
+  props: {
+    astro: { type: Object, default: () => ({}) },
+    /** the next day's astro: tomorrow's rise/set when today has none */
+    nextAstro: { type: Object, default: null },
+    now: { type: Number, default: null },
+    loading: { type: Boolean, default: false }
+  },
   computed: {
-    ...mapState(useWeatherStore, ['astro']),
-    progress() {
-      const a = this.astro || {}
-      return progressBetween(a.moonrise, a.moonset)
+    state() {
+      return moonState({
+        rise: parseMinutes(this.astro.moonrise),
+        set: parseMinutes(this.astro.moonset),
+        now: this.now,
+        nextRise: parseMinutes(this.nextAstro?.moonrise),
+        nextSet: parseMinutes(this.nextAstro?.moonset)
+      })
+    },
+    phase() {
+      return moonPhase(this.astro.moon_phase, this.astro.moon_illumination)
+    },
+    phaseLine() {
+      const name = this.phase.key ? this.$t(`moonPhases.${this.phase.key}`) : this.astro.moon_phase
+      if (!name) return ''
+      return this.$t('astro.illuminated', { phase: name, n: this.formatNumber(this.phase.illumination) })
+    },
+    posterLit() {
+      return moonLitPath(48, this.phase.k, this.phase.waxing)
+    },
+    glyphLit() {
+      return moonLitPath(9, this.phase.k, this.phase.waxing)
     },
     riseTime() {
-      return formatAstroTime((this.astro || {}).moonrise, currentIntlTag())
+      return this.state?.rise.known ? this.time(this.astro.moonrise) : '—'
     },
     setTime() {
-      return formatAstroTime((this.astro || {}).moonset, currentIntlTag())
+      if (!this.state?.set.known) return '—'
+      // "No moonset" today: the time shown is tomorrow's
+      return this.time(parseMinutes(this.astro.moonset) === null ? this.nextAstro?.moonset : this.astro.moonset)
+    },
+    status() {
+      if (!this.state) return '—'
+      const s = this.state.status
+      if (s) return this.$t(`astro.${s.key}`, { d: this.duration(s.minutes) })
+      return this.state.rise.known ? this.$t('astro.risesAt', { time: this.riseTime }) : this.$t('astro.noMoonrise')
+    },
+    note() {
+      const n = this.state?.note
+      if (!n) return ''
+      return n.key === 'noMoonriseNext'
+        ? this.$t('astro.noMoonriseNext', { time: this.time(this.nextAstro?.moonrise) })
+        : this.$t('astro.noMoonrise')
+    }
+  },
+  methods: {
+    time(value) {
+      const t = formatAstroTime(value, currentIntlTag())
+      return t === '--' ? '—' : t
+    },
+    edgeLabel(key, day) {
+      const label = this.$t(`astro.${key}`)
+      return day ? this.$t('astro.withDay', { label, day: this.$t(`astro.${day}`) }) : label
     }
   }
 }
 </script>
-
-<style scoped>
-.moon-body {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .moon-body {
-    animation: float 4.5s ease-in-out infinite;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-1.5px);
-  }
-}
-</style>

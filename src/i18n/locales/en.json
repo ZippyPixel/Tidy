@@ -6,18 +6,22 @@
     "noMatchingCities": "No matching cities",
     "settings": "Settings",
     "openSettings": "Open settings menu",
-    "lightMode": "Light mode",
     "darkMode": "Dark mode",
-    "switchToLight": "Switch to light mode",
-    "switchToDark": "Switch to dark mode",
     "temperature": "Temperature",
-    "switchToUnit": "Switch to {unit}",
     "celsius": "Celsius",
     "fahrenheit": "Fahrenheit",
     "language": "Language",
     "switchLanguage": "Switch to বাংলা",
     "getCurrentLocation": "Get current location",
-    "getLocation": "Get location"
+    "searchCity": "Search city",
+    "closeSearch": "Close search",
+    "clearSearch": "Clear search",
+    "suggestions": "Suggestions",
+    "close": "Close",
+    "settingsDescription": "Theme, temperature unit and language",
+    "submitSearch": "Show weather for this city",
+    "about": "About Tidy",
+    "home": "Tidy home"
   },
   "weather": {
     "currentLocation": "Current Location",
@@ -28,18 +32,17 @@
     "uv": "UV",
     "airQuality": "Air Quality",
     "km": "km",
-    "hPa": "hPa"
+    "hPa": "hPa",
+    "currentConditions": "Current Conditions",
+    "details": "Details",
+    "chanceOfRain": "Chance of rain",
+    "low": "Low",
+    "high": "High",
+    "nowBetween": "Now, between the day’s low and high",
+    "uvUnavailable": "UV index not available"
   },
   "forecast": {
     "dayCount": "{count} Day Forecast | {count} Days Forecast"
-  },
-  "chart": {
-    "dailySummary": "Daily Summary",
-    "noData": "No Data"
-  },
-  "planetary": {
-    "sunriseSunset": "Sunrise & Sunset",
-    "moonriseMoonset": "Moonrise & Moonset"
   },
   "airQualityLevels": {
     "good": "Good",
@@ -60,5 +63,104 @@
   "errors": {
     "geolocationUnsupported": "Geolocation is not supported by your browser",
     "locationFailed": "Unable to retrieve your location"
+  },
+  "hourly": {
+    "title": "Hourly",
+    "view": "Hourly view",
+    "summary": "Summary",
+    "trends": "Trends",
+    "metric": "Metric",
+    "metrics": {
+      "temp": "Temperature",
+      "feels": "Feels like",
+      "rain": "Chance of rain",
+      "wind": "Wind",
+      "hum": "Humidity"
+    },
+    "now": "Now",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "onDay": "{day}, {time}",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "earlier": "Earlier hours",
+    "later": "Later hours",
+    "scrollRegion": "Hourly forecast, scrolls sideways",
+    "chartHint": "Hourly chart. Hover, tap or drag to read values.",
+    "windFrom": "from {dir}",
+    "kmh": "km/h",
+    "mph": "mph",
+    "noData": "No hourly data"
+  },
+  "astro": {
+    "title": "Sun & Moon",
+    "sun": "Sun",
+    "moon": "Moon",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "moonrise": "Moonrise",
+    "moonset": "Moonset",
+    "withDay": "{label} · {day}",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "risesIn": "Rises in {d}",
+    "setsIn": "Sets in {d}",
+    "risesAt": "Rises at {time}",
+    "daylight": "{d} of daylight",
+    "duration": "{h}h {m}m",
+    "durationMinutes": "{m}m",
+    "illuminated": "{phase} · {n}% illuminated",
+    "noMoonrise": "No moonrise today",
+    "noMoonriseNext": "No moonrise today · next rise tomorrow, {time}"
+  },
+  "moonPhases": {
+    "newMoon": "New Moon",
+    "waxingCrescent": "Waxing Crescent",
+    "firstQuarter": "First Quarter",
+    "waxingGibbous": "Waxing Gibbous",
+    "fullMoon": "Full Moon",
+    "waningGibbous": "Waning Gibbous",
+    "lastQuarter": "Last Quarter",
+    "waningCrescent": "Waning Crescent"
+  },
+  "about": {
+    "eyebrow": "About",
+    "titleLead": "Everything about today,",
+    "titleTail": "on one screen.",
+    "intro": "Tidy shows the weather where you are — right now, hour by hour, and the next few days — without an account, ads or a setup flow. Here is what each panel on that screen is for.",
+    "cards": {
+      "now": {
+        "eyebrow": "Current conditions",
+        "titleLead": "Right now,",
+        "titleTail": "where you are",
+        "body": "Tidy asks once for your location and opens on it: temperature, what it actually feels like, chance of rain, humidity, pressure and visibility. Search any city to look somewhere else."
+      },
+      "hours": {
+        "eyebrow": "Hourly",
+        "titleLead": "The next 24 hours,",
+        "titleTail": "two ways",
+        "body": "Summary lays the day out as hour cards — temperature, rain, wind, and when the sun rises or sets. Trends plots temperature, feels-like, rain, wind or humidity as a curve you can tap or drag to read."
+      },
+      "week": {
+        "eyebrow": "Three-day forecast",
+        "titleLead": "The days ahead,",
+        "titleTail": "at a glance",
+        "body": "Highs, lows and rain chance for the next three days, on one shared scale so warmer days really look warmer. Pick a day and the rest of the screen follows it."
+      },
+      "night": {
+        "eyebrow": "Sun & moon",
+        "titleLead": "The sky keeps",
+        "titleTail": "a schedule",
+        "body": "How long until sunset or the next moonrise, how much daylight there is, and tonight’s moon phase — counted in the city’s own time, wherever you are looking from."
+      },
+      "air": {
+        "eyebrow": "Air & UV",
+        "titleLead": "What you",
+        "titleTail": "cannot see",
+        "body": "Air quality and UV index, read back as plain words instead of raw index numbers: good, moderate, unhealthy. Worth a look before a long run or an afternoon outside."
+      }
+    },
+    "settingsNote": "Tidy also speaks বাংলা, switches between °C and °F, and follows your system’s light or dark theme. Change any of it from Settings.",
+    "dataSource": "Weather data from WeatherAPI.com."
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-night-bg">
+  <div class="min-h-screen bg-background text-foreground">
     <LoadingOverlay />
     <NuxtLayout>
       <NuxtPage />
