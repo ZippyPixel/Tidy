@@ -92,16 +92,21 @@ describe('hourDetail heat index threshold', () => {
 describe('uvLevel', () => {
   it.each([
     [0, 'low'],
-    [2.9, 'low'],
-    [3, 'moderate'],
-    [5.9, 'moderate'],
-    [6, 'high'],
-    [7.9, 'high'],
-    [8, 'veryHigh'],
-    [10.9, 'veryHigh'],
-    [11, 'extreme']
+    [2.4, 'low'],
+    [2.5, 'moderate'],
+    [5.4, 'moderate'],
+    [5.6, 'high'],
+    [7.4, 'high'],
+    [7.6, 'veryHigh'],
+    [10.4, 'veryHigh'],
+    [10.6, 'extreme']
   ])('daytime UV %s is %s', (uv, level) => {
     expect(uvLevel(uv, true)).toBe(level)
+  })
+
+  it('emphasises a value that displays as 6', () => {
+    expect(hourDetail({ ...at('2026-11-06', 13), uv: 5.6 }, null, 'celsius').uv.emphasis).toBe(true)
+    expect(hourDetail({ ...at('2026-11-06', 13), uv: 5.4 }, null, 'celsius').uv.emphasis).toBe(false)
   })
 
   it('says none at night, unless the API reports real UV', () => {
