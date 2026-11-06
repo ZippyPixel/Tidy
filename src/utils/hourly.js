@@ -18,8 +18,33 @@ export function normalizeHour(hour) {
     windDegree: hour.wind_degree,
     humidity: hour.humidity,
     code: hour.condition?.code ?? null,
-    isDay: hour.is_day === 1
+    isDay: hour.is_day === 1,
+    // hour detail modal
+    conditionText: hour.condition?.text?.trim(),
+    precipMm: hour.precip_mm,
+    precipIn: hour.precip_in,
+    gustKph: hour.gust_kph,
+    gustMph: hour.gust_mph,
+    dewC: hour.dewpoint_c,
+    dewF: hour.dewpoint_f,
+    uv: hour.uv,
+    visKm: hour.vis_km,
+    visMi: hour.vis_miles,
+    pressureMb: hour.pressure_mb,
+    pressureIn: hour.pressure_in,
+    cloud: hour.cloud,
+    heatC: hour.heatindex_c,
+    heatF: hour.heatindex_f
   }
+}
+
+// The hour before `date` `hour` in `hourly`, across midnight if needed. Null before
+// the first hour of the forecast.
+export function previousHour(hourly, date, hour) {
+  if (hour > 0) return hourly?.[date]?.find((h) => h.hour === hour - 1) ?? null
+  const dates = Object.keys(hourly || {}).sort()
+  const previousDate = dates[dates.indexOf(date) - 1]
+  return hourly?.[previousDate]?.find((h) => h.hour === 23) ?? null
 }
 
 // `count` consecutive hours starting at `startDate` `startHour`, crossing into the

@@ -21,7 +21,7 @@
         class="hourly-panel absolute inset-0"
         :class="{ 'is-hidden': mode !== 'summary' }"
       >
-        <HourlySummary :items="items" :loading="loading" :live="live" :today="today" />
+        <HourlySummary :items="items" :loading="loading" :live="live" :today="today" @select-hour="selectHour" />
       </div>
       <div
         role="tabpanel"
@@ -40,6 +40,14 @@
         />
       </div>
     </div>
+
+    <HourDetailModal
+      :hour="selected?.hour"
+      :previous="selected?.previous"
+      :when="selected?.when"
+      :opener="selected?.opener"
+      @close="selected = null"
+    />
   </DashboardCard>
 </template>
 
@@ -48,9 +56,10 @@ import { mapState } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import DashboardCard from '@/components/common/DashboardCard.vue'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
+import HourDetailModal from '@/components/weather/HourDetailModal.vue'
 import HourlySummary from '@/components/weather/HourlySummary.vue'
 import HourlyTrends from '@/components/weather/HourlyTrends.vue'
-import { hourlyStrip, hourlyWindow } from '@/utils/hourly'
+import { hourlyStrip, hourlyWindow, previousHour } from '@/utils/hourly'
 import { locationClock } from '@/utils/astro'
 
 const MODE_KEY = 'tidy.hourly.mode'
@@ -76,11 +85,13 @@ function writePref(key, value) {
 
 export default {
   name: 'DailyChart',
-  components: { DashboardCard, SegmentedControl, HourlySummary, HourlyTrends },
+  components: { DashboardCard, SegmentedControl, HourDetailModal, HourlySummary, HourlyTrends },
   data() {
     return {
       mode: 'summary',
       metric: 'temp',
+      // a snapshot, so the clock moving the window on cannot change the open modal
+      selected: null,
       nowMs: Date.now(),
       clockTimer: null
     }
@@ -124,6 +135,11 @@ export default {
     clearInterval(this.clockTimer)
   },
   methods: {
+    selectHour(selection) {
+      // looked up in the whole forecast: the first card's previous hour is outside the window
+      const previous = previousHour(this.hourly, selection.hour.date, selection.hour.hour)
+      this.selected = { ...selection, previous }
+    },
     setMode(value) {
       this.mode = value
       writePref(MODE_KEY, value)
