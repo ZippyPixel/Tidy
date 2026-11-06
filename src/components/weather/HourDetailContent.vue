@@ -42,12 +42,13 @@
             >{{ tile.value }}<span class="text-[13px] font-normal text-muted-foreground">{{ tile.unit }}</span></span
           >
         </span>
-        <!-- an empty sub-line keeps the tile rows level -->
-        <span class="truncate text-xs leading-4 text-muted-foreground">{{ tile.sub || '&nbsp;' }}</span>
+        <!-- wraps rather than truncates: the gust value does not fit one line in 3 columns.
+             An empty sub-line keeps the tile rows level. -->
+        <span class="text-xs leading-4 text-muted-foreground">{{ tile.sub || '\u00a0' }}</span>
       </div>
     </div>
 
-    <div class="flex flex-wrap gap-x-4 gap-y-1 border-t pt-3 text-[13px] leading-5 text-muted-foreground tabular-nums">
+    <div class="flex flex-wrap gap-x-4 gap-y-1 border-t border-input pt-3 text-[13px] leading-5 text-muted-foreground tabular-nums">
       <span>{{ $t('hourly.detail.cloudCover', { value: number(detail.cloud) }) }}</span>
       <span v-if="detail.heatIndex !== null">
         {{ $t('hourly.detail.heatIndex', { temp: degrees(detail.heatIndex) }) }}

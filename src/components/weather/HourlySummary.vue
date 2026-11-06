@@ -29,20 +29,26 @@
               <div class="mt-4 h-6 text-sm font-medium leading-6">{{ $t(`hourly.${item.kind}`) }}</div>
             </div>
 
-            <!-- hour -->
-            <div
+            <!-- hour: spans, because a button only takes phrasing content -->
+            <button
               v-else
-              class="flex h-[208px] flex-col items-center rounded-tile px-1 py-4"
+              type="button"
+              aria-haspopup="dialog"
+              :aria-label="cardLabel(item, index)"
+              class="flex h-[208px] w-full touch-manipulation flex-col items-center rounded-tile px-1 py-4 outline-none hover:shadow-[inset_0_0_0_1px_hsl(var(--input))] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:shadow-[inset_0_0_0_999px_hsl(var(--foreground)/0.06)]"
               :class="isNow(index) ? 'bg-accent text-accent-foreground' : ''"
+              @pointerdown="onCardPress"
+              @pointercancel="press = null"
+              @click="onCardClick(item, index, $event)"
             >
-              <div class="h-4 whitespace-nowrap text-[13px] font-medium leading-4">
-                {{ isNow(index) ? $t('hourly.now') : formatHour(item.hour) }}
-              </div>
-              <div class="mt-4 flex size-10 items-center justify-center">
+              <span class="h-4 whitespace-nowrap text-[13px] font-medium leading-4">
+                {{ hourLabel(item, index) }}
+              </span>
+              <span class="mt-4 flex size-10 items-center justify-center">
                 <img v-if="item.code" class="size-10 object-contain" :src="icon(item)" alt="" />
-              </div>
-              <div class="mt-4 h-6 text-xl font-medium leading-6 tabular-nums">{{ temp(item) }}</div>
-              <div
+              </span>
+              <span class="mt-4 h-6 text-xl font-medium leading-6 tabular-nums">{{ temp(item) }}</span>
+              <span
                 class="mt-6 flex h-4 items-center justify-center gap-0.5 text-xs leading-4 tabular-nums"
                 :class="
                   item.rain >= 10
@@ -53,8 +59,8 @@
               >
                 <AppIcon name="droplet" :size="11" :stroke-width="2.2" class="flex-none" />
                 <span>{{ formatRainChance(item.rain) }}</span>
-              </div>
-              <div class="mt-2 flex h-4 items-center justify-center gap-0.5 whitespace-nowrap text-xs leading-4 tabular-nums">
+              </span>
+              <span class="mt-2 flex h-4 items-center justify-center gap-0.5 whitespace-nowrap text-xs leading-4 tabular-nums">
                 <svg
                   viewBox="0 0 24 24"
                   aria-hidden="true"
@@ -66,8 +72,8 @@
                 </svg>
                 <span class="font-medium">{{ formatNumber(Math.round(wind(item))) }}</span>
                 <span :class="isNow(index) ? '' : 'text-muted-foreground'">{{ windUnit }}</span>
-              </div>
-            </div>
+              </span>
+            </button>
           </div>
         </template>
         <p v-if="!items.length" class="self-center text-sm text-muted-foreground">{{ $t('hourly.noData') }}</p>
@@ -119,6 +125,9 @@ import { getWeatherIcon } from '@/constants/weatherIcons'
 import { currentIntlTag } from '@/i18n'
 import { formatAstroTime, prefersReducedMotion } from '@/utils/astro'
 
+// a press that travels further than this is a swipe, not a tap
+const TAP_SLOP_PX = 8
+
 export default {
   name: 'HourlySummary',
   components: { AppIcon },
@@ -131,8 +140,10 @@ export default {
     live: { type: Boolean, default: false },
     today: { type: String, default: '' }
   },
+  emits: ['select-hour'],
   data() {
     return {
+      press: null,
       atStart: true,
       atEnd: false,
       stepButton:
@@ -175,6 +186,42 @@ export default {
       const prev = this.items[index - 1]
       if (index === 0 || prev?.type === 'divider') return this.relativeDay(item.date, this.today)
       return ''
+    },
+    hourLabel(item, index) {
+      return this.isNow(index) ? this.$t('hourly.now') : this.formatHour(item.hour)
+    },
+    cardLabel(item, index) {
+      return this.$t('hourly.detail.openLabel', {
+        day: this.relativeDay(item.date, this.today),
+        time: this.hourLabel(item, index),
+        temp: this.temp(item),
+        condition: item.conditionText || ''
+      })
+    },
+    onCardPress(event) {
+      this.press = { x: event.clientX, y: event.clientY, scroll: this.$refs.scroller.scrollLeft }
+    },
+    wasSwipe(event) {
+      const { press } = this
+      this.press = null
+      // detail 0 is a keyboard click, with no press to compare against
+      if (!press || event.detail === 0) return false
+      return (
+        Math.abs(event.clientX - press.x) > TAP_SLOP_PX ||
+        Math.abs(event.clientY - press.y) > TAP_SLOP_PX ||
+        Math.abs(this.$refs.scroller.scrollLeft - press.scroll) > TAP_SLOP_PX
+      )
+    },
+    onCardClick(item, index, event) {
+      if (this.wasSwipe(event)) return
+      this.$emit('select-hour', {
+        hour: item,
+        when: this.$t('hourly.detail.when', {
+          day: this.relativeDay(item.date, this.today),
+          time: this.hourLabel(item, index)
+        }),
+        opener: event.currentTarget
+      })
     },
     temp(item) {
       const v = this.celsius ? item.tempC : item.tempF

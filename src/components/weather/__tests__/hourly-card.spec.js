@@ -22,8 +22,11 @@ const apiHour = (date, h) => ({
   wind_mph: 6 + h / 2,
   wind_degree: 200,
   humidity: 80,
-  condition: { code: 1063 },
-  is_day: h >= 6 && h < 18 ? 1 : 0
+  condition: { code: 1063, text: 'Patchy rain nearby' },
+  is_day: h >= 6 && h < 18 ? 1 : 0,
+  pressure_mb: 1050 - h * 2,
+  uv: 1,
+  vis_km: 10
 })
 const DATES = ['2026-07-15', '2026-07-16']
 const hourly = Object.fromEntries(DATES.map((d) => [d, Array.from({ length: 24 }, (_, h) => normalizeHour(apiHour(d, h)))]))
@@ -95,6 +98,114 @@ describe('Hourly card', () => {
     const first = wrapper.findAll('[role="tabpanel"]')[0].findAll('.rounded-tile')[0]
     expect(first.text()).toContain('85°') // 77 + 15/2 = 84.5
     expect(first.text()).toContain('mph')
+  })
+
+  describe('hour detail', () => {
+    const hourButtons = (wrapper) => wrapper.findAll('[role="tabpanel"]')[0].findAll('button[aria-haspopup="dialog"]')
+    const dialog = () => document.querySelector('[role="dialog"]')
+    // trigger() cannot set clientX on a MouseEvent
+    const fire = async (card, type, init) => {
+      card.element.dispatchEvent(new MouseEvent(type, { bubbles: true, ...init }))
+      await flushPromises()
+    }
+    let mounted
+
+    function open(state) {
+      const result = setup(state)
+      mounted = result.wrapper
+      return result
+    }
+
+    afterEach(() => {
+      mounted?.unmount()
+      document.body.innerHTML = ''
+    })
+
+    it('makes every hour card a labelled button, and no sunrise or sunset card', () => {
+      const { wrapper } = open()
+      const strip = wrapper.findAll('[role="tabpanel"]')[0]
+      expect(hourButtons(wrapper)).toHaveLength(25)
+      expect(hourButtons(wrapper)[0].attributes('aria-label')).toBe('Today, Now: 29°, Patchy rain nearby. Show details')
+      expect(hourButtons(wrapper)[1].attributes('aria-label')).toContain('Today, 4 PM')
+      const sunset = strip.findAll('.rounded-tile').find((card) => card.text().includes('Sunset'))
+      expect(sunset.element.tagName).toBe('DIV')
+    })
+
+    it('keeps the Now accent, and gets the inset ring on hover', () => {
+      const { wrapper } = open()
+      const [now, next] = hourButtons(wrapper)
+      expect(now.classes()).toContain('bg-accent')
+      expect(next.classes()).not.toContain('bg-accent')
+      expect(next.attributes('class')).toContain('hover:shadow-[inset_0_0_0_1px_hsl(var(--input))]')
+    })
+
+    it('keeps the strip scrolling and snapping per card', () => {
+      const { wrapper } = open()
+      const scroller = wrapper.find('[role="region"]')
+      expect(scroller.classes()).toEqual(expect.arrayContaining(['overflow-x-auto', 'snap-x', 'snap-mandatory']))
+      expect(hourButtons(wrapper)[0].element.parentElement.classList).toContain('snap-start')
+    })
+
+    it('opens the modal for the clicked hour', async () => {
+      const { wrapper } = open()
+      await hourButtons(wrapper)[1].trigger('click')
+      await flushPromises()
+      expect(dialog().textContent).toContain('Today · 4 PM')
+      expect(dialog().textContent).toContain('Patchy rain nearby')
+    })
+
+    it('labels the first card as Now in the modal', async () => {
+      const { wrapper } = open()
+      await hourButtons(wrapper)[0].trigger('click')
+      await flushPromises()
+      expect(dialog().textContent).toContain('Today · Now')
+    })
+
+    it('finds the pressure trend of the first card outside the visible window', async () => {
+      const { wrapper } = open()
+      await hourButtons(wrapper)[0].trigger('click')
+      await flushPromises()
+      expect(dialog().textContent).toContain('Falling')
+    })
+
+    it('does not open when the press moved, as a swipe does', async () => {
+      const { wrapper } = open()
+      const card = hourButtons(wrapper)[1]
+      await fire(card, 'pointerdown', { clientX: 200, clientY: 100 })
+      await fire(card, 'click', { clientX: 150, clientY: 100, detail: 1 })
+      await flushPromises()
+      expect(dialog()).toBeNull()
+    })
+
+    it('does not open when the strip scrolled under the press', async () => {
+      const { wrapper } = open()
+      const card = hourButtons(wrapper)[1]
+      const scroller = wrapper.find('[role="region"]').element
+      await fire(card, 'pointerdown', { clientX: 200, clientY: 100 })
+      scroller.scrollLeft = 80
+      await fire(card, 'click', { clientX: 200, clientY: 100, detail: 1 })
+      await flushPromises()
+      expect(dialog()).toBeNull()
+    })
+
+    it('opens on a tap with a little finger movement', async () => {
+      const { wrapper } = open()
+      const card = hourButtons(wrapper)[1]
+      await fire(card, 'pointerdown', { clientX: 200, clientY: 100 })
+      await fire(card, 'click', { clientX: 204, clientY: 102, detail: 1 })
+      await flushPromises()
+      expect(dialog()).not.toBeNull()
+    })
+
+    it('opens from the keyboard after a cancelled swipe', async () => {
+      const { wrapper } = open()
+      const card = hourButtons(wrapper)[1]
+      await fire(card, 'pointerdown', { clientX: 200, clientY: 100 })
+      await card.trigger('pointercancel')
+      await fire(card, 'click', { clientX: 0, clientY: 0, detail: 0 })
+      await flushPromises()
+      expect(dialog()).not.toBeNull()
+    })
   })
 })
 

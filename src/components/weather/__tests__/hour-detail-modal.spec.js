@@ -108,6 +108,25 @@ describe('HourDetailModal', () => {
       ])
     })
 
+    it('lets a long sub-line wrap, so the gust value is never cut off in three columns', async () => {
+      await open({ md: true })
+      const wind = dialog().querySelectorAll('[data-tile]')[1]
+      const sub = wind.lastElementChild
+      expect(sub.textContent).toContain('gusts 25')
+      expect(sub.classList).not.toContain('truncate')
+    })
+
+    it('keeps an empty, non-collapsing sub-line when the hour has no previous reading', async () => {
+      await open({ h: 0 })
+      const pressure = dialog().querySelectorAll('[data-tile]')[5]
+      expect(pressure.lastElementChild.textContent).toBe('\u00a0')
+    })
+
+    it('draws the footer divider with a token that shows on the popover in both themes', async () => {
+      await open()
+      expect(dialog().querySelector('.border-t').classList).toContain('border-input')
+    })
+
     it('uses imperial values in °F, with the heat index in the footer', async () => {
       await open({ unit: 'fahrenheit' })
       const tiles = tileTexts()
