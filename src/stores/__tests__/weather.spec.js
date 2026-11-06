@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import fixture from '@/utils/__tests__/fixtures/weatherapi-forecast.json'
 
 const hour = (date, h) => ({
   time: `${date} ${String(h).padStart(2, '0')}:00`,
@@ -122,5 +123,32 @@ describe('UV level', () => {
     expect(store.getUVIndexLevel(7.5)).toBe('veryHigh')
     expect(store.getUVIndexLevel(10.6)).toBe('extreme')
     expect(store.getUVIndexLevel(undefined)).toBe('unknown')
+  })
+})
+
+describe('current conditions for the detail modals', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('keeps the raw current reading and the next 24 hours from the location clock', async () => {
+    const store = useWeatherStore()
+    await store.setValues(fixture)
+    expect(store.current.wind_kph).toBe(10.8)
+    expect(store.next24Hours).toHaveLength(24)
+    expect(store.next24Hours[0]).toMatchObject({ date: '2026-11-06', hour: 13 })
+    expect(store.next24Hours[23]).toMatchObject({ date: '2026-11-07', hour: 12 })
+  })
+
+  it('is empty before the first fetch', () => {
+    const store = useWeatherStore()
+    expect(store.current).toBeNull()
+    expect(store.next24Hours).toEqual([])
+  })
+
+  it('stays on the current reading when a forecast day is selected', async () => {
+    const store = useWeatherStore()
+    await store.setValues(fixture)
+    store.setSelectedForecastDate(fixture.forecast.forecastday[2])
+    expect(store.current.last_updated).toBe('2026-11-06 12:45')
+    expect(store.next24Hours[0].date).toBe('2026-11-06')
   })
 })

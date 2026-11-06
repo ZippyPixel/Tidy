@@ -1,0 +1,294 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
+
+import WeatherDetails from '@/components/weather/WeatherDetails.vue'
+import { EPA_LEVELS, UV_LEVELS } from '@/constants/levelColors'
+import { activeI18n } from '@/i18n'
+import useUnitStore from '@/stores/unit'
+import useWeatherStore from '@/stores/weather'
+import fixture from '@/utils/__tests__/fixtures/weatherapi-forecast.json'
+
+const i18n = activeI18n()
+const realMatchMedia = window.matchMedia
+const INDEX = { humidity: 0, wind: 1, precip: 2, visibility: 3, pressure: 4, uv: 5, airQuality: 6 }
+
+function setWidth(md) {
+  window.matchMedia = (query) => ({
+    matches: md && query.includes('min-width: 768px'),
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false
+  })
+}
+
+let wrapper
+
+async function open(key, { md = true, unit = 'celsius', response = fixture } = {}) {
+  setWidth(md)
+  const pinia = createPinia()
+  useUnitStore(pinia).unit = unit
+  await useWeatherStore(pinia).setValues(response)
+  wrapper = mount(WeatherDetails, { attachTo: document.body, global: { plugins: [pinia, i18n] } })
+  await flushPromises()
+  await wrapper.findAll('button')[INDEX[key]].trigger('click')
+  await flushPromises()
+}
+
+const dialog = () => document.querySelector('[role="dialog"]')
+const text = () => dialog()?.textContent.replace(/\s+/g, ' ').trim() ?? ''
+const columns = () => [...dialog().querySelectorAll('[data-column]')]
+const hero = () => dialog().querySelector('[data-hero]')
+
+describe('condition detail modal', () => {
+  beforeEach(() => history.replaceState(null, ''))
+
+  afterEach(() => {
+    wrapper?.unmount()
+    window.matchMedia = realMatchMedia
+    i18n.global.locale.value = 'en'
+  })
+
+  describe('shell', () => {
+    it('is a 520px dialog from md, titled with the update time', async () => {
+      await open('humidity')
+      expect(dialog().className).toContain('max-w-[520px]')
+      expect(dialog().hasAttribute('data-vaul-drawer')).toBe(false)
+      expect(dialog().querySelector('h2').textContent).toBe('Humidity')
+      expect(text()).toMatch(/Updated 12:45\sPM/)
+    })
+
+    it('is a drawer below md, and back closes it', async () => {
+      await open('wind', { md: false })
+      expect(dialog().hasAttribute('data-vaul-drawer')).toBe(true)
+      expect(history.state?.tidyDetail).toBe(true)
+      history.back()
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      await flushPromises()
+      expect(wrapper.vm.selected).toBeNull()
+    })
+
+    it('closes on Esc and returns focus to the tile', async () => {
+      await open('humidity')
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      await flushPromises()
+      expect(wrapper.vm.selected).toBeNull()
+      expect(document.activeElement).toBe(wrapper.findAll('button')[INDEX.humidity].element)
+    })
+
+    it('has no close button and takes focus', async () => {
+      await open('humidity')
+      expect(dialog().querySelector('button')).toBeNull()
+      expect(dialog().contains(document.activeElement)).toBe(true)
+    })
+
+    it('does not open a tile with no reading', async () => {
+      const current = { ...fixture.current, uv: undefined }
+      await open('uv', { response: { ...fixture, current } })
+      expect(dialog()).toBeNull()
+    })
+  })
+
+  describe('humidity', () => {
+    it('shows the average, comfort and now', async () => {
+      await open('humidity')
+      expect(hero().textContent).toContain("Today's average")
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('58%')
+      expect(hero().textContent).toContain('Humid')
+      expect(hero().textContent).toContain('Now 51% · dew point 19°')
+    })
+
+    it('draws 12 pill bars in the humidity colour, Now first', async () => {
+      await open('humidity')
+      expect(columns()).toHaveLength(12)
+      expect(columns()[0].textContent).toContain('Now')
+      expect(columns()[0].textContent).toContain('40%')
+      expect(columns()[0].querySelector('.bg-chart-humidity').style.height).toBe('40%')
+    })
+
+    it('gives dew point guidance in the chosen unit', async () => {
+      await open('humidity')
+      expect(text()).toContain('below 16° is comfortable, above 21° feels muggy')
+      wrapper.unmount()
+      await open('humidity', { unit: 'fahrenheit' })
+      expect(text()).toContain('below 61° is comfortable, above 70° feels muggy')
+      expect(text()).toContain('dew point 67°')
+    })
+  })
+
+  describe('wind', () => {
+    it('shows speed, Beaufort, direction and gusts', async () => {
+      await open('wind')
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('11 km/h')
+      expect(hero_).toContain('Light breeze')
+      expect(hero_).toContain('From NNW · gusts 19 km/h')
+      expect(text()).toContain('Strongest today: 15 km/h.')
+    })
+
+    it('uses mph in °F without changing the label', async () => {
+      await open('wind', { unit: 'fahrenheit' })
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('7 mph')
+      expect(hero_).toContain('Light breeze')
+    })
+
+    it('rotates the compass needle to where the wind blows', async () => {
+      await open('wind')
+      expect(dialog().querySelector('[data-needle]').getAttribute('transform')).toBe('rotate(518)')
+    })
+
+    it('puts a direction arrow on every column', async () => {
+      await open('wind')
+      expect(columns()).toHaveLength(12)
+      expect(columns()[0].querySelector('[data-arrow]').style.transform).toBe('rotate(520deg)') // 340 + 180
+    })
+  })
+
+  describe('precipitation', () => {
+    it('reports the total and that rain is unlikely', async () => {
+      await open('precip')
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('0 mm')
+      expect(hero().textContent).toContain('Rain is unlikely in the next 24 hours')
+    })
+
+    it('reports inches in °F', async () => {
+      await open('precip', { unit: 'fahrenheit' })
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('0 in')
+    })
+
+    it('turns a chance of 30% or more to the rain colour', async () => {
+      const days = structuredClone(fixture.forecast.forecastday)
+      days[0].hour[13].chance_of_rain = 30
+      await open('precip', { response: { ...fixture, forecast: { forecastday: days } } })
+      expect(columns()[0].querySelector('[data-value]').className).toContain('text-rain')
+      expect(columns()[1].querySelector('[data-value]').className).not.toContain('text-rain')
+      expect(hero().textContent).toContain('Best chance: 30% around now')
+    })
+
+    it('draws a condition icon in each column', async () => {
+      await open('precip')
+      expect(columns().every((column) => column.querySelector('[data-icon]'))).toBe(true)
+      expect(columns()[0].querySelector('[data-icon]').dataset.icon).toBe('sun')
+      expect(columns()[3].querySelector('[data-icon]').dataset.icon).toBe('moon')
+    })
+  })
+
+  describe('uv', () => {
+    it("shows today's high, its level and now", async () => {
+      await open('uv')
+      expect(hero().textContent).toContain('High')
+      expect(hero().textContent).toMatch(/Now 7 · strongest around 1\sPM/)
+      expect(dialog().querySelector('[data-big]').textContent.trim()).toBe('7')
+    })
+
+    it('colours bars by level', async () => {
+      await open('uv')
+      const fill = columns()[0].querySelector('[data-fill]')
+      const probe = document.createElement('div')
+      probe.style.background = UV_LEVELS[2].color
+      expect(fill.style.background).toBe(probe.style.background)
+    })
+
+    it('lists the five-row guide, the current level in accent', async () => {
+      await open('uv')
+      const rows = [...dialog().querySelectorAll('[data-guide]')]
+      expect(rows).toHaveLength(5)
+      expect(rows[2].textContent).toContain('6–7 High. Protection essential.')
+      expect(rows[2].className).toContain('bg-accent')
+      expect(rows.filter((row) => row.className.includes('bg-accent'))).toHaveLength(1)
+    })
+  })
+
+  describe('visibility', () => {
+    it('shows the reading, label and lowest ahead', async () => {
+      await open('visibility')
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('10 km')
+      expect(hero_).toContain('Clear view')
+      expect(hero_).toMatch(/Lowest in the next 24 h: 5 km around 3\sAM/)
+    })
+
+    it('uses miles in °F', async () => {
+      await open('visibility', { unit: 'fahrenheit' })
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('6 mi')
+    })
+
+    it('draws a 4-segment scale with a marker', async () => {
+      await open('visibility')
+      expect(dialog().querySelectorAll('[data-segment]')).toHaveLength(4)
+      expect(dialog().querySelector('[data-marker]').style.left).toMatch(/^83\.3/)
+      expect(hero().textContent).toContain('Poor')
+      expect(hero().textContent).toContain('Clear')
+    })
+  })
+
+  describe('pressure', () => {
+    it('shows the reading, trend and change', async () => {
+      await open('pressure')
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('1014 hPa')
+      expect(hero_).toContain('Falling')
+      expect(hero_).toContain('−3 hPa over the next 3 hours')
+      expect(hero_).toContain('Avg 1013')
+    })
+
+    it('uses inHg in °F', async () => {
+      await open('pressure', { unit: 'fahrenheit' })
+      const hero_ = hero().textContent.replace(/\s+/g, ' ')
+      expect(hero_).toContain('29.94 inHg')
+      expect(hero_).toContain('−0.09 inHg over the next 3 hours')
+      expect(hero_).toContain('Avg 29.92')
+    })
+
+    it('places the marker on the 970–1050 gauge', async () => {
+      await open('pressure')
+      expect(dialog().querySelector('[data-marker]').style.left).toBe('55%')
+    })
+  })
+
+  describe('air quality', () => {
+    it('shows the category, advice and index', async () => {
+      await open('airQuality')
+      expect(hero().textContent).toContain('Moderate')
+      expect(hero().textContent).toContain('US EPA index 2 of 6')
+      expect(hero().textContent).toContain('Acceptable for most people.')
+    })
+
+    it('draws the 6-colour scale with a marker in the category colour', async () => {
+      await open('airQuality')
+      const segments = [...dialog().querySelectorAll('[data-segment]')]
+      expect(segments).toHaveLength(EPA_LEVELS.length)
+      expect(dialog().querySelector('[data-marker]').style.left).toMatch(/^25/)
+    })
+
+    it('lists six pollutants with units', async () => {
+      await open('airQuality')
+      const polls = [...dialog().querySelectorAll('[data-pollutant]')].map((p) => p.textContent.replace(/\s+/g, ' ').trim())
+      expect(polls).toHaveLength(6)
+      expect(polls[0]).toBe('PM2.540 µg/m³')
+      expect(polls[5]).toBe('CO407 µg/m³')
+    })
+  })
+
+  describe('bar strip layout', () => {
+    it('is a 12-column grid from md and scrolls sideways below it', async () => {
+      await open('humidity')
+      const strip = dialog().querySelector('[data-strip]')
+      expect(strip.className).toContain('md:grid-cols-12')
+      expect(strip.className).toContain('overflow-x-auto')
+      expect(strip.hasAttribute('data-vaul-no-drag')).toBe(true)
+    })
+  })
+
+  it('renders in Bengali, with Bengali digits', async () => {
+    i18n.global.locale.value = 'bn'
+    await open('humidity')
+    expect(dialog().querySelector('h2').textContent).toBe('আর্দ্রতা')
+    expect(text()).toContain('৫৮')
+  })
+})

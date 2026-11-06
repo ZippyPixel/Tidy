@@ -27,6 +27,8 @@
     "currentLocation": "Current Location",
     "feelsLike": "Feels like {temp}",
     "humidity": "Humidity",
+    "wind": "Wind",
+    "precipitation": "Precipitation",
     "visibility": "Visibility",
     "pressure": "Pressure",
     "uv": "UV",
@@ -130,6 +132,147 @@
         "mm": "mm",
         "in": "in"
       }
+    }
+  },
+  "conditionDetail": {
+    "updated": "Updated {time}",
+    "openLabel": "{title}: {value}. Show details",
+    "tileTitles": {
+      "wind": "Wind from {dir}",
+      "precip": "Precipitation today",
+      "uv": "UV index",
+      "airQuality": "Air quality: {name}"
+    },
+    "humidity": {
+      "title": "Humidity",
+      "kicker": "Today's average",
+      "sub": "Now {now}% · dew point {dew}",
+      "comfort": {
+        "dry": "Dry",
+        "comfortable": "Comfortable",
+        "slightlyHumid": "Slightly humid",
+        "humid": "Humid",
+        "muggy": "Muggy",
+        "oppressive": "Oppressive"
+      },
+      "para1": "Relative humidity is how much water vapour the air holds compared with the most it could hold at that temperature.",
+      "para2": "Dew point is the temperature the air would need to cool to for humidity to reach 100%. It is the better guide to how sticky it feels: below {comfortable} is comfortable, above {muggy} feels muggy."
+    },
+    "wind": {
+      "title": "Wind",
+      "kicker": "Now",
+      "sub": "From {dir} · gusts {gust} {unit}",
+      "beaufort": {
+        "calm": "Calm",
+        "lightAir": "Light air",
+        "lightBreeze": "Light breeze",
+        "gentleBreeze": "Gentle breeze",
+        "moderateBreeze": "Moderate breeze",
+        "freshBreeze": "Fresh breeze",
+        "strongBreeze": "Strong breeze",
+        "nearGale": "Near gale",
+        "gale": "Gale",
+        "strongGale": "Strong gale",
+        "storm": "Storm",
+        "violentStorm": "Violent storm"
+      },
+      "para1": "Strongest today: {speed} {unit}. Speeds are averages 10 m above the ground; gusts are short bursts that can be much stronger.",
+      "para2": "The arrow shows where the wind is blowing to. The direction named, like NNW, is where it is coming from."
+    },
+    "precip": {
+      "title": "Precipitation",
+      "kicker": "Today's total",
+      "unlikely": "Rain is unlikely in the next 24 hours",
+      "bestNow": "Best chance: {chance}% around now",
+      "best": "Best chance: {chance}% around {time}",
+      "para1": "Precipitation is any water falling from clouds: rain, drizzle, hail or snow. The total is the depth it would leave on flat ground.",
+      "para2": "Bars show the expected amount for each two-hour slot; the percentage is the highest chance of rain in that slot."
+    },
+    "visibility": {
+      "title": "Visibility",
+      "kicker": "Current condition",
+      "lowest": "Lowest in the next 24 h: {value} {unit} around {time}",
+      "staying": "Staying clear for the next 24 hours",
+      "scale": {
+        "poor": "Poor",
+        "hazy": "Hazy",
+        "good": "Good",
+        "clear": "Clear"
+      },
+      "para1": "Visibility is the distance at which you can clearly see a prominent object, like a building or hill, against the sky.",
+      "para2": "Rain, fog, dust, smoke and haze all reduce it. Below 1 km counts as fog; below 5 km, drive with your lights on."
+    },
+    "pressure": {
+      "title": "Pressure",
+      "kicker": "Current condition",
+      "steady": "Little change over the next 3 hours",
+      "change": "{sign}{value} {unit} over the next 3 hours",
+      "low": "Low",
+      "average": "Avg {value}",
+      "high": "High",
+      "para1": "Air pressure is the weight of the atmosphere above you. Tidy shows mean sea-level pressure, so places at different heights can be compared; about 1013 hPa is average.",
+      "para2": "Falling pressure often brings cloud, wind or rain. Rising pressure usually means calmer, clearer weather."
+    },
+    "uv": {
+      "title": "UV index",
+      "kicker": "Today's high",
+      "now": "Now {now}",
+      "nowPeak": "Now {now} · strongest around {time}",
+      "guide": {
+        "low": {
+          "range": "0–2 Low.",
+          "advice": "Little protection needed. Sunglasses on bright days."
+        },
+        "moderate": {
+          "range": "3–5 Moderate.",
+          "advice": "Hat, sunglasses and SPF 30+ sunscreen. Seek shade around midday."
+        },
+        "high": {
+          "range": "6–7 High.",
+          "advice": "Protection essential. Cut time in the sun between 11 AM and 3 PM."
+        },
+        "veryHigh": {
+          "range": "8–10 Very high.",
+          "advice": "Extra protection. Avoid the midday sun, cover up and reapply sunscreen."
+        },
+        "extreme": {
+          "range": "11+ Extreme.",
+          "advice": "Unprotected skin can burn in minutes. Stay in shade at midday."
+        }
+      },
+      "para": "The UV index measures the strength of the sun’s ultraviolet radiation, from 0 to 11+. It peaks around midday, and clouds block less of it than you might think."
+    },
+    "airQuality": {
+      "title": "Air quality",
+      "kicker": "Current condition",
+      "sub": "US EPA index {index} of 6",
+      "unit": "µg/m³",
+      "short": {
+        "good": "Good",
+        "moderate": "Moderate",
+        "sensitive": "Sensitive",
+        "unhealthy": "Unhealthy",
+        "veryUnhealthy": "Very unhealthy",
+        "hazardous": "Hazardous"
+      },
+      "names": {
+        "good": "Good",
+        "moderate": "Moderate",
+        "sensitive": "Unhealthy for sensitive groups",
+        "unhealthy": "Unhealthy",
+        "veryUnhealthy": "Very unhealthy",
+        "hazardous": "Hazardous"
+      },
+      "advice": {
+        "good": "Air quality is good. A fine time to be outside.",
+        "moderate": "Acceptable for most people. If you are unusually sensitive to air pollution, consider cutting back on long or hard exertion outdoors.",
+        "sensitive": "People with heart or lung conditions, older adults and children should reduce long or hard exertion outdoors.",
+        "unhealthy": "Everyone may start to feel effects. Sensitive groups should avoid long or hard exertion outdoors.",
+        "veryUnhealthy": "Health alert: everyone should limit time outdoors, and sensitive groups should stay inside.",
+        "hazardous": "Emergency conditions. Everyone should avoid outdoor activity."
+      },
+      "para1": "The US EPA index rates the air from 1 (Good) to 6 (Hazardous), based on whichever pollutant is worst right now.",
+      "para2": "PM2.5 and PM10 are fine particles from smoke, dust and traffic. O₃ is ground-level ozone, which builds up on hot, sunny afternoons."
     }
   },
   "astro": {

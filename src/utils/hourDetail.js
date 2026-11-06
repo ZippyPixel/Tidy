@@ -1,17 +1,20 @@
 // Pure view-model behind the hour detail modal. Returns numbers and i18n key
 // suffixes (hourly.detail.*); formatting and translation stay in the component.
+import { UV_LEVELS } from '@/constants/levelColors'
 import { compassPoint } from '@/utils/hourly'
 
 // Rounded to a tenth so float noise (91.1 - 90.1) cannot move a threshold.
 const difference = (a, b) => Math.round((a - b) * 10) / 10
 
+// The bands are whole numbers, so round first: 5.6 reads as 6, and 6 is high.
+export function uvLevelOf(uv) {
+  const rounded = Math.round(uv)
+  return UV_LEVELS.find((level) => rounded < level.max) ?? UV_LEVELS[UV_LEVELS.length - 1]
+}
+
 export function uvLevel(uv, isDay) {
   if (!isDay && uv < 0.5) return 'none'
-  if (uv < 3) return 'low'
-  if (uv < 6) return 'moderate'
-  if (uv < 8) return 'high'
-  if (uv < 11) return 'veryHigh'
-  return 'extreme'
+  return uvLevelOf(uv).key
 }
 
 export function visibilityLevel(km) {
@@ -54,7 +57,7 @@ export function hourDetail(hour, previous, unit) {
       gust: celsius ? hour.gustKph : hour.gustMph
     },
     humidity: { value: hour.humidity, dewPoint: celsius ? hour.dewC : hour.dewF },
-    uv: { value: hour.uv, level: uvLevel(hour.uv, hour.isDay), emphasis: hour.uv >= 6 },
+    uv: { value: hour.uv, level: uvLevel(hour.uv, hour.isDay), emphasis: Math.round(hour.uv) >= 6 },
     visibility: {
       value: celsius ? hour.visKm : hour.visMi,
       unit: celsius ? 'km' : 'mi',

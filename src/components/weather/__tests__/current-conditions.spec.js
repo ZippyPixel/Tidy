@@ -7,6 +7,7 @@ import WeatherDetails from '@/components/weather/WeatherDetails.vue'
 import { activeI18n } from '@/i18n'
 import useWeatherStore from '@/stores/weather'
 import useUnitStore from '@/stores/unit'
+import fixture from '@/utils/__tests__/fixtures/weatherapi-forecast.json'
 
 const i18n = activeI18n()
 
@@ -30,7 +31,8 @@ function setup(component, props = {}, state = {}) {
       minTemp_c: 26,
       minTemp_f: 78.8
     },
-    basicWeatherInfo: { humidity: 69, visibility: 10, pressure: 1000, uv: 'moderate', airQuality: 'good' },
+    current: fixture.current,
+    forecast: fixture.forecast.forecastday,
     ...state
   })
   const wrapper = mount(component, { props, global: { plugins: [pinia, i18n] } })
@@ -72,49 +74,103 @@ describe('BasicWeatherInfo', () => {
     const { wrapper } = setup(BasicWeatherInfo)
     const row = wrapper.findComponent(WeatherDetails)
     expect(row.props('variant')).toBe('row')
-    expect(row.classes()).toEqual(expect.arrayContaining(['hidden', 'md:grid', 'grid-cols-5']))
+    expect(row.classes()).toEqual(expect.arrayContaining(['hidden', 'md:grid', 'md:grid-cols-[repeat(6,minmax(0,1fr))_minmax(96px,1fr)]', 'lg:grid-cols-4', 'xl:grid-cols-7']))
   })
 })
 
 describe('WeatherDetails', () => {
-  it('lists the five readings with units', () => {
+  const tiles = (wrapper) => wrapper.findAll('button')
+  const withReading = (patch) => ({ current: { ...fixture.current, ...patch } })
+
+  it('lists the seven readings in order, with units', () => {
     const { wrapper } = setup(WeatherDetails, { variant: 'tiles' })
-    const cells = wrapper.findAll('[title]')
-    expect(cells.map((c) => c.find('span').text())).toEqual([
+    expect(tiles(wrapper).map((tile) => tile.find('span').text())).toEqual([
       'Humidity',
+      'Wind',
+      'Precipitation',
       'Visibility',
       'Pressure',
       'UV',
       'Air Quality'
     ])
-    expect(cells[0].text()).toContain('69%')
-    expect(cells[1].text()).toContain('10 km')
-    expect(cells[2].text()).toContain('1000 hPa')
-    expect(cells[3].text()).toContain('Moderate')
-    expect(cells[4].text()).toContain('Good')
+    const values = tiles(wrapper).map((tile) => tile.findAll('span')[1].text().replace(/\s+/g, ' '))
+    expect(values).toEqual(['51%', '11 km/h', '0 mm', '10 km', '1014 hPa', '7', 'Moderate'])
   })
 
-  it('spans Air Quality over two phone columns', () => {
+  it('uses miles, mph, inches and inHg in °F', async () => {
+    const { wrapper, unit } = setup(WeatherDetails, { variant: 'tiles' })
+    unit.setUnit('fahrenheit')
+    await wrapper.vm.$nextTick()
+    const values = tiles(wrapper).map((tile) => tile.findAll('span')[1].text().replace(/\s+/g, ' '))
+    expect(values.slice(1, 5)).toEqual(['7 mph', '0 in', '6 mi', '29.94 inHg'])
+  })
+
+  it('points the wind arrow where the wind blows to, in the wind colour', () => {
+    const { wrapper } = setup(WeatherDetails)
+    const arrow = tiles(wrapper)[1].find('svg')
+    expect(arrow.attributes('style')).toContain('rotate(518deg)') // 338 + 180
+    expect(arrow.classes()).toContain('text-chart-wind')
+  })
+
+  it('marks air quality with a dot in its category colour', () => {
+    const { wrapper } = setup(WeatherDetails)
+    const dot = tiles(wrapper)[6].find('[aria-hidden="true"]')
+    expect(dot.attributes('style')).toContain('background')
+    expect(tiles(wrapper)[0].find('[aria-hidden="true"]').exists()).toBe(false)
+  })
+
+  it('shows EPA 3 under its own short name', () => {
+    const { wrapper } = setup(WeatherDetails, {}, withReading({ air_quality: { 'us-epa-index': 3 } }))
+    expect(tiles(wrapper)[6].text()).toContain('Sensitive')
+  })
+
+  it('names each tile for screen readers and opens a dialog', () => {
+    const { wrapper } = setup(WeatherDetails)
+    expect(tiles(wrapper)[1].attributes('aria-label')).toBe('Wind from NNW: 11 km/h. Show details')
+    expect(tiles(wrapper)[6].attributes('aria-label')).toBe('Air quality: Moderate. Show details')
+    expect(tiles(wrapper)[0].attributes('aria-haspopup')).toBe('dialog')
+  })
+
+  // md: Air Quality keeps enough width for its name, or "Moderate" truncates at 768px
+  it('lays the row out in 7 columns, 4 at lg, offsetting its padding', () => {
+    const { wrapper } = setup(WeatherDetails, { variant: 'row' })
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['md:grid-cols-[repeat(6,minmax(0,1fr))_minmax(96px,1fr)]', 'lg:grid-cols-4', 'xl:grid-cols-7']))
+    expect(tiles(wrapper)[0].classes()).toEqual(expect.arrayContaining(['-mx-2', 'px-2', '-my-1.5', 'py-1.5']))
+  })
+
+  it('lays phone tiles out in 2 columns, 4 from sm, Air Quality spanning 2 at base', () => {
     const { wrapper } = setup(WeatherDetails, { variant: 'tiles' })
-    expect(wrapper.classes()).toEqual(expect.arrayContaining(['grid-cols-2', 'sm:grid-cols-5']))
-    expect(wrapper.findAll('[title]')[4].classes()).toContain('col-span-2')
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['grid-cols-2', 'sm:grid-cols-4']))
+    expect(tiles(wrapper)[6].classes()).toEqual(expect.arrayContaining(['col-span-2', 'sm:col-span-1']))
+    expect(tiles(wrapper)[0].classes()).toEqual(expect.arrayContaining(['-mx-3', 'px-3', '-my-2.5', 'py-2.5']))
   })
 
-  it('dims a missing UV reading and explains it', () => {
-    const { wrapper } = setup(WeatherDetails, { variant: 'row' }, {
-      basicWeatherInfo: { humidity: 69, visibility: 10, pressure: 1000, uv: 'unknown', airQuality: 'good' }
-    })
-    const uv = wrapper.findAll('[title]')[3]
+  it('dims a missing UV reading and explains it, with nothing to open', () => {
+    const { wrapper } = setup(WeatherDetails, { variant: 'row' }, withReading({ uv: undefined }))
+    const uv = tiles(wrapper)[5]
     expect(uv.attributes('title')).toBe('UV index not available')
     expect(uv.text()).toContain('—')
-    expect(uv.findAll('span')[1].classes()).toContain('text-muted-foreground')
+    expect(uv.findAll('span')[1].find('.text-muted-foreground').exists()).toBe(true)
+    expect(uv.attributes('disabled')).toBeDefined()
+  })
+
+  it('dims missing air quality rather than claiming Good', () => {
+    const { wrapper } = setup(WeatherDetails, {}, withReading({ air_quality: undefined }))
+    const aq = tiles(wrapper)[6]
+    expect(aq.text()).not.toContain('Good')
+    expect(aq.attributes('disabled')).toBeDefined()
+  })
+
+  it('has nothing to open before the first fetch', () => {
+    const { wrapper } = setup(WeatherDetails, {}, { current: null, forecast: [] })
+    expect(tiles(wrapper).every((tile) => tile.attributes('disabled') !== undefined)).toBe(true)
   })
 
   it('renders Bengali digits in bn', async () => {
     const { wrapper } = setup(WeatherDetails, { variant: 'row' })
     i18n.global.locale.value = 'bn'
     await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toContain('৬৯%')
+    expect(wrapper.text()).toContain('৫১%')
     i18n.global.locale.value = 'en'
   })
 })
