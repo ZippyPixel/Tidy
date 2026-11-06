@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '@/constants/api'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
 import { currentLocale } from '@/i18n'
-import { normalizeHour } from '@/utils/hourly'
+import { hourlyWindow, normalizeHour } from '@/utils/hourly'
 import { zoneOffsetMs } from '@/utils/astro'
 
 export default defineStore('weather', {
@@ -17,6 +17,8 @@ export default defineStore('weather', {
     conditionCode: null,
     isDay: 1,
     hourly: {}, // { [date]: normalized hour[] } for the Hourly card
+    current: null, // raw API `current`, for the detail modals; unaffected by the selected day
+    localtime: '', // the location's clock when fetched, 'YYYY-MM-DD HH:mm'
     today: '', // the location's current date, YYYY-MM-DD
     zoneOffsetMs: null, // location UTC offset, for its wall clock (utils/astro locationClock)
     astro: {}, //sunrise, sunset, moonrise, moonset
@@ -42,6 +44,12 @@ export default defineStore('weather', {
         maxTemp: fmt(isCelsius ? r.maxTemp_c : r.maxTemp_f),
         minTemp: fmt(isCelsius ? r.minTemp_c : r.minTemp_f),
       }
+    },
+    // the window behind the detail modals, starting at the hour the data was fetched
+    next24Hours(state) {
+      if (!state.localtime) return []
+      const [date, time] = state.localtime.split(' ')
+      return hourlyWindow(state.hourly, date, Number(time.split(':')[0]), 24)
     }
   },
   actions: {
@@ -146,6 +154,10 @@ export default defineStore('weather', {
       this.hourly = Object.fromEntries(
         this.forecast.map((day) => [day.date, (day.hour || []).map(normalizeHour)])
       )
+
+      //current conditions as the API sent them, for the detail modals
+      this.current = response.current
+      this.localtime = response.location.localtime
 
       //current basic weather info
       this.basicWeatherInfo.humidity = response.current.humidity
