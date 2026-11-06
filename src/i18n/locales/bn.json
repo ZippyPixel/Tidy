@@ -90,7 +90,47 @@
     "windFrom": "{dir} দিক থেকে",
     "kmh": "কিমি/ঘ",
     "mph": "মাইল/ঘ",
-    "noData": "ঘণ্টাভিত্তিক তথ্য নেই"
+    "noData": "ঘণ্টাভিত্তিক তথ্য নেই",
+    "detail": {
+      "when": "{day} · {time}",
+      "openLabel": "{day}, {time}: {temp}, {condition}। বিস্তারিত দেখুন",
+      "feelsLike": "অনুভূত {temp}",
+      "noRain": "বৃষ্টির সম্ভাবনা নেই",
+      "expected": "{amount} প্রত্যাশিত",
+      "windFrom": "{dir} দিক থেকে",
+      "gusts": "দমকা {gust}",
+      "dewPoint": "শিশিরাঙ্ক {temp}",
+      "uvIndex": "ইউভি সূচক",
+      "uvLevels": {
+        "none": "রাতে নেই",
+        "low": "কম",
+        "moderate": "মাঝারি",
+        "high": "বেশি",
+        "veryHigh": "খুব বেশি",
+        "extreme": "চরম"
+      },
+      "visibilityLevels": {
+        "clear": "পরিষ্কার দৃশ্য",
+        "good": "ভালো",
+        "hazy": "ঝাপসা",
+        "poor": "খারাপ"
+      },
+      "trends": {
+        "rising": "বাড়ছে",
+        "falling": "কমছে",
+        "steady": "স্থির"
+      },
+      "cloudCover": "মেঘের আবরণ {value}%",
+      "heatIndex": "তাপ সূচক {temp}",
+      "units": {
+        "km": "কিমি",
+        "mi": "মাইল",
+        "hPa": "hPa",
+        "inHg": "inHg",
+        "mm": "মিমি",
+        "in": "ইঞ্চি"
+      }
+    }
   },
   "astro": {
     "title": "সূর্য ও চাঁদ",

@@ -90,7 +90,47 @@
     "windFrom": "from {dir}",
     "kmh": "km/h",
     "mph": "mph",
-    "noData": "No hourly data"
+    "noData": "No hourly data",
+    "detail": {
+      "when": "{day} · {time}",
+      "openLabel": "{day}, {time}: {temp}, {condition}. Show details",
+      "feelsLike": "Feels like {temp}",
+      "noRain": "No rain expected",
+      "expected": "{amount} expected",
+      "windFrom": "From {dir}",
+      "gusts": "gusts {gust}",
+      "dewPoint": "Dew point {temp}",
+      "uvIndex": "UV index",
+      "uvLevels": {
+        "none": "None at night",
+        "low": "Low",
+        "moderate": "Moderate",
+        "high": "High",
+        "veryHigh": "Very high",
+        "extreme": "Extreme"
+      },
+      "visibilityLevels": {
+        "clear": "Clear view",
+        "good": "Good",
+        "hazy": "Hazy",
+        "poor": "Poor"
+      },
+      "trends": {
+        "rising": "Rising",
+        "falling": "Falling",
+        "steady": "Steady"
+      },
+      "cloudCover": "Cloud cover {value}%",
+      "heatIndex": "Heat index {temp}",
+      "units": {
+        "km": "km",
+        "mi": "mi",
+        "hPa": "hPa",
+        "inHg": "inHg",
+        "mm": "mm",
+        "in": "in"
+      }
+    }
   },
   "astro": {
     "title": "Sun & Moon",

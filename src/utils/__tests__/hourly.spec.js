@@ -28,6 +28,45 @@ const day = (date) => Array.from({ length: 24 }, (_, h) => normalizeHour(apiHour
 const hourly = { '2026-07-15': day('2026-07-15'), '2026-07-16': day('2026-07-16') }
 
 describe('normalizeHour', () => {
+  it('keeps the fields the hour detail modal reads, in both units', () => {
+    const hour = normalizeHour(
+      apiHour('2026-07-15', 9, {
+        condition: { code: 1000, text: 'Sunny ' },
+        precip_mm: 1.2,
+        precip_in: 0.05,
+        gust_kph: 25.2,
+        gust_mph: 15.7,
+        dewpoint_c: 16.6,
+        dewpoint_f: 62,
+        uv: 6,
+        vis_km: 10,
+        vis_miles: 6,
+        pressure_mb: 1012,
+        pressure_in: 29.88,
+        cloud: 8,
+        heatindex_c: 32.8,
+        heatindex_f: 91.1
+      })
+    )
+    expect(hour).toMatchObject({
+      conditionText: 'Sunny',
+      precipMm: 1.2,
+      precipIn: 0.05,
+      gustKph: 25.2,
+      gustMph: 15.7,
+      dewC: 16.6,
+      dewF: 62,
+      uv: 6,
+      visKm: 10,
+      visMi: 6,
+      pressureMb: 1012,
+      pressureIn: 29.88,
+      cloud: 8,
+      heatC: 32.8,
+      heatF: 91.1
+    })
+  })
+
   it('keeps both units and flattens the fields the card reads', () => {
     expect(normalizeHour(apiHour('2026-07-15', 9))).toEqual({
       date: '2026-07-15',
