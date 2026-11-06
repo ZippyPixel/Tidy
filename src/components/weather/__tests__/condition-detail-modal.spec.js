@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 
 import WeatherDetails from '@/components/weather/WeatherDetails.vue'
+import { EPA_LEVELS, UV_LEVELS } from '@/constants/levelColors'
 import { activeI18n } from '@/i18n'
 import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
@@ -145,6 +146,61 @@ describe('condition detail modal', () => {
       await open('wind')
       expect(columns()).toHaveLength(12)
       expect(columns()[0].querySelector('[data-arrow]').style.transform).toBe('rotate(520deg)') // 340 + 180
+    })
+  })
+
+  describe('precipitation', () => {
+    it('reports the total and that rain is unlikely', async () => {
+      await open('precip')
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('0 mm')
+      expect(hero().textContent).toContain('Rain is unlikely in the next 24 hours')
+    })
+
+    it('reports inches in °F', async () => {
+      await open('precip', { unit: 'fahrenheit' })
+      expect(hero().textContent.replace(/\s+/g, ' ')).toContain('0 in')
+    })
+
+    it('turns a chance of 30% or more to the rain colour', async () => {
+      const days = structuredClone(fixture.forecast.forecastday)
+      days[0].hour[13].chance_of_rain = 30
+      await open('precip', { response: { ...fixture, forecast: { forecastday: days } } })
+      expect(columns()[0].querySelector('[data-value]').className).toContain('text-rain')
+      expect(columns()[1].querySelector('[data-value]').className).not.toContain('text-rain')
+      expect(hero().textContent).toContain('Best chance: 30% around now')
+    })
+
+    it('draws a condition icon in each column', async () => {
+      await open('precip')
+      expect(columns().every((column) => column.querySelector('[data-icon]'))).toBe(true)
+      expect(columns()[0].querySelector('[data-icon]').dataset.icon).toBe('sun')
+      expect(columns()[3].querySelector('[data-icon]').dataset.icon).toBe('moon')
+    })
+  })
+
+  describe('uv', () => {
+    it("shows today's high, its level and now", async () => {
+      await open('uv')
+      expect(hero().textContent).toContain('High')
+      expect(hero().textContent).toMatch(/Now 7 · strongest around 1\sPM/)
+      expect(dialog().querySelector('[data-big]').textContent.trim()).toBe('7')
+    })
+
+    it('colours bars by level', async () => {
+      await open('uv')
+      const fill = columns()[0].querySelector('[data-fill]')
+      const probe = document.createElement('div')
+      probe.style.background = UV_LEVELS[2].color
+      expect(fill.style.background).toBe(probe.style.background)
+    })
+
+    it('lists the five-row guide, the current level in accent', async () => {
+      await open('uv')
+      const rows = [...dialog().querySelectorAll('[data-guide]')]
+      expect(rows).toHaveLength(5)
+      expect(rows[2].textContent).toContain('6–7 High.')
+      expect(rows[2].className).toContain('bg-accent')
+      expect(rows.filter((row) => row.className.includes('bg-accent'))).toHaveLength(1)
     })
   })
 

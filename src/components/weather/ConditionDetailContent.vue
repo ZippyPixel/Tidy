@@ -109,12 +109,18 @@ import DetailScale from '@/components/weather/DetailScale.vue'
 import weatherMixin from '@/mixins/weatherMixin'
 import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
+import { UV_LEVELS } from '@/constants/levelColors'
+import { uvLevelOf } from '@/utils/hourDetail'
 import {
   beaufortLabel,
   dewPointComfort,
   dewPointGuide,
   humidityColumns,
+  rainBestChance,
+  rainColumns,
   readings,
+  uvColumns,
+  uvPeak,
   windColumns
 } from '@/utils/conditionDetail'
 
@@ -210,6 +216,62 @@ export default {
           this.$t(`${T}.wind.para1`, { speed: this.formatNumber(this.r.maxWind), unit: this.speedUnit }),
           this.$t(`${T}.wind.para2`)
         ]
+      }
+    },
+    precipSub() {
+      const best = rainBestChance(this.next24Hours)
+      if (!best.likely) return this.$t(`${T}.precip.unlikely`)
+      const chance = this.formatNumber(best.chance)
+      return best.isNow
+        ? this.$t(`${T}.precip.bestNow`, { chance })
+        : this.$t(`${T}.precip.best`, { chance, time: this.formatHour(best.hour.hour) })
+    },
+    precipView() {
+      return {
+        title: this.$t(`${T}.precip.title`),
+        kicker: this.$t(`${T}.precip.kicker`),
+        big: this.formatNumber(this.r.precip),
+        unit: ` ${this.unitLabel(this.r.precipUnit)}`,
+        sub: this.precipSub(),
+        strip: {
+          boxClass: 'h-14 w-4',
+          fillClass: 'rounded bg-rain',
+          columns: rainColumns(this.next24Hours).map((c) =>
+            this.column(c, `${this.formatNumber(c.value)}%`, {
+              valueClass: c.emphasis ? 'font-semibold text-rain' : 'font-medium text-muted-foreground'
+            })
+          )
+        },
+        paragraphs: [this.$t(`${T}.precip.para1`), this.$t(`${T}.precip.para2`)]
+      }
+    },
+    uvView() {
+      const peak = uvPeak(this.next24Hours, this.forecast[0].date)
+      const level = uvLevelOf(this.day.uv)
+      const now = this.formatNumber(Math.round(this.current.uv))
+      const currentLevel = uvLevelOf(this.current.uv).key
+      return {
+        title: this.$t(`${T}.uv.title`),
+        kicker: this.$t(`${T}.uv.kicker`),
+        big: this.formatNumber(Math.round(this.day.uv)),
+        qualifier: this.$t(`hourly.detail.uvLevels.${level.key}`),
+        qualifierColor: level.color,
+        sub: peak
+          ? this.$t(`${T}.uv.nowPeak`, { now, time: this.formatHour(peak.hour.hour) })
+          : this.$t(`${T}.uv.now`, { now }),
+        strip: {
+          boxClass: 'h-14 w-4',
+          fillClass: 'rounded',
+          columns: uvColumns(this.next24Hours).map((c) => this.column(c, this.formatNumber(c.value)))
+        },
+        guide: UV_LEVELS.map(({ key, color }) => ({
+          key,
+          color,
+          current: key === currentLevel,
+          range: this.$t(`${T}.uv.guide.${key}.range`),
+          advice: this.$t(`${T}.uv.guide.${key}.advice`)
+        })),
+        paragraphs: [this.$t(`${T}.uv.para`)]
       }
     }
   }
