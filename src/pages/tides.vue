@@ -275,17 +275,17 @@ export default {
     },
     zoneText() {
       const { hours, minutes, negative } = offsetParts(zoneOffsetMin(this.now, this.zone))
-      const pad = minutes ? `:${String(minutes).padStart(2, '0')}` : ''
+      const pad = minutes ? `:${this.tideDecimal(minutes, 0)}` : ''
       return this.$t('tides.page.timesIn', {
         zone: this.zone.replace(/_/g, ' '),
-        offset: `${negative ? '−' : '+'}${hours}${pad}`
+        offset: `${negative ? '−' : '+'}${this.tideDecimal(hours, 0)}${pad}`
       })
     },
     distanceLine() {
       if (!this.station) return ''
       const parts = [this.zoneText]
       if (this.distanceKm !== null && this.coords) {
-        parts.unshift(this.$t('tides.page.kmFrom', { km: this.formatNumber(this.distanceKm), place: this.coords.name }))
+        parts.unshift(this.$t('tides.page.kmFrom', { km: this.tideGrouped(this.distanceKm), place: this.coords.name }))
       }
       return parts.join(' · ')
     },

@@ -6,7 +6,7 @@
         :href="part.href"
         target="_blank"
         rel="noopener noreferrer"
-        class="break-all underline underline-offset-2 hover:text-foreground"
+        class="underline underline-offset-2 hover:text-foreground"
         >{{ part.text }}</a
       >
       <template v-else>{{ part.text }}</template>

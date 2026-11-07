@@ -5,7 +5,7 @@
         type="button"
         data-explore
         aria-haspopup="dialog"
-        class="h-10 rounded-full px-1 text-sm font-semibold text-primary outline-ring focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        class="h-11 rounded-full px-1 text-sm font-semibold text-primary outline-ring focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         @click="$emit('explore', $event)"
       >
         {{ $t('tides.nearby.exploreAll') }}
@@ -21,7 +21,7 @@
         @click="$emit('select', station.id)"
       >
         <span class="font-medium">{{ station.name }}</span>
-        <span class="tabular-nums text-muted-foreground">{{ $t('tides.explorer.km', { km: formatNumber(station.km) }) }}</span>
+        <span class="tabular-nums text-muted-foreground">{{ $t('tides.explorer.km', { km: tideGrouped(station.km) }) }}</span>
       </button>
     </div>
   </DashboardCard>
@@ -29,12 +29,12 @@
 
 <script>
 import DashboardCard from '@/components/common/DashboardCard.vue'
-import weatherMixin from '@/mixins/weatherMixin'
+import tideMixin from '@/mixins/tideMixin'
 
 export default {
   name: 'NearbyStations',
   components: { DashboardCard },
-  mixins: [weatherMixin],
+  mixins: [tideMixin],
   props: {
     stations: { type: Array, required: true }
   },

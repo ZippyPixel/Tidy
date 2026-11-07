@@ -266,6 +266,14 @@ describe('chartModel', () => {
     expect(chartModel(t, { view: 'card', now }).grid).toEqual([])
   })
 
+  it('has no negative zero on a scale that dips below the datum', () => {
+    const sf = sample.stations['ticon/sanfrancisco_fort_point-9414920-usa-da_sat']
+    const { grid } = chartModel(sf, { view: 'day', day: 0, now })
+    const zero = grid.find((g) => g.value === 0)
+    expect(zero).toBeDefined()
+    expect(Object.is(zero.value, -0)).toBe(false)
+  })
+
   it('reads a scrubbed time back to the curve', () => {
     const scrub = day.at(day.from + 3600)
     expect(scrub.x).toBeCloseTo((3600 / (day.to - day.from)) * 100, 3)

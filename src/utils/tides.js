@@ -254,7 +254,8 @@ export function chartModel(t, { view, day = 0, now, unit = 'celsius' }) {
     for (let value = Math.ceil(low / step) * step; value <= high + 1e-6; value += step) {
       const metres = unit === 'celsius' ? value : value / METRES_TO_FEET
       const y = fractionY(metres)
-      if (y > 0.02 && y < 0.98) grid.push({ value, y: y * 100 })
+      // ceil of a small negative is -0, which would print as "-0"
+      if (y > 0.02 && y < 0.98) grid.push({ value: value === 0 ? 0 : value, y: y * 100 })
     }
     grid.sort((a, b) => a.y - b.y)
   }

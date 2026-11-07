@@ -175,6 +175,14 @@ describe('StationExplorer', () => {
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
+  it('groups long distances', async () => {
+    await setup()
+    await type('Reyk')
+    wrapper.vm.chooseStation({ id: 'ticon/r', name: 'Reykjavík', country: 'Iceland', lat: 64.15, lon: -21.94 })
+    await wrapper.vm.$nextTick()
+    expect(one('[data-popup]').textContent).toContain('Iceland · 8,649 km from Joar Sahara')
+  })
+
   it('closes on Esc', async () => {
     await setup()
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))

@@ -26,6 +26,10 @@ export default {
         maximumFractionDigits: digits
       }).format(value)
     },
+    // distances and counts: "8,649"
+    tideGrouped(value) {
+      return new Intl.NumberFormat(currentIntlTag()).format(value)
+    },
     // hero values: 2 decimals in metres, 1 in feet
     tideHeight(metres) {
       return this.tideDecimal(metresToUnit(metres, this.unit), heroDigits(this.unit))

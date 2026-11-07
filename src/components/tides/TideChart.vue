@@ -107,16 +107,16 @@
           :style="{ left: `${mark.x}%`, top: `${mark.y}%` }"
         >
           <span
-            class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card"
-            :class="[view === 'week' ? 'size-1.5' : 'size-[9px]', mark.high ? 'bg-tide' : 'border-tide bg-card']"
+            class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2"
+            :class="[view === 'week' ? 'size-2' : 'size-[11px]', mark.high ? 'border-card bg-tide' : 'border-tide bg-card']"
           />
           <span
             v-if="view !== 'week'"
             class="absolute flex flex-col whitespace-nowrap"
-            :class="[anchorClass(mark.anchor), mark.high ? 'bottom-[9px]' : 'top-[9px]']"
+            :class="[anchorClass(mark.anchor), mark.high ? 'bottom-[7px]' : 'top-[9px]']"
           >
-            <span class="text-[13px] font-semibold leading-4 tabular-nums text-foreground">{{ mark.clock }}</span>
-            <span class="text-xs leading-4 tabular-nums text-muted-foreground">{{ mark.height }}</span>
+            <span class="text-[13px] font-semibold leading-[14px] tabular-nums text-foreground">{{ mark.clock }}</span>
+            <span class="text-xs leading-[14px] tabular-nums text-muted-foreground">{{ mark.height }}</span>
           </span>
         </div>
 

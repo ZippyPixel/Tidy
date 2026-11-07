@@ -143,8 +143,8 @@ import { DialogContent, DialogDescription, DialogPortal, DialogRoot, DialogTitle
 import AppIcon from '@/components/common/AppIcon.vue'
 import TideGlobe from '@/components/tides/TideGlobe.vue'
 import { API_ENDPOINTS } from '@/constants/api'
-import { currentIntlTag } from '@/i18n'
 import backToClose from '@/mixins/backToClose'
+import tideMixin from '@/mixins/tideMixin'
 import weatherMixin from '@/mixins/weatherMixin'
 import useTidesStore from '@/stores/tides'
 import { normalizeName } from '@/utils/globe'
@@ -157,7 +157,7 @@ const COUNTRY_ROWS = 200
 export default {
   name: 'StationExplorer',
   components: { AppIcon, DialogContent, DialogDescription, DialogPortal, DialogRoot, DialogTitle, TideGlobe },
-  mixins: [weatherMixin, backToClose],
+  mixins: [weatherMixin, tideMixin, backToClose],
   props: {
     open: { type: Boolean, default: false },
     /** gets focus back on close */
@@ -192,13 +192,13 @@ export default {
     countLine() {
       if (!this.index) return this.$t('tides.explorer.loading')
       return this.$t('tides.explorer.count', {
-        count: this.groupedNumber(this.index.count),
+        count: this.tideGrouped(this.index.count),
         countries: this.formatNumber(this.index.countries.length)
       })
     },
     globeLabel() {
       if (!this.index) return this.$t('tides.explorer.globeLoading')
-      return this.$t('tides.explorer.globe', { count: this.groupedNumber(this.index.count) })
+      return this.$t('tides.explorer.globe', { count: this.tideGrouped(this.index.count) })
     },
     creditLine() {
       const project = this.index?.credit?.project
@@ -345,11 +345,8 @@ export default {
       this.country = null
       this.near = false
     },
-    groupedNumber(value) {
-      return new Intl.NumberFormat(currentIntlTag()).format(value)
-    },
     kmText(km) {
-      return this.$t('tides.explorer.km', { km: km < 10 ? this.formatNumber(Math.round(km * 10) / 10) : this.formatNumber(Math.round(km)) })
+      return this.$t('tides.explorer.km', { km: km < 10 ? this.formatNumber(Math.round(km * 10) / 10) : this.tideGrouped(Math.round(km)) })
     },
     stationRow(station, right) {
       const distance = right ?? (this.home ? this.kmText(haversineKm(this.home, station)) : '')

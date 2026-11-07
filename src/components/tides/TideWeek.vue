@@ -1,37 +1,44 @@
 <template>
   <DashboardCard :title="$t('tides.week.title')">
     <div class="-mx-3 flex flex-col gap-1">
-      <!-- same row language as the 3-day forecast. The sparkline joins from md. -->
+      <!-- same row language as the 3-day forecast. Fixed columns on a phone keep the rows lined
+           up with a badge in one of them; the bar gives way on the narrowest screens, and the
+           sparkline joins from md. -->
       <div
         v-for="row in rows"
         :key="row.date"
         data-row
-        class="grid min-h-16 grid-cols-[minmax(64px,auto)_minmax(0,1fr)_56px_44px] items-center gap-2.5 rounded-lg px-3 py-2 md:grid-cols-[minmax(96px,120px)_minmax(0,1fr)_120px_minmax(80px,160px)_52px] md:gap-4"
+        class="grid min-h-16 grid-cols-[72px_minmax(0,1fr)_44px_52px] items-center gap-2 rounded-lg px-3 py-2 max-[374px]:grid-cols-[72px_minmax(0,1fr)_52px] md:grid-cols-[minmax(96px,120px)_minmax(0,1fr)_120px_minmax(80px,160px)_52px] md:gap-4"
         :class="{ 'bg-accent text-accent-foreground': row.isToday }"
       >
         <div class="flex min-w-0 flex-col gap-0.5">
-          <span class="flex items-baseline gap-1.5 whitespace-nowrap">
+          <!-- stacked on a phone, so "Today" doesn't take the width the times need -->
+          <span class="flex flex-col whitespace-nowrap md:flex-row md:items-baseline md:gap-1.5">
             <span class="text-[15px] font-semibold leading-5">{{ row.day }}</span>
             <span class="text-[13px]" :class="{ 'text-muted-foreground': !row.isToday }">{{ row.shortDate }}</span>
           </span>
-          <span v-if="row.spring" data-badge class="self-start rounded-full bg-tide-soft px-2 py-px text-[11px] font-semibold leading-4 text-tide">
+          <span v-if="row.spring" data-badge class="self-start rounded-full bg-tide-soft px-1.5 py-px md:px-2 text-[11px] font-semibold leading-4 text-tide">
             {{ $t('tides.week.springTide') }}
           </span>
-          <span v-if="row.neap" data-badge class="self-start rounded-full bg-muted px-2 py-px text-[11px] font-semibold leading-4 text-muted-foreground">
+          <span v-if="row.neap" data-badge class="self-start rounded-full bg-muted px-1.5 py-px md:px-2 text-[11px] font-semibold leading-4 text-muted-foreground">
             {{ $t('tides.week.neapTide') }}
           </span>
         </div>
         <div class="flex min-w-0 flex-col gap-0.5 text-[13px] leading-[18px] tabular-nums">
-          <span class="flex min-w-0 flex-wrap gap-x-3">
-            <span class="w-[34px] flex-none font-semibold text-tide">{{ $t('tides.chart.high') }}</span>
-            <span v-for="e in row.highs" :key="e.time" class="whitespace-nowrap">
-              {{ tideClock(e.time, zone) }}<span class="text-xs text-muted-foreground">{{ ' ' + tideShort(e.level) }}</span>
+          <span class="flex min-w-0 gap-x-2 md:gap-x-3">
+            <span class="min-w-[34px] flex-none font-semibold text-tide">{{ $t('tides.chart.high') }}</span>
+            <span class="flex min-w-0 flex-wrap gap-x-3">
+              <span v-for="e in row.highs" :key="e.time" class="whitespace-nowrap">
+                {{ tideClock(e.time, zone) }}<span class="text-xs text-muted-foreground">{{ ' ' + tideShort(e.level) }}</span>
+              </span>
             </span>
           </span>
-          <span class="flex min-w-0 flex-wrap gap-x-3">
-            <span class="w-[34px] flex-none font-semibold text-muted-foreground">{{ $t('tides.chart.low') }}</span>
-            <span v-for="e in row.lows" :key="e.time" class="whitespace-nowrap">
-              {{ tideClock(e.time, zone) }}<span class="text-xs text-muted-foreground">{{ ' ' + tideShort(e.level) }}</span>
+          <span class="flex min-w-0 gap-x-2 md:gap-x-3">
+            <span class="min-w-[34px] flex-none font-semibold text-muted-foreground">{{ $t('tides.chart.low') }}</span>
+            <span class="flex min-w-0 flex-wrap gap-x-3">
+              <span v-for="e in row.lows" :key="e.time" class="whitespace-nowrap">
+                {{ tideClock(e.time, zone) }}<span class="text-xs text-muted-foreground">{{ ' ' + tideShort(e.level) }}</span>
+              </span>
             </span>
           </span>
         </div>
@@ -45,7 +52,7 @@
             stroke-linecap="round"
           />
         </svg>
-        <div aria-hidden="true" class="relative h-1.5 rounded-[3px] bg-foreground/10">
+        <div aria-hidden="true" class="relative h-1.5 rounded-[3px] bg-foreground/10 max-[374px]:hidden">
           <div
             data-bar
             class="absolute inset-y-0 rounded-[3px]"

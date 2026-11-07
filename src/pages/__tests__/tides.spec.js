@@ -129,7 +129,7 @@ describe('Tides page', () => {
       const { wrapper, store } = setup({ query: { station: SF.station.id }, chosen: ready(SF) })
       expect(store.loadStation).toHaveBeenCalledWith(SF.station.id)
       expect(wrapper.find('h1').text()).toBe('San Francisco Fort Point')
-      expect(wrapper.find('[data-distance]').text()).toMatch(/^[\d]+ km from Joar Sahara · Times in America\/Los Angeles \(UTC−8\)$/)
+      expect(wrapper.find('[data-distance]').text()).toMatch(/^12,350 km from Joar Sahara · Times in America\/Los Angeles \(UTC−8\)$/)
     })
 
     it('still works with no forecast location', () => {
