@@ -123,6 +123,8 @@ export function weekRows(t, now, count = 7) {
     const high = highs.length ? Math.max(...highs.map((e) => e.level)) : weekHigh
     return {
       index,
+      weekLow,
+      weekHigh,
       date: t.days[index].date,
       isToday: index === from,
       spring: t.days[index].spring,
@@ -147,6 +149,14 @@ export function sparkPath(t, index, low, high, width = 120, height = 36) {
     path += `${k ? ' L' : 'M'}${((k / 72) * width).toFixed(1)},${(height - 2 - ((level - low) / span) * (height - 4)).toFixed(1)}`
   }
   return path
+}
+
+// A credit line split around its URLs, so they can be links.
+export function creditParts(text) {
+  return text
+    .split(/(https?:\/\/[^\s),]*[^\s),.])/)
+    .filter(Boolean)
+    .map((part) => (/^https?:\/\//.test(part) ? { text: part, href: part } : { text: part }))
 }
 
 // ---- the chart: everything in a 1000 x 100 box the SVG stretches to fit, and percentages

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   chartModel,
   chartWindow,
+  creditParts,
   dayIndexAt,
   durationParts,
   extremeAfter,
@@ -268,5 +269,21 @@ describe('chartModel', () => {
   it('reads a scrubbed time back to the curve', () => {
     const scrub = day.at(day.from + 3600)
     expect(scrub.x).toBeCloseTo((3600 / (day.to - day.from)) * 100, 3)
+  })
+})
+
+describe('creditParts', () => {
+  it('turns URLs into links, leaving their punctuation out', () => {
+    expect(creditParts('Slackwater database (https://example.org/a). Source: https://doi.org/10.17882/109129.')).toEqual([
+      { text: 'Slackwater database (' },
+      { text: 'https://example.org/a', href: 'https://example.org/a' },
+      { text: '). Source: ' },
+      { text: 'https://doi.org/10.17882/109129', href: 'https://doi.org/10.17882/109129' },
+      { text: '.' }
+    ])
+  })
+
+  it('leaves plain text alone', () => {
+    expect(creditParts('NOAA')).toEqual([{ text: 'NOAA' }])
   })
 })
