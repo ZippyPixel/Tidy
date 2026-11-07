@@ -40,6 +40,9 @@
     --chart-rain: 205 85% 36%;
     --chart-wind: 168 72% 26%;
     --chart-humidity: 262 50% 50%;
+    --tide: 188 74% 30%;
+    --tide-soft: 188 50% 94%;
+    --chart-night: 220 22% 95.5%;
     /* sun & moon arcs */
     --sun-arc: 30 95% 33%;
     --sun-arc-ahead: 32 70% 42%;
@@ -95,6 +98,9 @@
     --chart-rain: 200 85% 68%;
     --chart-wind: 162 60% 56%;
     --chart-humidity: 262 85% 78%;
+    --tide: 186 62% 56%;
+    --tide-soft: 188 32% 18%;
+    --chart-night: 220 8% 9%;
     --sun-arc: 40 95% 62%;
     --sun-arc-ahead: 38 45% 42%;
     --moon-arc: 220 14% 80%;

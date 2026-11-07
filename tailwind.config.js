@@ -46,6 +46,10 @@ module.exports = {
         },
         // V3 weather semantics (assets/style.css)
         'surface-raised': 'hsl(var(--surface-raised))',
+        tide: {
+          DEFAULT: 'hsl(var(--tide) / <alpha-value>)',
+          soft: 'hsl(var(--tide-soft) / <alpha-value>)'
+        },
         sun: 'hsl(var(--sun))',
         rain: 'hsl(var(--rain))',
         'cloud-highlight': 'hsl(var(--cloud-highlight))',
@@ -69,6 +73,7 @@ module.exports = {
           feels: 'hsl(var(--chart-feels))',
           rain: 'hsl(var(--chart-rain))',
           wind: 'hsl(var(--chart-wind))',
+          night: 'hsl(var(--chart-night))',
           humidity: 'hsl(var(--chart-humidity))'
         }
       },
