@@ -46,6 +46,14 @@ module.exports = {
         },
         // V3 weather semantics (assets/style.css)
         'surface-raised': 'hsl(var(--surface-raised))',
+        scrollbar: {
+          thumb: {
+            DEFAULT: 'hsl(var(--scrollbar-thumb))',
+            hover: 'hsl(var(--scrollbar-thumb-hover))',
+            active: 'hsl(var(--scrollbar-thumb-active))'
+          },
+          track: 'hsl(var(--scrollbar-track))'
+        },
         tide: {
           DEFAULT: 'hsl(var(--tide) / <alpha-value>)',
           soft: 'hsl(var(--tide-soft) / <alpha-value>)'
