@@ -201,11 +201,19 @@ describe('Tides page', () => {
 
     explorer.vm.$emit('pick', 'ticon/x')
     await wrapper.vm.$nextTick()
-    expect(explorer.props('open')).toBe(false)
     expect(router.replace).not.toHaveBeenCalled()
 
     explorer.vm.$emit('close')
     await wrapper.vm.$nextTick()
+    expect(explorer.props('open')).toBe(false)
     expect(router.replace).toHaveBeenCalledWith({ query: { station: 'ticon/x' } })
+  })
+
+  it('keeps the station when the explorer is closed without a pick', async () => {
+    const { wrapper, router } = setup()
+    await wrapper.find('[data-change]').trigger('click')
+    wrapper.findComponent({ name: 'StationExplorer' }).vm.$emit('close')
+    await wrapper.vm.$nextTick()
+    expect(router.replace).not.toHaveBeenCalled()
   })
 })

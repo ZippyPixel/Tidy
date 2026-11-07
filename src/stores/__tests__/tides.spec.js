@@ -101,3 +101,24 @@ describe('weather store coords', () => {
     })
   })
 })
+
+describe('explorer data', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('downloads once, and tries again after a failure', async () => {
+    setActivePinia(createPinia())
+    const store = useTidesStore()
+    const index = { countries: [{ name: 'Iceland', s: [['ticon/r', 'Reykjavik', 64, -22]] }] }
+    const fetchMock = vi.fn(async (url) => (url === '/globe-land.json' ? { dots: [] } : index))
+    vi.stubGlobal('$fetch', fetchMock)
+
+    fetchMock.mockRejectedValueOnce(new Error('network'))
+    await expect(store.loadExplorerData()).rejects.toThrow('network')
+
+    fetchMock.mockClear()
+    const [first] = await Promise.all([store.loadExplorerData(), store.loadExplorerData()])
+    await store.loadExplorerData()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(first.stations[0]).toMatchObject({ id: 'ticon/r', country: 'Iceland' })
+  })
+})

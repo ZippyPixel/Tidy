@@ -29,6 +29,7 @@
 import { useMediaQuery } from '@vueuse/core'
 import { DialogContent, DialogOverlay, DialogPortal, DialogRoot } from 'reka-ui'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import backToClose from '@/mixins/backToClose'
 
 // The surface shared by the hour and condition detail modals: a centered Dialog from
 // md, a Drawer below it. No close button; outside click/tap and Esc close it, and on
@@ -36,6 +37,7 @@ import { Drawer, DrawerContent } from '@/components/ui/drawer'
 export default {
   name: 'DetailModalShell',
   components: { DialogContent, DialogOverlay, DialogPortal, DialogRoot, Drawer, DrawerContent },
+  mixins: [backToClose],
   props: {
     /** what to show, handed to the slot; null closes the modal */
     value: { type: [Object, String], default: null },
@@ -56,9 +58,7 @@ export default {
       mounted: false,
       // what is on screen: outlives `value` so the closing animation keeps its content
       shown: null,
-      focusTarget: null,
-      // this modal owns the current history entry
-      pushed: false
+      focusTarget: null
     }
   },
   computed: {
@@ -72,45 +72,17 @@ export default {
         this.shown = value
         this.focusTarget = this.opener
       }
-    },
-    open(open) {
-      if (open) window.addEventListener('popstate', this.onPopState)
-      else window.removeEventListener('popstate', this.onPopState)
-      this.syncHistory()
-    },
-    isMd() {
-      this.syncHistory()
     }
   },
   mounted() {
     this.mounted = true
   },
-  beforeUnmount() {
-    window.removeEventListener('popstate', this.onPopState)
-  },
   methods: {
-    // Phone only: back closes the sheet instead of leaving the page. Merged into the
-    // current state, because vue-router keeps its position there.
-    syncHistory() {
-      if (!this.open || this.isMd || this.pushed) return
-      history.pushState({ ...history.state, [this.historyKey]: true }, '')
-      this.pushed = true
-    },
     onOpenChange(open) {
       // vaul also reports false when mounted closed and after we have closed it;
       // only a request while still open is a real one
       if (open || !this.open) return
-      if (this.pushed) {
-        // the entry has to go too; popstate finishes the close
-        this.pushed = false
-        history.back()
-      } else {
-        this.$emit('close')
-      }
-    },
-    onPopState() {
-      this.pushed = false
-      this.$emit('close')
+      this.requestClose()
     },
     restoreFocus() {
       this.focusTarget?.focus({ preventScroll: true })

@@ -355,12 +355,11 @@ export default {
       this.explorerMounted = true
       this.explorerOpen = true
     },
+    // The explorer closes itself after a pick. Only once it has, including its history step
+    // on a phone, is it safe to change the URL: sooner would race that step.
     pickStation(id) {
       this.pendingStation = id
-      this.explorerOpen = false
     },
-    // the explorer has fully closed, including its history step on a phone. Only now is it
-    // safe to change the URL: doing it sooner would race that step and lose the station.
     onExplorerClosed() {
       this.explorerOpen = false
       const id = this.pendingStation

@@ -518,7 +518,7 @@
       "globe": "Globe with {count} tide stations. Drag to turn it, tap a dot to pick a station.",
       "globeLoading": "Globe of tide stations",
       "viewTides": "View tides",
-      "pickSub": "{country} · {km} km from {place}",
+      "pickSub": "{country} · {km} from {place}",
       "km": "{km} km",
       "credit": "Stations: {project}"
     }

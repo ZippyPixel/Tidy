@@ -1,6 +1,7 @@
 import { markRaw } from 'vue'
 import { defineStore } from 'pinia'
 import { API_ENDPOINTS } from '@/constants/api'
+import { flattenIndex } from '@/utils/globe'
 
 // One forecast is good for a while: predictions only change as the day rolls over.
 const FRESH_FOR_MS = 30 * 60 * 1000
@@ -14,7 +15,9 @@ const emptySlot = () => ({ key: null, data: null, status: 'idle', fetchedAt: 0 }
 export default defineStore('tides', {
   state: () => ({
     nearest: emptySlot(),
-    chosen: emptySlot()
+    chosen: emptySlot(),
+    // the explorer's downloads: kept for the visit, however often it opens
+    explorer: null
   }),
   actions: {
     async load(slotName, key, query) {
@@ -45,6 +48,18 @@ export default defineStore('tides', {
     },
     loadStation(id) {
       return this.load('chosen', id, { station: id })
+    },
+    async loadExplorerData() {
+      if (this.explorer) return this.explorer
+      this.explorerRequest ??= Promise.all([$fetch(API_ENDPOINTS.TIDE_STATIONS), $fetch('/globe-land.json')])
+      try {
+        const [index, land] = await this.explorerRequest
+        // thousands of rows that never change: reactivity would only slow them down
+        this.explorer = markRaw({ index, land, stations: flattenIndex(index) })
+        return this.explorer
+      } finally {
+        this.explorerRequest = null
+      }
     }
   }
 })
