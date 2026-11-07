@@ -1,6 +1,10 @@
 <template>
   <DialogRoot :open="open" @update:open="onOpenChange">
     <DialogPortal>
+      <!-- Hidden behind the full-screen panel: it's here because reka-ui locks page scroll from the overlay -->
+      <DialogOverlay
+        class="fixed inset-0 z-[60] bg-background duration-[160ms] ease-out data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 motion-reduce:!animate-none"
+      />
       <DialogContent
         data-explorer
         class="fixed inset-0 z-[60] flex flex-col bg-background text-foreground outline-none duration-[160ms] ease-out data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 motion-reduce:!animate-none"
@@ -139,7 +143,7 @@
 <script>
 import { mapStores } from 'pinia'
 import { useMediaQuery } from '@vueuse/core'
-import { DialogContent, DialogDescription, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
+import { DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
 import AppIcon from '@/components/common/AppIcon.vue'
 import TideGlobe from '@/components/tides/TideGlobe.vue'
 import { API_ENDPOINTS } from '@/constants/api'
@@ -156,7 +160,7 @@ const COUNTRY_ROWS = 200
 
 export default {
   name: 'StationExplorer',
-  components: { AppIcon, DialogContent, DialogDescription, DialogPortal, DialogRoot, DialogTitle, TideGlobe },
+  components: { AppIcon, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, TideGlobe },
   mixins: [weatherMixin, tideMixin, backToClose],
   props: {
     open: { type: Boolean, default: false },

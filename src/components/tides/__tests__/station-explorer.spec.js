@@ -82,6 +82,16 @@ describe('StationExplorer', () => {
     expect(one('[data-count]').textContent).toContain('3 stations in 2 countries')
   })
 
+  it('locks the page behind it while open', async () => {
+    document.body.style.overflow = ''
+    await setup()
+    await wrapper.vm.$nextTick()
+    expect(document.body.style.overflow).toBe('hidden')
+    await wrapper.setProps({ open: false })
+    await flushPromises()
+    expect(document.body.style.overflow).toBe('')
+  })
+
   it('lists your country first, then all of them', async () => {
     await setup()
     const sections = all('[data-section]')
