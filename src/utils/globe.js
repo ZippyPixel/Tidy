@@ -75,6 +75,13 @@ export const clampDragLat = (lat) => Math.max(-75, Math.min(75, lat))
 export const clampFlyLat = (lat) => Math.max(-70, Math.min(70, lat))
 export const clampZoom = (zoom) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom))
 
+const WHEEL_RATE = 0.002
+const PINCH_RATE = 0.01 // a pinch arrives as ctrl+wheel, with much smaller deltas
+const WHEEL_UNIT_PX = { 0: 1, 1: 16, 2: 400 } // by deltaMode: pixels, lines, pages
+
+export const wheelZoom = (zoom, { deltaY, deltaMode, ctrlKey }) =>
+  clampZoom(zoom * Math.exp(-deltaY * WHEEL_UNIT_PX[deltaMode] * (ctrlKey ? PINCH_RATE : WHEEL_RATE)))
+
 // Accent-insensitive, so "Reykjavik" finds "Reykjavík".
 export function normalizeName(text) {
   return String(text)

@@ -1,5 +1,7 @@
 <template>
-  <div ref="box" data-globe class="relative min-h-0 min-w-0 overflow-hidden bg-background">
+  <div ref="box" data-globe class="relative min-h-0 min-w-0 overflow-hidden bg-background" @wheel.prevent="onWheel">
+    <!-- The wheel is on the box, not the canvas: the controls and the popup sit on top of the
+         canvas, and ctrl+wheel over them would zoom the browser -->
     <!-- Drawn on a canvas, which has to know its pixel size: the one place tides measures -->
     <canvas
       ref="canvas"
@@ -109,6 +111,7 @@ import {
   project,
   projectAngles,
   shortestTurn,
+  wheelZoom,
   ZOOM_STEP
 } from '@/utils/globe'
 
@@ -173,6 +176,7 @@ export default {
     this.drag = null
     this.fly = null
     this.frame = 0
+    this.dirty = false
     this.stationSet = null
     this.landSet = null
     this.reducedMotion = false
@@ -332,10 +336,11 @@ export default {
         this.view.lon -= SPIN_PER_FRAME
         more = true
       }
-      if (more) {
+      if (more || this.dirty) {
+        this.dirty = false
         this.draw()
-        this.kick()
       }
+      if (more) this.kick()
     },
     flyTo(lon, lat, zoom) {
       const toLat = clampFlyLat(lat)
@@ -405,6 +410,13 @@ export default {
         this.hover = null
         this.$emit('update:pick', this.stationAt(event))
       }
+    },
+    onWheel(event) {
+      this.view.zoom = wheelZoom(this.view.zoom, event)
+      this.fly = null
+      this.stopSpin()
+      this.dirty = true
+      this.kick()
     },
     onLeave() {
       if (this.hover && !this.drag) {

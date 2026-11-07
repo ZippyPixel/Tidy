@@ -515,7 +515,7 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
       "recenter": "Back to the selected station",
-      "globe": "Globe with {count} tide stations. Drag to turn it, tap a dot to pick a station.",
+      "globe": "Globe with {count} tide stations. Drag to turn it, scroll or pinch to zoom, tap a dot to pick a station.",
       "globeLoading": "Globe of tide stations",
       "viewTides": "View tides",
       "pickSub": "{country} · {km} from {place}",
