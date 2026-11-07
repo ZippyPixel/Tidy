@@ -6,6 +6,7 @@ const BORROW = 6 * 3600
 
 export const toCm = (metres) => Math.round(metres * 100)
 export const round2 = (x) => Math.round(x * 100) / 100
+const round3 = (x) => Math.round(x * 1000) / 1000
 
 // Form factor: daily over twice-daily constituents, the standard way to name a tide.
 export function tideType(constituents = []) {
@@ -94,7 +95,8 @@ export function parseCoordinates(lat, lon) {
   if (lat === '' || lon === '' || lat == null || lon == null) return null
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
   if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null
-  return { lat: round2(latitude), lon: round2(longitude) }
+  // about 110 m: fine enough to keep the distance right, coarse enough to share a cache entry
+  return { lat: round3(latitude), lon: round3(longitude) }
 }
 
 export function parseDays(days, fallback = 7) {

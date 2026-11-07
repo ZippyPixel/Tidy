@@ -92,7 +92,7 @@ describe('datumRanges', () => {
 
 describe('request parsing', () => {
   it('rounds good coordinates and refuses bad ones', () => {
-    expect(parseCoordinates('23.8171', '90.4169')).toEqual({ lat: 23.82, lon: 90.42 })
+    expect(parseCoordinates('23.81712', '90.41688')).toEqual({ lat: 23.817, lon: 90.417 })
     expect(parseCoordinates('0', '0')).toEqual({ lat: 0, lon: 0 })
     expect(parseCoordinates('91', '0')).toBeNull()
     expect(parseCoordinates('0', '181')).toBeNull()
