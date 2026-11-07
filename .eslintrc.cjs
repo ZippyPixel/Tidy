@@ -25,6 +25,7 @@ module.exports = {
       files: ['server/**/*.js'],
       globals: {
         defineEventHandler: 'readonly',
+        defineCachedEventHandler: 'readonly',
         getQuery: 'readonly',
         createError: 'readonly',
         useRuntimeConfig: 'readonly',

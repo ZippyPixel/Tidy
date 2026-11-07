@@ -345,5 +345,182 @@
     },
     "settingsNote": "Tidy also speaks বাংলা, switches between °C and °F, and follows your system’s light or dark theme. Change any of it from Settings.",
     "dataSource": "Weather data from WeatherAPI.com."
+  },
+  "tides": {
+    "title": "Tides",
+    "tideTimes": "Tide times",
+    "openLabel": "Tides. Open tide times",
+    "cardLabel": "Tides at {name}: {trend}, {level} {unit} now. {next}. Open tide times",
+    "rising": "Rising",
+    "falling": "Falling",
+    "m": "m",
+    "ft": "ft",
+    "metres": "metres",
+    "feet": "feet",
+    "nowAt": "Now · {time}",
+    "nextHigh": "Next high tide",
+    "nextLow": "Next low tide",
+    "nextHighAt": "Next high tide {time}",
+    "nextLowAt": "Next low tide {time}",
+    "heightIn": "{height} {unit} · in {duration}",
+    "heightInThenHigh": "{height} {unit} · in {duration} · then high at {time}",
+    "heightInThenLow": "{height} {unit} · in {duration} · then low at {time}",
+    "hoursMinutes": "{hours}h {minutes}m",
+    "minutesOnly": "{minutes}m",
+    "stationLine": "{name} · {km} km",
+    "inland": "{place} is inland, so these are the tides at {name}, the nearest station ({km} km away).",
+    "none": {
+      "title": "No tide station nearby",
+      "body": "The nearest one is more than 300 km away. Tides matter on coasts and tidal rivers.",
+      "cta": "Explore stations worldwide"
+    },
+    "page": {
+      "back": "Weather",
+      "changeStation": "Change station",
+      "kmFrom": "{km} km from {place}",
+      "timesIn": "Times in {zone} (UTC{offset})",
+      "nowLocal": "{time} local time · {day}",
+      "nowHere": "{time} · {day}"
+    },
+    "chart": {
+      "title": "Tide chart",
+      "rangeLabel": "Tide chart range",
+      "day": "Day",
+      "week": "Week",
+      "previousDay": "Previous day",
+      "nextDay": "Next day",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "next7": "Next 7 days",
+      "high": "High",
+      "low": "Low",
+      "night": "Night",
+      "note": "Heights in {unit} above {datum}",
+      "ariaDay": "Tides on {day}: {list}",
+      "ariaWeek": "Tides this week: {list}",
+      "ariaCard": "Tides, next 24 hours: {list}",
+      "ariaHigh": "high {time}, {height}",
+      "ariaLow": "low {time}, {height}",
+      "ariaNone": "Tide chart",
+      "datums": {
+        "LAT": "lowest astronomical tide (LAT)",
+        "MLLW": "mean lower low water (MLLW)",
+        "MLW": "mean low water (MLW)",
+        "MSL": "mean sea level (MSL)"
+      }
+    },
+    "rightNow": {
+      "title": "Right now",
+      "rangeToday": "Range today"
+    },
+    "today": {
+      "title": "Today's tides",
+      "onDay": "Tides on {day}",
+      "highTide": "High tide",
+      "lowTide": "Low tide",
+      "nextIn": "Next · in {duration}",
+      "passed": "Passed"
+    },
+    "moon": {
+      "title": "Moon & tides",
+      "illuminated": "{percent}% illuminated",
+      "spring": "Spring",
+      "neap": "Neap",
+      "springLine": "{day} · range up to {range} {unit}",
+      "neapLine": "{day} · range only {range} {unit}",
+      "notSoon": "Not in the next few weeks",
+      "explain": "Tides run biggest a day or two after a new or full moon, when the sun and moon pull in line, and smallest near the quarter moons.",
+      "nextNew": "Next new moon: {date}.",
+      "nextFull": "Next full moon: {date}.",
+      "sunrise": "Sunrise {time}",
+      "sunset": "Sunset {time}"
+    },
+    "week": {
+      "title": "Next 7 days",
+      "springTide": "Spring tide",
+      "neapTide": "Neap tide"
+    },
+    "about": {
+      "title": "About this station",
+      "types": {
+        "semidiurnal": "Semidiurnal",
+        "mixedSemidiurnal": "Mixed, mainly semidiurnal",
+        "mixedDiurnal": "Mixed, mainly diurnal",
+        "diurnal": "Diurnal"
+      },
+      "leads": {
+        "semidiurnal": "{name} has two high and two low tides a day, of about the same height, about 50 minutes later each day.",
+        "mixedSemidiurnal": "{name} has two high and two low tides most days, but one of each pair is noticeably bigger than the other.",
+        "mixedDiurnal": "{name} often has just one high and one low tide a day, with a smaller second tide on some days.",
+        "diurnal": "{name} has one high and one low tide a day."
+      },
+      "tideType": "Tide type",
+      "averageRange": "Average range",
+      "springRange": "Spring tide range",
+      "largestRange": "Largest range this year",
+      "heightsFrom": "Heights measured from",
+      "position": "Position",
+      "positionValue": "{lat}° {ns}, {lon}° {ew}",
+      "n": "N",
+      "s": "S",
+      "e": "E",
+      "w": "W",
+      "data": "Data",
+      "record": "Tide gauge record",
+      "source": "Source"
+    },
+    "nearby": {
+      "title": "Nearby stations",
+      "exploreAll": "Explore all stations on the globe"
+    },
+    "footer": {
+      "disclaimer": "Tide times are astronomical predictions from harmonic constants. Wind, air pressure and river flow can move the real water level, so don't use them for navigation.",
+      "credit": "Tide harmonic constituents from the {project}."
+    },
+    "empty": {
+      "notFoundTitle": "We can't find that station",
+      "notFoundBody": "The link may be out of date, or this station isn't available in Tidy.",
+      "backTo": "Back to {name}",
+      "backNearest": "Back to your nearest station",
+      "errorTitle": "Couldn't load the tides",
+      "errorBody": "Check your connection and try again.",
+      "retry": "Try again",
+      "pickTitle": "Find a tide station",
+      "pickBody": "Choose any station on the globe to see its tides."
+    },
+    "explorer": {
+      "title": "Find a tide station",
+      "count": "{count} stations in {countries} countries",
+      "loading": "Loading stations…",
+      "search": "Search stations or countries",
+      "searchLabel": "Search tide stations or countries",
+      "clear": "Clear search",
+      "nearMe": "Near me",
+      "nearestTo": "Nearest to {place}",
+      "nearest": "Nearest stations",
+      "suggested": "Suggested",
+      "allCountries": "All countries",
+      "countries": "Countries",
+      "stations": "Stations · {count}",
+      "stationCount": "{count} station | {count} stations",
+      "listLabel": "Stations",
+      "countryHeading": "{name} · {count}",
+      "showing": "Showing {shown} of {total}. Search to find the rest.",
+      "noMatch": "No station or country matches “{query}”.",
+      "loadFailed": "Couldn't load the stations. Try again in a moment.",
+      "close": "Close",
+      "spinStop": "Stop spinning",
+      "spinStart": "Spin the globe",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "recenter": "Back to the selected station",
+      "globe": "Globe with {count} tide stations. Drag to turn it, scroll or pinch to zoom, tap a dot to pick a station.",
+      "globeLoading": "Globe of tide stations",
+      "viewTides": "View tides",
+      "pickSub": "{country} · {km} from {place}",
+      "km": "{km} km",
+      "credit": "Stations: {project}"
+    }
   }
 }
