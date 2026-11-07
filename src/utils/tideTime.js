@@ -51,3 +51,20 @@ export function zonedMidnight(date, timeZone) {
   const guess = utc - zoneOffsetMin(utc, timeZone) * 60
   return utc - zoneOffsetMin(guess, timeZone) * 60
 }
+
+export function hourInZone(epoch, timeZone) {
+  return +wallClock(epoch, timeZone).hour
+}
+
+// Whole local hours from `from` to `to` that are a multiple of `every`, read from the wall
+// clock so a daylight saving day and a half-hour zone still land on the right marks.
+export function hourTicks(from, to, timeZone, every) {
+  const start = wallClock(from, timeZone)
+  const past = +start.minute * 60 + +start.second
+  const ticks = []
+  for (let time = past ? from - past + 3600 : from; time <= to; time += 3600) {
+    const hour = hourInZone(time, timeZone)
+    if (hour % every === 0) ticks.push({ time, hour })
+  }
+  return ticks
+}
