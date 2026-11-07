@@ -13,8 +13,12 @@ const EXTREME_DAYS = 33
 const SPRING_NEAP_PADDING = 3
 const YEAR_DAYS = 366
 
-// CC BY-NC records may not be used in a commercial product, so no lookup can return them.
+// What every lookup may return. CC BY-NC records may not be used in a commercial product,
+// and the database also holds current stations and tide stations with nothing to predict from.
 const licensed = (station) => station.license?.commercial_use !== false
+const hasTideData = (station) =>
+  station.kind === 'tide' && (station.harmonic_constituents?.length > 0 || station.offsets !== undefined)
+const usable = (station) => licensed(station) && hasTideData(station)
 
 function credit(station) {
   const source = credits.get(station.source.name) ?? null
@@ -49,7 +53,7 @@ async function nearbyStations(station) {
     lon: station.longitude,
     maxDistance: NEARBY_RADIUS_KM,
     maxResults: NEARBY_COUNT + 1,
-    filter: licensed
+    filter: usable
   })
   return found
     .filter((s) => s.id !== station.id)
@@ -123,7 +127,7 @@ export async function stationTides(station, { now, days = 7, distanceKm = null }
 // null when nothing usable is within the search radius.
 export async function nearestLicensedStation(lat, lon) {
   try {
-    return await nearestStation({ lat, lon, maxDistance: SEARCH_RADIUS_KM, filter: licensed })
+    return await nearestStation({ lat, lon, maxDistance: SEARCH_RADIUS_KM, filter: usable })
   } catch (error) {
     if (/No stations found/.test(error?.message)) return null
     throw error
@@ -134,7 +138,7 @@ export async function nearestLicensedStation(lat, lon) {
 export async function licensedStationById(id) {
   try {
     const station = await findStation(id)
-    return licensed(station) && qualityFilter(station) ? station : null
+    return usable(station) && qualityFilter(station) ? station : null
   } catch (error) {
     if (/Station not found/.test(error?.message)) return null
     throw error
@@ -155,12 +159,12 @@ const listing = (station, km) => ({
 
 export async function searchStations(query) {
   const db = await loadStations()
-  return { stations: db.search(query, { filter: licensed, maxResults: 20 }).map((s) => listing(s)) }
+  return { stations: db.search(query, { filter: usable, maxResults: 20 }).map((s) => listing(s)) }
 }
 
 export async function stationsAround(lat, lon) {
   const db = await loadStations()
-  return { stations: db.near({ lat, lon, maxResults: 10, filter: licensed }).map(([s, km]) => listing(s, km)) }
+  return { stations: db.near({ lat, lon, maxResults: 10, filter: usable }).map(([s, km]) => listing(s, km)) }
 }
 
 // Every usable station by country, for the globe: [id, name, lat, lon].
@@ -169,7 +173,7 @@ export async function stationIndex() {
   const rad = Math.PI / 180
   const byCountry = new Map()
   for (const station of db.accepted) {
-    if (!licensed(station)) continue
+    if (!usable(station)) continue
     const name = station.country || ''
     if (!byCountry.has(name)) byCountry.set(name, [])
     byCountry.get(name).push(station)

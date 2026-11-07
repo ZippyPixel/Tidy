@@ -97,7 +97,53 @@ describe('lookups', () => {
     const ids = index.countries.flatMap((c) => c.s.map((s) => s[0]))
     expect(ids).not.toContain(nonCommercial.id)
     expect(ids).toHaveLength(index.count)
-    expect(index.count).toBe(9764)
+  })
+
+  describe('only tide stations with data', () => {
+    const usable = (s) => s.kind === 'tide' && (s.harmonic_constituents.length > 0 || s.offsets !== undefined)
+    let current
+    let noData
+
+    beforeAll(async () => {
+      const db = await loadStations()
+      const licensed = db.accepted.filter((s) => s.license.commercial_use !== false)
+      current = licensed.find((s) => s.kind === 'current')
+      noData = licensed.find((s) => s.kind === 'tide' && !usable(s))
+    })
+
+    it('counts 6,096 stations in 120 countries', async () => {
+      const index = await stationIndex()
+      expect(index.count).toBe(6096)
+      expect(index.countries).toHaveLength(120)
+    })
+
+    it('leaves the rest out of the index', async () => {
+      const index = await stationIndex()
+      const ids = index.countries.flatMap((c) => c.s.map((s) => s[0]))
+      expect(ids).not.toContain(current.id)
+      expect(ids).not.toContain(noData.id)
+    })
+
+    it('leaves the rest out of search', async () => {
+      for (const station of [current, noData]) {
+        const found = await searchStations(station.name)
+        expect(found.stations.map((s) => s.id)).not.toContain(station.id)
+      }
+    })
+
+    it('leaves the rest out of near and nearest', async () => {
+      for (const station of [current, noData]) {
+        const around = await stationsAround(station.latitude, station.longitude)
+        expect(around.stations.map((s) => s.id)).not.toContain(station.id)
+        const near = await nearestLicensedStation(station.latitude, station.longitude)
+        expect(near?.id).not.toBe(station.id)
+      }
+    })
+
+    it('treats them as unknown by id', async () => {
+      expect(await licensedStationById(current.id)).toBeNull()
+      expect(await licensedStationById(noData.id)).toBeNull()
+    })
   })
 
   it('finds a station by search and by position, in the same shape', async () => {
