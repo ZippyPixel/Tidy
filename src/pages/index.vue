@@ -1,9 +1,9 @@
 <template>
   <!-- home: V3 12-column grid. Source order is the phone order; md+ re-places cards.
-       base  Current → Hourly → Forecast → Sun & Moon → Details
-       md    Current → Forecast → Hourly → Sun & Moon (details move into Current)
+       base  Current → Hourly → Forecast → Sun & Moon → Details → Tides
+       md    Current → Forecast → Hourly → Sun & Moon → Tides (details move into Current)
        lg    Current / Forecast in cols 1–7, Sun & Moon cols 8–12 over both rows,
-             Hourly full width below; xl is the same on an 8 / 4 split -->
+             Hourly and then Tides full width below; xl is the same on an 8 / 4 split -->
   <div>
     <LocationHeading />
     <div class="grid grid-cols-12 items-stretch gap-4 md:gap-6">
@@ -18,6 +18,7 @@
       <DashboardCard :title="$t('weather.details')" class="col-span-12 row-start-5 md:hidden">
         <WeatherDetails variant="tiles" />
       </DashboardCard>
+      <TidesCard class="col-span-12 row-start-6 md:row-start-5 lg:row-start-4" />
     </div>
   </div>
 </template>
@@ -30,6 +31,7 @@ import PlanetaryInfo from '@/components/weather/PlanetaryInfo.vue'
 import LocationHeading from '@/components/weather/LocationHeading.vue'
 import WeatherDetails from '@/components/weather/WeatherDetails.vue'
 import DashboardCard from '@/components/common/DashboardCard.vue'
+import TidesCard from '@/components/tides/TidesCard.vue'
 
 export default {
   name: 'HomeView',
@@ -40,7 +42,8 @@ export default {
     PlanetaryInfo,
     LocationHeading,
     WeatherDetails,
-    DashboardCard
+    DashboardCard,
+    TidesCard
   }
 }
 </script>
