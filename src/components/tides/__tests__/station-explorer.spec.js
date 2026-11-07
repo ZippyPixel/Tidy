@@ -92,6 +92,17 @@ describe('StationExplorer', () => {
     expect(document.body.style.overflow).toBe('')
   })
 
+  it.each([[true], [false]])('puts the list in the Tidy scroll area, md %s', async (md) => {
+    await setup({ md })
+    const list = one('[data-station-list]')
+    expect(list.getAttribute('role')).toBe('region')
+    expect(list.getAttribute('aria-label')).toBeTruthy()
+    const viewport = list.querySelector('[data-reka-scroll-area-viewport]')
+    expect(viewport.classList).toContain('overscroll-contain')
+    expect(viewport.querySelector('[data-row]')).not.toBeNull()
+    expect(viewport.querySelector('[data-section]').parentElement.classList).toContain('pr-4')
+  })
+
   it('lists your country first, then all of them', async () => {
     await setup()
     const sections = all('[data-section]')

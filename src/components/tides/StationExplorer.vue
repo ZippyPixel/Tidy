@@ -73,50 +73,54 @@
               </button>
             </div>
 
-            <div
+            <ScrollArea
               role="region"
               :aria-label="$t('tides.explorer.listLabel')"
-              class="order-3 min-h-60 flex-1 overflow-y-auto overscroll-contain px-1 pb-[calc(24px+env(safe-area-inset-bottom))] pt-2 md:min-h-0 md:px-3 md:pb-6 md:pt-1"
+              data-station-list
+              class="order-3 min-h-60 flex-1 md:min-h-0"
             >
-              <div v-if="!index && !loadFailed" data-list-loading class="flex flex-col gap-3 px-3 py-2">
-                <div class="h-3 w-2/5 rounded bg-muted" />
-                <div class="h-4 w-4/5 rounded bg-muted" />
-                <div class="h-4 w-[70%] rounded bg-muted" />
-              </div>
-              <p v-if="message" data-message class="px-3 py-4 text-sm leading-5 text-muted-foreground">{{ message }}</p>
-              <div v-for="section in sections" :key="section.title" data-section class="flex flex-col gap-0.5 pb-3">
-                <div class="flex min-h-8 items-center justify-between gap-2 px-3">
-                  <span class="truncate text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-muted-foreground">{{ section.title }}</span>
-                  <button
-                    v-if="section.back"
-                    type="button"
-                    data-all-countries
-                    class="h-8 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold text-primary"
-                    @click="backToAll"
-                  >
-                    {{ $t('tides.explorer.allCountries') }}
-                  </button>
+              <!-- 16px on the right keeps the bar off the chevrons -->
+              <div class="pb-[calc(24px+env(safe-area-inset-bottom))] pl-1 pr-4 pt-2 md:pb-6 md:pl-3 md:pt-1">
+                <div v-if="!index && !loadFailed" data-list-loading class="flex flex-col gap-3 px-3 py-2">
+                  <div class="h-3 w-2/5 rounded bg-muted" />
+                  <div class="h-4 w-4/5 rounded bg-muted" />
+                  <div class="h-4 w-[70%] rounded bg-muted" />
                 </div>
-                <button
-                  v-for="row in section.rows"
-                  :key="row.key"
-                  type="button"
-                  data-row
-                  :aria-label="row.aria"
-                  class="flex min-h-14 w-full items-center gap-3 rounded-lg px-3 py-2 text-left outline-ring [outline-offset:-2px] hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 active:bg-foreground/[0.09]"
-                  :class="{ 'bg-accent text-accent-foreground': row.active }"
-                  @click="row.onClick"
-                >
-                  <span class="flex min-w-0 flex-1 flex-col items-start gap-0.5">
-                    <span class="max-w-full truncate text-[15px] font-medium leading-5">{{ row.title }}</span>
-                    <span class="max-w-full truncate text-[13px] leading-4 text-muted-foreground">{{ row.sub }}</span>
-                  </span>
-                  <span class="flex-none whitespace-nowrap text-[13px] leading-4 tabular-nums text-muted-foreground">{{ row.right }}</span>
-                  <AppIcon name="chevron-right" :size="16" :stroke-width="2" class="flex-none text-muted-foreground" />
-                </button>
-                <p v-if="section.more" class="mx-3 mt-1 text-[13px] leading-[18px] text-muted-foreground">{{ section.more }}</p>
+                <p v-if="message" data-message class="px-3 py-4 text-sm leading-5 text-muted-foreground">{{ message }}</p>
+                <div v-for="section in sections" :key="section.title" data-section class="flex flex-col gap-0.5 pb-3">
+                  <div class="flex min-h-8 items-center justify-between gap-2 px-3">
+                    <span class="truncate text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-muted-foreground">{{ section.title }}</span>
+                    <button
+                      v-if="section.back"
+                      type="button"
+                      data-all-countries
+                      class="h-8 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold text-primary"
+                      @click="backToAll"
+                    >
+                      {{ $t('tides.explorer.allCountries') }}
+                    </button>
+                  </div>
+                  <button
+                    v-for="row in section.rows"
+                    :key="row.key"
+                    type="button"
+                    data-row
+                    :aria-label="row.aria"
+                    class="flex min-h-14 w-full items-center gap-3 rounded-lg px-3 py-2 text-left outline-ring [outline-offset:-2px] hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 active:bg-foreground/[0.09]"
+                    :class="{ 'bg-accent text-accent-foreground': row.active }"
+                    @click="row.onClick"
+                  >
+                    <span class="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+                      <span class="max-w-full truncate text-[15px] font-medium leading-5">{{ row.title }}</span>
+                      <span class="max-w-full truncate text-[13px] leading-4 text-muted-foreground">{{ row.sub }}</span>
+                    </span>
+                    <span class="flex-none whitespace-nowrap text-[13px] leading-4 tabular-nums text-muted-foreground">{{ row.right }}</span>
+                    <AppIcon name="chevron-right" :size="16" :stroke-width="2" class="flex-none text-muted-foreground" />
+                  </button>
+                  <p v-if="section.more" class="mx-3 mt-1 text-[13px] leading-[18px] text-muted-foreground">{{ section.more }}</p>
+                </div>
               </div>
-            </div>
+            </ScrollArea>
           </aside>
 
           <TideGlobe
@@ -146,6 +150,7 @@ import { useMediaQuery } from '@vueuse/core'
 import { DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
 import AppIcon from '@/components/common/AppIcon.vue'
 import TideGlobe from '@/components/tides/TideGlobe.vue'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { API_ENDPOINTS } from '@/constants/api'
 import backToClose from '@/mixins/backToClose'
 import tideMixin from '@/mixins/tideMixin'
@@ -160,7 +165,7 @@ const COUNTRY_ROWS = 200
 
 export default {
   name: 'StationExplorer',
-  components: { AppIcon, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, TideGlobe },
+  components: { AppIcon, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, ScrollArea, TideGlobe },
   mixins: [weatherMixin, tideMixin, backToClose],
   props: {
     open: { type: Boolean, default: false },
