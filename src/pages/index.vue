@@ -5,6 +5,8 @@
        lg    Current / Forecast in cols 1–7, Sun & Moon cols 8–12 over both rows,
              Hourly and then Tides full width below; xl is the same on an 8 / 4 split -->
   <div>
+    <!-- one announcement for the whole dashboard; each card marks itself aria-busy -->
+    <p role="status" class="sr-only">{{ showSkeleton ? $t('loading.weather') : '' }}</p>
     <LocationHeading />
     <div class="grid grid-cols-12 items-stretch gap-4 md:gap-6">
       <BasicWeatherInfo class="col-span-12 row-start-1 lg:col-span-7 xl:col-span-8" />
@@ -15,7 +17,11 @@
       <PlanetaryInfo
         class="col-span-12 row-start-4 lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 xl:col-span-4 xl:col-start-9"
       />
-      <DashboardCard :title="$t('weather.details')" class="col-span-12 row-start-5 md:hidden">
+      <DashboardCard
+        :title="$t('weather.details')"
+        :busy="showSkeleton"
+        class="col-span-12 row-start-5 md:hidden"
+      >
         <WeatherDetails variant="tiles" />
       </DashboardCard>
       <TidesCard class="col-span-12 row-start-6 md:row-start-5 lg:row-start-4" />
@@ -32,6 +38,7 @@ import LocationHeading from '@/components/weather/LocationHeading.vue'
 import WeatherDetails from '@/components/weather/WeatherDetails.vue'
 import DashboardCard from '@/components/common/DashboardCard.vue'
 import TidesCard from '@/components/tides/TidesCard.vue'
+import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 
 export default {
   name: 'HomeView',
@@ -44,6 +51,9 @@ export default {
     WeatherDetails,
     DashboardCard,
     TidesCard
+  },
+  setup() {
+    return useWeatherSkeleton()
   }
 }
 </script>

@@ -7,8 +7,25 @@
          tiles: the phone Details card, Air Quality spans 2 at base
          Padding is offset by a negative margin, so the hover background grows outwards
          and the text stays on the grid. -->
+    <!-- skeleton: label and value bars on the tiles' own line heights; not focusable -->
+    <template v-if="showSkeleton">
+      <div
+        v-for="([labelW, valueW], i) in skeletonTiles"
+        :key="i"
+        data-skeleton
+        class="flex min-w-0 flex-col gap-1"
+        :class="{ 'col-span-2 sm:col-span-1': !row && i === skeletonTiles.length - 1 }"
+      >
+        <Skeleton class="my-[3px] h-2.5" :style="{ width: `${labelW}px` }" />
+        <Skeleton
+          class="max-w-full"
+          :class="row ? 'my-1 h-4' : 'my-[3px] h-[18px]'"
+          :style="{ width: `${row ? valueW : valueW + 8}px` }"
+        />
+      </div>
+    </template>
     <button
-      v-for="item in items"
+      v-for="item in showSkeleton ? [] : items"
       :key="item.key"
       type="button"
       aria-haspopup="dialog"
@@ -18,6 +35,7 @@
       @click="open(item.key, $event)"
       class="flex min-w-0 flex-col gap-1 rounded-lg text-left outline-ring transition-colors duration-[120ms] ease-linear focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 enabled:hover:bg-foreground/5 enabled:active:bg-foreground/[0.09]"
       :class="[
+        fadeClass,
         row ? '-mx-2 -my-1.5 px-2 py-1.5' : '-mx-3 -my-2.5 px-3 py-2.5',
         { 'col-span-2 sm:col-span-1': !row && item.key === 'airQuality' }
       ]"
@@ -73,15 +91,22 @@ import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
 import weatherMixin from '@/mixins/weatherMixin'
 import { epaCategory, readings } from '@/utils/conditionDetail'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 
 const MISSING = '—'
+// [label, value] bar widths per tile (design/TidySkeleton, details)
+const SKELETON_TILES = [[56, 40], [34, 64], [78, 48], [52, 52], [54, 70], [22, 28], [66, 44]]
 
 export default {
   name: 'WeatherDetails',
-  components: { ConditionDetailContent, DetailModalShell },
+  components: { ConditionDetailContent, DetailModalShell, Skeleton },
   mixins: [weatherMixin],
   props: {
     variant: { type: String, default: 'row', validator: (v) => ['row', 'tiles'].includes(v) }
+  },
+  setup() {
+    return { ...useWeatherSkeleton(), skeletonTiles: SKELETON_TILES }
   },
   data() {
     return {

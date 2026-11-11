@@ -1,6 +1,11 @@
 {
   "languageName": "বাংলা",
-  "loading": "আবহাওয়ার তথ্য লোড হচ্ছে...",
+  "loading": {
+    "weather": "আবহাওয়া লোড হচ্ছে…",
+    "tides": "জোয়ার-ভাটা লোড হচ্ছে…",
+    "stations": "স্টেশন লোড হচ্ছে…",
+    "search": "খোঁজা হচ্ছে…"
+  },
   "header": {
     "searchPlaceholder": "শহর খুঁজুন",
     "noMatchingCities": "কোনো শহর পাওয়া যায়নি",

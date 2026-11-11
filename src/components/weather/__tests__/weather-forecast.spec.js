@@ -26,6 +26,7 @@ function setup() {
   const pinia = createPinia()
   const store = useWeatherStore(pinia)
   store.$patch({
+    awaitingLocation: false,
     today: '2026-09-25',
     rawTemperature: { avgTemp_c: 27 },
     forecast: [day('2026-09-25', 25, 32, 87), day('2026-09-26', 26, 35, 57), day('2026-09-27', 27, 34, 22)]

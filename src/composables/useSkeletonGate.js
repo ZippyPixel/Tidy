@@ -1,4 +1,5 @@
 import { computed, getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
+import useWeatherStore from '@/stores/weather'
 
 // Once shown, a skeleton stays at least this long so a fast response doesn't flash it.
 export const MIN_SKELETON_MS = 300
@@ -52,6 +53,12 @@ export function useSkeletonGate(isLoading) {
   const fadeClass = computed(() => (revealed.value && !showSkeleton.value ? 'tidy-fade-in' : ''))
 
   return { showSkeleton, fadeClass }
+}
+
+// The dashboard's weather cards all wait on the same forecast.
+export function useWeatherSkeleton() {
+  const weather = useWeatherStore()
+  return useSkeletonGate(() => weather.weatherPending)
 }
 
 export default useSkeletonGate

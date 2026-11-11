@@ -68,6 +68,21 @@ describe('AppHeader layout', () => {
     wrapper.unmount()
   })
 
+  it('keeps locate enabled for a refresh, disabling it at 50% only during its own request', async () => {
+    const pinia = createPinia()
+    const store = useWeatherStore(pinia)
+    const wrapper = mount(AppHeader, { global: { plugins: [pinia, i18n] } })
+    const locate = () => wrapper.findAll('[aria-label="Get current location"]')
+    store.isLoading = true
+    await flushPromises()
+    expect(locate().every((b) => b.attributes('disabled') === undefined)).toBe(true)
+    store.locating = true
+    await flushPromises()
+    expect(locate().every((b) => b.attributes('disabled') !== undefined)).toBe(true)
+    expect(locate()[0].classes()).toContain('disabled:opacity-50')
+    wrapper.unmount()
+  })
+
   it('opens the full-screen search from the phone search button', async () => {
     const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] }, attachTo: document.body })
     await wrapper.find('[aria-label="Search city"]').trigger('click')

@@ -1,6 +1,11 @@
 {
   "languageName": "English",
-  "loading": "Loading weather data...",
+  "loading": {
+    "weather": "Loading weather…",
+    "tides": "Loading tides…",
+    "stations": "Loading stations…",
+    "search": "Searching…"
+  },
   "header": {
     "searchPlaceholder": "Search City",
     "noMatchingCities": "No matching cities",

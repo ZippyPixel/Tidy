@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-background text-foreground">
-    <LoadingOverlay />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -10,13 +9,9 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
-import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 
 export default {
   name: 'App',
-  components: {
-    LoadingOverlay
-  },
   computed: {
     ...mapState(useWeatherStore, ['location', 'isLoading'])
   },

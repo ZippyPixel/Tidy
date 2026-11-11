@@ -22,7 +22,7 @@
         <button
           type="button"
           :class="iconButton"
-          :disabled="isLoading"
+          :disabled="locating"
           :title="locationError ? $t(locationError) : $t('header.getCurrentLocation')"
           :aria-label="$t('header.getCurrentLocation')"
           @click="handleLocationClick"
@@ -45,7 +45,7 @@
         <button
           type="button"
           :class="[iconButton, 'md:hidden']"
-          :disabled="isLoading"
+          :disabled="locating"
           :title="locationError ? $t(locationError) : $t('header.getCurrentLocation')"
           :aria-label="$t('header.getCurrentLocation')"
           @click="handleLocationClick"
@@ -98,11 +98,13 @@ export default {
       searchOpen: false,
       // 44px icon buttons (design tap-target rule)
       iconButton:
-        'flex size-11 flex-none items-center justify-center rounded-full hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40'
+        'flex size-11 flex-none items-center justify-center rounded-full hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50'
     }
   },
   computed: {
-    ...mapState(useWeatherStore, ['isLoading', 'locationError'])
+    // the header is real from the first frame; only locate waits, and only on its own
+    // request (a refresh or a city search leaves it alone)
+    ...mapState(useWeatherStore, ['locating', 'locationError'])
   },
   methods: {
     ...mapActions(useWeatherStore, ['detectUserLocation']),

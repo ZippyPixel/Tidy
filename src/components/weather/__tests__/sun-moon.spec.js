@@ -25,6 +25,7 @@ function setup({ hour = 15, minute = 37, astro = TODAY, date = '2026-09-25' } = 
   const pinia = createPinia()
   const store = useWeatherStore(pinia)
   store.$patch({
+    awaitingLocation: false,
     astro,
     date,
     today: '2026-09-25',

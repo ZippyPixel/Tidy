@@ -91,7 +91,9 @@ describe('shadcn-vue components', () => {
 
   it('renders Skeleton', () => {
     const wrapper = mount(Skeleton)
-    expect(wrapper.classes()).toContain('animate-pulse')
+    expect(wrapper.classes()).toContain('tidy-skeleton')
+    expect(wrapper.classes()).not.toContain('animate-pulse')
+    expect(wrapper.attributes('aria-hidden')).toBe('true')
   })
 
   it('renders Switch and toggles', async () => {

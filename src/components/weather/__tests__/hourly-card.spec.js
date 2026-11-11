@@ -42,7 +42,7 @@ const realNow = Date.now
 function setup(state = {}) {
   const pinia = createPinia()
   const store = useWeatherStore(pinia)
-  store.$patch({ hourly, forecast, date: DATES[0], today: DATES[0], zoneOffsetMs: 6 * 3600000, ...state })
+  store.$patch({ awaitingLocation: false, hourly, forecast, date: DATES[0], today: DATES[0], zoneOffsetMs: 6 * 3600000, ...state })
   const wrapper = mount(DailyChart, { global: { plugins: [pinia, i18n] } })
   return { wrapper, store, unit: useUnitStore(pinia) }
 }

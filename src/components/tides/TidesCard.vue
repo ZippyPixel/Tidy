@@ -2,19 +2,21 @@
   <NuxtLink
     to="/tides"
     :aria-label="ariaLabel"
+    :aria-busy="loading ? 'true' : undefined"
     class="flex w-full min-w-0 flex-col gap-4 rounded-card border bg-card p-4 text-card-foreground outline-ring transition-[border-color] duration-[120ms] ease-linear hover:border-input focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:shadow-[inset_0_0_0_999px_hsl(var(--foreground)/0.03)] md:p-6"
   >
     <!-- design/TidyTidesCard: the whole card is one link, so nothing inside is interactive -->
     <div class="flex min-h-6 items-center justify-between gap-3">
       <h2 class="text-sm font-medium leading-6 text-muted-foreground">{{ $t('tides.title') }}</h2>
       <span class="flex min-w-0 items-center gap-0.5 text-[13px] font-medium leading-4 text-muted-foreground">
-        <span data-station-line class="truncate">{{ stationLine }}</span>
+        <Skeleton v-if="loading" class="h-3 w-[150px]" />
+        <span v-else data-station-line class="truncate" :class="fadeClass">{{ stationLine }}</span>
         <AppIcon name="chevron-right" :size="18" class="flex-none" />
       </span>
     </div>
 
     <template v-if="state === 'live'">
-      <div class="flex flex-col gap-5 md:grid md:grid-cols-[minmax(200px,248px)_minmax(0,1fr)] md:items-center md:gap-8">
+      <div :class="fadeClass" class="flex flex-col gap-5 md:grid md:grid-cols-[minmax(200px,248px)_minmax(0,1fr)] md:items-center md:gap-8">
         <div class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 md:flex md:flex-col md:items-stretch md:gap-5">
           <div class="flex min-w-0 items-center gap-4">
             <TideGauge :fraction="gauge" class="h-[92px] w-7 md:h-28" />
@@ -76,22 +78,30 @@
       <span v-if="state === 'none'" class="text-sm font-semibold leading-5 text-primary">{{ $t('tides.none.cta') }}</span>
     </template>
 
-    <div v-else data-loading class="flex flex-col gap-5 md:grid md:grid-cols-[minmax(200px,248px)_minmax(0,1fr)] md:items-center md:gap-8">
+    <!-- skeleton (design/TidySkeleton tidescard): the live layout's grid and heights -->
+    <div
+      v-else
+      data-loading
+      data-skeleton
+      class="flex flex-col gap-5 md:grid md:grid-cols-[minmax(200px,248px)_minmax(0,1fr)] md:items-center md:gap-8"
+      aria-hidden="true"
+    >
       <div class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 md:flex md:flex-col md:items-stretch md:gap-5">
-        <div class="flex items-center gap-4">
-          <div class="h-[92px] w-7 flex-none rounded-full bg-muted md:h-28" />
-          <div class="flex flex-col gap-2.5">
-            <div class="h-3 w-16 rounded bg-muted" />
-            <div class="h-8 w-[104px] rounded-md bg-muted" />
-            <div class="h-3 w-20 rounded bg-muted" />
+        <div class="flex min-w-0 items-center gap-4">
+          <Skeleton class="h-[92px] w-7 rounded-[14px] md:h-28" />
+          <div class="flex min-w-0 flex-col gap-2.5">
+            <Skeleton class="h-3 w-16" />
+            <Skeleton class="h-[30px] w-24 rounded-md md:h-[34px] md:w-[110px]" />
+            <Skeleton class="h-2.5 w-20 md:w-[84px]" />
           </div>
         </div>
-        <div class="flex flex-col items-end gap-1.5 md:items-start md:border-t md:pt-4">
-          <div class="h-3 w-24 rounded bg-muted" />
-          <div class="h-5 w-[72px] rounded bg-muted" />
+        <div class="flex flex-col items-end gap-2 md:items-start md:border-t md:pt-4">
+          <Skeleton class="h-2.5 w-[88px] md:w-24" />
+          <Skeleton class="h-[18px] w-[72px] md:h-5 md:w-[76px]" />
+          <Skeleton class="h-2.5 w-[104px] md:w-32" />
         </div>
       </div>
-      <div class="h-[200px] rounded-tile bg-muted/60 md:h-[212px]" />
+      <SkeletonWave :top="0.24" :bottom="0.75" class="h-[200px] md:h-[212px]" />
     </div>
   </NuxtLink>
 </template>
@@ -107,12 +117,21 @@ import tideNow from '@/mixins/tideNow'
 import weatherMixin from '@/mixins/weatherMixin'
 import useTidesStore from '@/stores/tides'
 import useWeatherStore from '@/stores/weather'
+import { Skeleton } from '@/components/ui/skeleton'
+import SkeletonWave from '@/components/skeletons/SkeletonWave.vue'
+import { useSkeletonGate } from '@/composables/useSkeletonGate'
 import { gaugeFraction, isInland, isRising, levelAt, nextExtreme } from '@/utils/tides'
 
 export default {
   name: 'TidesCard',
-  components: { AppIcon, TideChart, TideGauge, TideTrend },
+  components: { AppIcon, Skeleton, SkeletonWave, TideChart, TideGauge, TideTrend },
   mixins: [weatherMixin, tideMixin, tideNow],
+  setup() {
+    const weather = useWeatherStore()
+    const tides = useTidesStore()
+    // the nearest station waits on the forecast's coordinates, then on its own request
+    return useSkeletonGate(() => weather.weatherPending || (!tides.nearest.data && tides.nearest.status !== 'error'))
+  },
   computed: {
     ...mapStores(useTidesStore),
     ...mapState(useWeatherStore, ['coords']),
@@ -123,10 +142,13 @@ export default {
       return this.tides?.station ?? null
     },
     state() {
+      if (this.loading) return 'loading'
       if (this.station) return 'live'
       if (this.tides) return 'none'
-      if (this.tidesStore.nearest.status === 'error') return 'error'
-      return 'loading'
+      return 'error'
+    },
+    loading() {
+      return this.showSkeleton
     },
     zone() {
       return this.station.timezone

@@ -31,6 +31,7 @@ export default defineStore('weather', {
     // nothing has been asked for yet: true until the first geolocation probe or fetch
     // settles, so the first frame (SSR included) shows skeletons rather than empty cards
     awaitingLocation: true,
+    locating: false, // a "use my location" request (probe + fetch) is in flight
     forecast: [],
     weatherByDate: [],
     selectedForecastDate: null,
@@ -67,9 +68,11 @@ export default defineStore('weather', {
   },
   actions: {
     async detectUserLocation() {
+      this.locating = true
       try {
         await this.locateAndFetch()
       } finally {
+        this.locating = false
         this.awaitingLocation = false
       }
     },

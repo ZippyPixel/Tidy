@@ -77,7 +77,7 @@ describe('TidesCard', () => {
     const close = { ...payload, station: { ...payload.station, distanceKm: 49 } }
     const { wrapper } = setup({ data: close })
     expect(wrapper.find('[data-inland]').exists()).toBe(false)
-    expect(wrapper.find('[data-station-line]').text()).toBe('Charchanga')
+    expect(wrapper.find('[data-station-line]').text()).toContain('Charchanga')
   })
 
   it('offers the globe when nothing is within 300 km', () => {
@@ -88,10 +88,31 @@ describe('TidesCard', () => {
     expect(wrapper.find('[data-level]').exists()).toBe(false)
   })
 
-  it('draws placeholders while loading', () => {
+  it('draws its skeleton while loading, title and all still real', () => {
     const { wrapper } = setup({ data: null, status: 'loading' })
     expect(wrapper.find('[data-loading]').exists()).toBe(true)
-    expect(wrapper.find('[data-station-line]').text()).toBe('Tide times')
+    expect(wrapper.attributes('aria-busy')).toBe('true')
+    expect(wrapper.find('h2').text()).toBe('Tides')
+    expect(wrapper.find('[data-station-line]').exists()).toBe(false)
+    expect(wrapper.find('[data-level]').exists()).toBe(false)
+  })
+
+  it('shows the skeleton while the forecast for a new city loads', () => {
+    const pinia = createPinia()
+    const weather = useWeatherStore(pinia)
+    weather.$patch({ isLoading: true, pendingQuery: 'Sydney', lastQuery: 'Dhaka', coords: COORDS })
+    const store = useTidesStore(pinia)
+    store.loadNearest = vi.fn()
+    store.nearest = { key: 'x', status: 'ready', fetchedAt: 0, data: payload }
+    const wrapper = mount(TidesCard, { global: { plugins: [pinia, activeI18n()] } })
+    expect(wrapper.find('[data-loading]').exists()).toBe(true)
+  })
+
+  it('shows its content, not the skeleton, once loaded', () => {
+    const { wrapper } = setup()
+    expect(wrapper.find('[data-loading]').exists()).toBe(false)
+    expect(wrapper.attributes('aria-busy')).toBeUndefined()
+    expect(wrapper.find('[data-station-line]').text()).toContain('Charchanga')
   })
 
   it('says so when the request failed', () => {
