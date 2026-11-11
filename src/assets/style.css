@@ -48,6 +48,9 @@
     --scrollbar-thumb-hover: 220 9% 62%;
     --scrollbar-thumb-active: 220 9% 50%;
     --scrollbar-track: 220 16% 93%;
+    /* skeleton loader (TidySkeleton): block colour and the highlight that sweeps across it */
+    --skeleton: 220 14% 90%;
+    --skeleton-highlight: 220 20% 96%;
     /* sun & moon arcs */
     --sun-arc: 30 95% 33%;
     --sun-arc-ahead: 32 70% 42%;
@@ -110,6 +113,8 @@
     --scrollbar-thumb-hover: 220 5% 42%;
     --scrollbar-thumb-active: 220 6% 54%;
     --scrollbar-track: 220 5% 15%;
+    --skeleton: 220 5% 18%;
+    --skeleton-highlight: 220 6% 25%;
     --sun-arc: 40 95% 62%;
     --sun-arc-ahead: 38 45% 42%;
     --moon-arc: 220 14% 80%;
@@ -219,8 +224,73 @@
     background-color: hsl(var(--scrollbar-thumb-hover));
   }
 
+  /* Skeleton loader (design/Tidy Loading, section 05). One clock for the whole page:
+     .tidy-skeleton blocks shimmer (a 100° band sweeping left to right), dashed chart
+     strokes (.tidy-skeleton-line) and large shapes like the globe disc
+     (.tidy-skeleton-soft) pulse to 55% instead. Static with reduced motion. */
+  .tidy-skeleton {
+    background-color: hsl(var(--skeleton));
+    background-image: linear-gradient(100deg, transparent 30%, hsl(var(--skeleton-highlight)) 50%, transparent 70%);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: tidy-skeleton-sweep 1.6s ease-in-out infinite;
+  }
+
+  .tidy-skeleton-line {
+    stroke: hsl(var(--skeleton));
+    animation: tidy-skeleton-pulse 1.6s ease-in-out infinite;
+  }
+
+  .tidy-skeleton-soft {
+    background-color: hsl(var(--skeleton));
+    animation: tidy-skeleton-pulse 1.6s ease-in-out infinite;
+  }
+
+  /* content replacing a skeleton (composables/useSkeletonGate) */
+  .tidy-fade-in {
+    animation: tidy-fade-in 200ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tidy-skeleton,
+    .tidy-skeleton-line,
+    .tidy-skeleton-soft,
+    .tidy-fade-in {
+      animation: none;
+    }
+
+    .tidy-skeleton {
+      background-image: none;
+    }
+  }
+
   .page-gutter {
     padding-left: max(var(--gutter), env(safe-area-inset-left));
     padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+}
+
+@keyframes tidy-skeleton-sweep {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@keyframes tidy-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes tidy-fade-in {
+  from {
+    opacity: 0;
   }
 }

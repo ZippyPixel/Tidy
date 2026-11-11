@@ -11,5 +11,6 @@ const props = defineProps({
 </script>
 
 <template>
-  <div :class="cn('animate-pulse rounded-md bg-primary/10', props.class)" />
+  <!-- the Tidy skeleton block: shared shimmer and tokens live in assets/style.css (.tidy-skeleton) -->
+  <div aria-hidden="true" :class="cn('tidy-skeleton rounded', props.class)" />
 </template>
