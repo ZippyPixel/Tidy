@@ -27,6 +27,10 @@ export default defineStore('weather', {
     chanceOfRain: '',
     basicWeatherInfo: {},
     isLoading: false,
+    pendingQuery: null, // the query being fetched; differs from lastQuery when the place changes
+    // nothing has been asked for yet: true until the first geolocation probe or fetch
+    // settles, so the first frame (SSR included) shows skeletons rather than empty cards
+    awaitingLocation: true,
     forecast: [],
     weatherByDate: [],
     selectedForecastDate: null,
@@ -35,6 +39,14 @@ export default defineStore('weather', {
     lastQuery: null
   }),
   getters: {
+    hasWeather: (state) => !!state.coords,
+    // Cards show their skeleton while this is true: on the first load, and when the
+    // city changes. A refetch of the same place (language switch, refresh) keeps the
+    // old numbers on screen until the new ones arrive. See composables/useSkeletonGate.
+    weatherPending(state) {
+      if (!state.coords) return state.isLoading || state.awaitingLocation
+      return state.isLoading && state.pendingQuery !== state.lastQuery
+    },
     temperature(state) {
       const isCelsius = useUnitStore().unit === 'celsius'
       const fmt = weatherMixin.methods.formatTemp
@@ -55,6 +67,14 @@ export default defineStore('weather', {
   },
   actions: {
     async detectUserLocation() {
+      try {
+        await this.locateAndFetch()
+      } finally {
+        this.awaitingLocation = false
+      }
+    },
+
+    locateAndFetch() {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
           this.locationError = 'errors.geolocationUnsupported'
@@ -91,20 +111,29 @@ export default defineStore('weather', {
 
     async fetchForecast(query) {
       this.isLoading = true
+      this.pendingQuery = query
       try {
         const data = await $fetch(API_ENDPOINTS.WEATHER, {
           query: { q: query, lang: currentLocale() }
         })
+        // a slower request for a place the user has moved on from lost the race
+        if (this.pendingQuery !== query) return
         this.lastQuery = query
         await this.setValues(data)
       } finally {
-        this.isLoading = false
+        if (this.pendingQuery === query) {
+          this.isLoading = false
+          this.pendingQuery = null
+          this.awaitingLocation = false
+        }
       }
     },
 
     async refetchWeather() {
-      if (!this.lastQuery) return
-      await this.fetchForecast(this.lastQuery)
+      // a place still on its way wins over the one on screen
+      const query = this.pendingQuery ?? this.lastQuery
+      if (!query) return
+      await this.fetchForecast(query)
     },
 
     async searchLocations(query) {
