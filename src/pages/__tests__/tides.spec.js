@@ -14,11 +14,13 @@ const SF = sample.stations['ticon/sanfrancisco_fort_point-9414920-usa-da_sat']
 const COORDS = { name: 'Joar Sahara', country: 'Bangladesh', lat: 23.817, lon: 90.417, tzId: 'Asia/Dhaka' }
 const ready = (data) => ({ key: 'x', status: 'ready', fetchedAt: 0, data })
 
-function setup({ query = {}, nearest = ready(payload), chosen, coords = COORDS, unit = 'celsius' } = {}) {
+function setup({ query = {}, nearest = ready(payload), chosen, coords = COORDS, unit = 'celsius', awaitingLocation = false } = {}) {
   const pinia = createPinia()
   useUnitStore(pinia).unit = unit
   const weather = useWeatherStore(pinia)
   weather.coords = coords
+  // the location probe has settled unless a test says otherwise
+  weather.awaitingLocation = awaitingLocation
   const store = useTidesStore(pinia)
   store.loadNearest = vi.fn()
   store.loadStation = vi.fn()
@@ -170,9 +172,52 @@ describe('Tides page', () => {
     expect(wrapper.find('[data-empty-explore]').exists()).toBe(true)
   })
 
-  it('shows a loading chart while waiting', () => {
+  it('shows one skeleton per section while waiting, with the page chrome real', () => {
     const { wrapper } = setup({ nearest: { key: 'x', status: 'loading', fetchedAt: 0, data: null } })
+    const grid = wrapper.find('[data-loading]')
+    expect(grid.exists()).toBe(true)
+    const titles = grid.findAll('section h2').map((h) => h.text())
+    expect(titles).toEqual(['Right now', 'Tide chart', "Today's tides", 'Next 7 days', 'Moon & tides', 'About this station', 'Nearby stations'])
+    expect(grid.findAll('section').every((s) => s.attributes('aria-busy') === 'true')).toBe(true)
+    // real: the back link, the kicker, the legend; waiting: Change station, at 50%
+    expect(wrapper.find('a[href="/"]').text()).toContain('Weather')
+    expect(grid.text()).toContain('High')
+    const change = wrapper.find('[data-change]')
+    expect(change.attributes('disabled')).toBeDefined()
+    expect(change.classes()).toContain('disabled:opacity-50')
+    expect(wrapper.find('h1').exists()).toBe(false)
+    expect(wrapper.find('[role="status"]').text()).toBe('Loading tides…')
+    // nothing in a skeleton takes focus
+    const focusable = 'a, input, [tabindex]:not([tabindex="-1"]), button:not([disabled])'
+    for (const s of wrapper.findAll('[data-skeleton]')) expect(s.element.querySelector(focusable)).toBeNull()
+    expect(grid.element.querySelector('button:not([disabled]):not([inert] *)')).toBeNull()
+  })
+
+  it('waits for the forecast location before it can look up the nearest station', () => {
+    const { wrapper } = setup({ coords: null, awaitingLocation: true, nearest: { key: null, status: 'idle', fetchedAt: 0, data: null } })
     expect(wrapper.find('[data-loading]').exists()).toBe(true)
+    expect(wrapper.find('[data-empty]').exists()).toBe(false)
+  })
+
+  it('swaps the skeleton for the sections after the minimum, faded in', async () => {
+    const { wrapper, store } = setup({ nearest: { key: 'x', status: 'loading', fetchedAt: 0, data: null } })
+    store.nearest = ready(payload)
+    await vi.advanceTimersByTimeAsync(299)
+    expect(wrapper.find('[data-loading]').exists()).toBe(true)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(wrapper.find('[data-loading]').exists()).toBe(false)
+    expect(wrapper.find('h1').text()).toBe('Charchanga')
+    expect(wrapper.find('.tidy-fade-in').exists()).toBe(true)
+    expect(wrapper.find('[data-change]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.find('[role="status"]').text()).toBe('')
+  })
+
+  it('keeps the station on screen while the same one refreshes', async () => {
+    const { wrapper, store } = setup()
+    store.nearest = { ...store.nearest, status: 'loading' }
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-loading]').exists()).toBe(false)
+    expect(wrapper.find('h1').text()).toBe('Charchanga')
   })
 
   it('can retry a failed request', async () => {
