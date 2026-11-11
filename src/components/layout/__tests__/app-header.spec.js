@@ -8,6 +8,7 @@ import useThemeStore from '@/stores/theme'
 import useUnitStore from '@/stores/unit'
 import useWeatherStore from '@/stores/weather'
 import useLocaleStore from '@/stores/locale'
+import { MIN_SKELETON_MS } from '@/composables/useSkeletonGate'
 
 const i18n = activeI18n()
 
@@ -243,7 +244,8 @@ describe('AppHeader search autocomplete', () => {
   async function typeInSearch(wrapper, text) {
     const input = wrapper.find('input[placeholder="Search City"]')
     await input.setValue(text)
-    await vi.advanceTimersByTimeAsync(300)
+    // the debounce, then the skeleton rows' minimum
+    await vi.advanceTimersByTimeAsync(300 + MIN_SKELETON_MS)
     await wrapper.vm.$nextTick()
     return input
   }
@@ -278,6 +280,31 @@ describe('AppHeader search autocomplete', () => {
     expect(items[0].textContent).toContain('Dhaka')
     expect(items[0].textContent).toContain('Bangladesh')
     expect(items[1].textContent).toContain('Dhahran, Saudi Arabia')
+    wrapper.unmount()
+  })
+
+  it('shows five skeleton rows while a lookup is in flight', async () => {
+    let finish
+    $fetch.mockImplementation(() => new Promise((resolve) => (finish = resolve)))
+    const wrapper = mount(AppHeader, { global: { plugins: [createPinia(), i18n] } })
+    await wrapper.find('input[placeholder="Search City"]').setValue('dha')
+    await vi.advanceTimersByTimeAsync(300)
+    await wrapper.vm.$nextTick()
+
+    const skeleton = document.body.querySelector('[data-skeleton]')
+    expect(skeleton).not.toBeNull()
+    expect(skeleton.getAttribute('aria-hidden')).toBe('true')
+    expect(skeleton.children).toHaveLength(5)
+    expect(skeleton.querySelector('button, a, input, [tabindex]')).toBeNull()
+    expect(options().length).toBe(0)
+    expect(document.body.textContent).not.toContain('No matching cities')
+    expect(wrapper.find('[role="status"]').text()).toBe('Searching…')
+
+    finish(SUGGESTIONS)
+    await vi.advanceTimersByTimeAsync(MIN_SKELETON_MS)
+    await wrapper.vm.$nextTick()
+    expect(document.body.querySelector('[data-skeleton]')).toBeNull()
+    expect(options().length).toBe(2)
     wrapper.unmount()
   })
 
