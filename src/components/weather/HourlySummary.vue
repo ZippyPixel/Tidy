@@ -3,10 +3,11 @@
     <!-- the strip bleeds to the card edges (-mx = card padding) and snaps per card -->
     <div
       ref="scroller"
-      tabindex="0"
+      :tabindex="loading ? undefined : 0"
       role="region"
       :aria-label="$t('hourly.scrollRegion')"
-      class="-mx-4 flex h-[232px] snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto overflow-y-hidden px-4 outline-none scrollbar-hide focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:-mx-6 md:scroll-px-6 md:px-6"
+      class="-mx-4 flex h-[232px] snap-x snap-mandatory scroll-px-4 gap-2 overflow-y-hidden px-4 outline-none scrollbar-hide focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:-mx-6 md:scroll-px-6 md:px-6"
+      :class="loading ? 'overflow-x-hidden' : 'overflow-x-auto'"
       :style="edgeMask"
       @scroll.passive="checkScroll"
     >
@@ -79,16 +80,17 @@
         <p v-if="!items.length" class="self-center text-sm text-muted-foreground">{{ $t('hourly.noData') }}</p>
       </template>
 
-      <!-- skeleton -->
+      <!-- skeleton (design/TidySkeleton hourly): the hour cards' own rows, the first
+           one raised like "now"; the strip is clipped, not scrollable, meanwhile -->
       <template v-else>
-        <div v-for="n in 12" :key="n" class="flex w-[72px] flex-none flex-col gap-2 md:w-20" aria-hidden="true">
+        <div v-for="n in 20" :key="n" data-skeleton class="flex w-[72px] flex-none flex-col gap-2 md:w-20" aria-hidden="true">
           <div class="h-4" />
-          <div class="flex h-[208px] flex-col items-center rounded-tile px-1 py-4 shadow-[inset_0_0_0_1px_hsl(var(--border))]">
-            <div class="flex h-4 items-center"><div class="h-2.5 w-8 rounded bg-muted" /></div>
-            <div class="mt-5 size-8 rounded-full bg-muted" />
-            <div class="mt-5 flex h-6 items-center"><div class="h-3.5 w-8 rounded bg-muted" /></div>
-            <div class="mt-6 flex h-4 items-center"><div class="h-2.5 w-7 rounded bg-muted" /></div>
-            <div class="mt-2 flex h-4 items-center"><div class="h-2.5 w-11 rounded bg-muted" /></div>
+          <div class="flex h-[208px] flex-col items-center rounded-tile px-1 py-4" :class="{ 'bg-surface-raised': n === 1 }">
+            <div class="flex h-4 items-center"><Skeleton class="h-2.5" :class="n === 1 ? 'w-7' : 'w-9'" /></div>
+            <Skeleton class="mt-4 size-10 rounded-full" />
+            <div class="mt-4 flex h-6 items-center"><Skeleton class="h-[18px] w-[30px]" /></div>
+            <div class="mt-6 flex h-4 items-center"><Skeleton class="h-2.5 w-[30px]" /></div>
+            <div class="mt-2 flex h-4 items-center"><Skeleton class="h-2.5 w-[42px]" /></div>
           </div>
         </div>
       </template>
@@ -121,6 +123,7 @@ import { mapState } from 'pinia'
 import useUnitStore from '@/stores/unit'
 import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getWeatherIcon } from '@/constants/weatherIcons'
 import { currentIntlTag } from '@/i18n'
 import { formatAstroTime, prefersReducedMotion } from '@/utils/astro'
@@ -130,7 +133,7 @@ const TAP_SLOP_PX = 8
 
 export default {
   name: 'HourlySummary',
-  components: { AppIcon },
+  components: { AppIcon, Skeleton },
   mixins: [weatherMixin],
   props: {
     /** hourlyStrip() output: hour / event / divider items */

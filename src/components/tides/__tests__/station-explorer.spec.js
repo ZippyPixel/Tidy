@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import StationExplorer from '@/components/tides/StationExplorer.vue'
 import { activeI18n } from '@/i18n'
+import { MIN_SKELETON_MS } from '@/composables/useSkeletonGate'
 
 const INDEX = {
   count: 3,
@@ -39,6 +40,8 @@ async function setup({ md = true, ...props } = {}) {
     global: { plugins: [createPinia(), activeI18n()] }
   })
   await flushPromises()
+  // past the list skeleton's minimum
+  await vi.advanceTimersByTimeAsync(MIN_SKELETON_MS)
   await wrapper.vm.$nextTick()
   return wrapper
 }
@@ -72,6 +75,42 @@ describe('StationExplorer', () => {
     window.matchMedia = realMatchMedia
     vi.unstubAllGlobals()
     vi.useRealTimers()
+  })
+
+  it('shows skeleton rows and a pulsing globe disc while the stations load', async () => {
+    // the skeleton's minimum is measured on the clock, so it must not move on its own here
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
+    let finish
+    fetchMock.mockImplementation((url) => (url === '/globe-land.json' ? LAND : new Promise((resolve) => (finish = resolve))))
+    setWidth(true)
+    wrapper = mount(StationExplorer, {
+      attachTo: document.body,
+      props: { open: true, home: HOME },
+      global: { plugins: [createPinia(), activeI18n()] }
+    })
+    await flushPromises()
+    expect(one('[data-list-loading]')).not.toBeNull()
+    expect(all('[data-list-loading] .tidy-skeleton').length).toBeGreaterThan(20)
+    expect(one('[data-station-list]').getAttribute('aria-busy')).toBe('true')
+    expect(one('[data-globe-skeleton]').classList).toContain('tidy-skeleton-soft')
+    expect(one('[role="status"]').textContent).toBe('Loading stations…')
+    // the search field is real; Near me and the globe controls wait at 50%
+    expect(one('[data-search]').disabled).toBe(false)
+    expect(one('[data-near]').disabled).toBe(true)
+    expect(one('[data-zoom-in]').disabled).toBe(true)
+    expect(one('[data-list-loading]').querySelector('button, a, input, [tabindex]')).toBeNull()
+    expect(all('[data-row]')).toHaveLength(0)
+
+    finish(INDEX)
+    await flushPromises()
+    expect(one('[data-list-loading]')).not.toBeNull()
+    await vi.advanceTimersByTimeAsync(MIN_SKELETON_MS)
+    await flushPromises()
+    expect(one('[data-list-loading]')).toBeNull()
+    expect(one('[data-globe-skeleton]')).toBeNull()
+    expect(all('[data-row]').length).toBeGreaterThan(0)
+    expect(one('[data-near]').disabled).toBe(false)
+    expect(one('[role="status"]').textContent).toBe('')
   })
 
   it('is a labelled dialog, with the count from the index', async () => {
@@ -237,6 +276,21 @@ describe('StationExplorer', () => {
     await wrapper.setProps({ open: true })
     await flushPromises()
     expect(fetchMock.mock.calls.length).toBe(first)
+  })
+
+  it('skips the skeleton when a new finder opens on stations already downloaded', async () => {
+    const pinia = createPinia()
+    setWidth(true)
+    const mountOne = () =>
+      mount(StationExplorer, { attachTo: document.body, props: { open: true, home: HOME }, global: { plugins: [pinia, activeI18n()] } })
+    const first = mountOne()
+    await flushPromises()
+    first.unmount()
+    wrapper = mountOne()
+    // no timers advanced: without the cache this would still be the skeleton's minimum
+    await flushPromises()
+    expect(one('[data-list-loading]')).toBeNull()
+    expect(all('[data-row]').length).toBeGreaterThan(0)
   })
 
   describe('back navigation on a phone', () => {

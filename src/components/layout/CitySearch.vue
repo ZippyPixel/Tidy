@@ -6,6 +6,7 @@
     :reset-search-term-on-blur="false"
     @update:open="onSuggestionsOpenChange"
   >
+    <p role="status" class="sr-only">{{ showSkeleton ? $t('loading.search') : '' }}</p>
     <!-- md+: muted pill in the header; suggestions in a popover under it -->
     <template v-if="variant === 'inline'">
       <ComboboxAnchor
@@ -32,9 +33,16 @@
         :side-offset="8"
         class="max-h-80 w-[--reka-combobox-trigger-width] overflow-y-auto rounded-tile p-1"
       >
-        <ComboboxEmpty class="px-3 py-4 text-sm text-muted-foreground">{{ $t('header.noMatchingCities') }}</ComboboxEmpty>
+        <!-- skeleton: five rows in the suggestions' own height while a lookup is in flight -->
+        <div v-if="showSkeleton" data-skeleton aria-hidden="true" class="flex flex-col">
+          <div v-for="([nameW, detailW], i) in skeletonRows" :key="i" class="flex min-h-14 flex-col justify-center gap-2 px-3 py-2">
+            <Skeleton class="h-3.5" :style="{ width: `${nameW}px` }" />
+            <Skeleton class="h-3" :style="{ width: `${detailW}px` }" />
+          </div>
+        </div>
+        <ComboboxEmpty v-else class="px-3 py-4 text-sm text-muted-foreground">{{ $t('header.noMatchingCities') }}</ComboboxEmpty>
         <ComboboxItem
-          v-for="suggestion in suggestions"
+          v-for="suggestion in showSkeleton ? [] : suggestions"
           :key="suggestion.id"
           :value="suggestion"
           class="flex min-h-14 cursor-pointer flex-col items-start justify-center gap-0.5 rounded-[var(--radius)] px-3 py-2 data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
@@ -87,9 +95,15 @@
         <ComboboxContent position="inline" class="outline-none">
           <ComboboxViewport>
             <p class="px-3 pb-2 pt-2.5 text-[13px] font-medium text-muted-foreground">{{ $t('header.suggestions') }}</p>
-            <ComboboxEmpty class="px-3 py-4 text-[15px] text-muted-foreground">{{ $t('header.noMatchingCities') }}</ComboboxEmpty>
+            <div v-if="showSkeleton" data-skeleton aria-hidden="true" class="flex flex-col">
+              <div v-for="([nameW, detailW], i) in skeletonRows" :key="i" class="flex min-h-16 flex-col justify-center gap-2 px-3.5 py-2.5">
+                <Skeleton class="h-4" :style="{ width: `${nameW}px` }" />
+                <Skeleton class="h-3" :style="{ width: `${detailW}px` }" />
+              </div>
+            </div>
+            <ComboboxEmpty v-else class="px-3 py-4 text-[15px] text-muted-foreground">{{ $t('header.noMatchingCities') }}</ComboboxEmpty>
             <ComboboxItem
-              v-for="suggestion in suggestions"
+              v-for="suggestion in showSkeleton ? [] : suggestions"
               :key="suggestion.id"
               :value="suggestion"
               class="flex min-h-16 cursor-pointer flex-col items-start justify-center gap-0.5 rounded-[var(--radius)] px-3.5 py-2.5 text-left outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
@@ -106,11 +120,14 @@
 </template>
 
 <script>
+import { ref } from 'vue'
 import { mapActions } from 'pinia'
 import { ComboboxContent, ComboboxViewport } from 'reka-ui'
 import useWeatherStore from '@/stores/weather'
 import { showWeather } from '@/utils/navigation'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useSkeletonGate } from '@/composables/useSkeletonGate'
 import {
   Combobox,
   ComboboxAnchor,
@@ -119,6 +136,9 @@ import {
   ComboboxItem,
   ComboboxList
 } from '@/components/ui/combobox'
+
+// [name, detail] bar widths for the five skeleton suggestions (design/TidySkeleton search)
+const SKELETON_ROWS = [[96, 150], [124, 120], [84, 168], [110, 96], [132, 140]]
 
 export default {
   name: 'CitySearch',
@@ -131,7 +151,8 @@ export default {
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
-    ComboboxViewport
+    ComboboxViewport,
+    Skeleton
   },
   props: {
     /** 'inline' — header pill with popover list (md+); 'screen' — full-screen layout (phone) */
@@ -139,6 +160,12 @@ export default {
   },
   // close: the user went back, or a search was sent (screen variant closes its dialog)
   emits: ['close'],
+  setup() {
+    // in setup, so the skeleton gate watches it from the start
+    const searching = ref(false)
+    const { showSkeleton } = useSkeletonGate(() => searching.value)
+    return { searching, showSkeleton, skeletonRows: SKELETON_ROWS }
+  },
   data() {
     return {
       cityName: '',
@@ -154,6 +181,7 @@ export default {
       if (query.length < 3) {
         this.suggestions = []
         this.showSuggestions = false
+        this.searching = false
         return
       }
       this.searchTimer = setTimeout(() => this.fetchSuggestions(query), 300)
@@ -172,15 +200,20 @@ export default {
       this.focus()
     },
     async fetchSuggestions(query) {
+      // the list opens on its skeleton rows while the lookup is in flight
+      this.searching = true
+      this.showSuggestions = true
       try {
         const results = await this.searchLocations(query)
         if (query !== this.cityName.trim()) return // input changed while fetching
         this.suggestions = results
-        this.showSuggestions = true
+        this.searching = false
       } catch (error) {
+        if (query !== this.cityName.trim()) return
         console.error('City search failed:', error)
         this.suggestions = []
         this.showSuggestions = false
+        this.searching = false
       }
     },
     onSuggestionsOpenChange(open) {
@@ -192,6 +225,7 @@ export default {
     },
     async selectSuggestion(suggestion) {
       this.showSuggestions = false
+      this.searching = false
       this.cityName = ''
       this.$emit('close')
       try {
@@ -205,6 +239,7 @@ export default {
       const cityName = this.cityName
       if (!cityName.trim()) return
       this.showSuggestions = false
+      this.searching = false
       clearTimeout(this.searchTimer)
       this.$emit('close')
       try {

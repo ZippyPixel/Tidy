@@ -1,31 +1,32 @@
 <template>
   <div class="flex h-full flex-col">
-    <template v-if="!loading">
-      <!-- metric chips -->
-      <div
-        role="radiogroup"
-        :aria-label="$t('hourly.metric')"
-        class="chip-row -mx-4 flex h-8 flex-none gap-2 overflow-x-auto overflow-y-hidden px-4 scrollbar-hide md:-mx-6 md:px-6"
+    <!-- metric chips: real from the first frame, disabled at 50% until there is data -->
+    <div
+      role="radiogroup"
+      :aria-label="$t('hourly.metric')"
+      class="chip-row -mx-4 flex h-8 flex-none gap-2 overflow-x-auto overflow-y-hidden px-4 scrollbar-hide md:-mx-6 md:px-6"
+    >
+      <button
+        v-for="chip in chips"
+        :key="chip.value"
+        type="button"
+        role="radio"
+        :aria-checked="String(chip.value === metric)"
+        :disabled="loading"
+        class="flex h-8 flex-none items-center gap-2 whitespace-nowrap rounded-lg border text-sm font-medium leading-5 hover:shadow-[inset_0_0_0_999px_hsl(var(--foreground)/0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card active:shadow-[inset_0_0_0_999px_hsl(var(--foreground)/0.12)] disabled:pointer-events-none disabled:opacity-50"
+        :class="
+          chip.value === metric
+            ? 'border-transparent bg-accent pl-2 pr-4 text-accent-foreground'
+            : 'border-input px-4 text-foreground'
+        "
+        @click="$emit('update:metric', chip.value)"
       >
-        <button
-          v-for="chip in chips"
-          :key="chip.value"
-          type="button"
-          role="radio"
-          :aria-checked="String(chip.value === metric)"
-          class="flex h-8 flex-none items-center gap-2 whitespace-nowrap rounded-lg border text-sm font-medium leading-5 hover:shadow-[inset_0_0_0_999px_hsl(var(--foreground)/0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card active:shadow-[inset_0_0_0_999px_hsl(var(--foreground)/0.12)]"
-          :class="
-            chip.value === metric
-              ? 'border-transparent bg-accent pl-2 pr-4 text-accent-foreground'
-              : 'border-input px-4 text-foreground'
-          "
-          @click="$emit('update:metric', chip.value)"
-        >
-          <AppIcon v-if="chip.value === metric" name="check" :size="18" :stroke-width="2.2" />
-          <span>{{ chip.label }}</span>
-        </button>
-      </div>
+        <AppIcon v-if="chip.value === metric" name="check" :size="18" :stroke-width="2.2" />
+        <span>{{ chip.label }}</span>
+      </button>
+    </div>
 
+    <template v-if="!loading">
       <!-- plot: SVG for strokes/fills (stretched to the box), HTML for anything that
            must keep its shape (labels, arrows, dot, tooltip), positioned in % -->
       <div class="relative ml-8 mt-4 h-40">
@@ -188,16 +189,31 @@
       </div>
     </template>
 
-    <!-- skeleton -->
+    <!-- skeleton (design/TidySkeleton): the plot box with its grid, y labels and x axis
+         as bars, and a dashed line pulsing on the shimmer's clock -->
     <template v-else>
-      <div class="flex h-8 gap-2 overflow-hidden" aria-hidden="true">
-        <div v-for="w in [120, 96, 132, 68, 96]" :key="w" class="h-8 flex-none rounded-lg bg-muted" :style="{ width: `${w}px` }" />
-      </div>
-      <div class="relative ml-8 mt-4 h-40 rounded-lg bg-gradient-to-b from-muted/0 to-muted" aria-hidden="true">
-        <div class="absolute inset-x-0 top-0 border-t border-chart-grid" />
-        <div class="absolute inset-x-0 top-1/2 border-t border-chart-grid" />
-        <div class="absolute inset-x-0 bottom-0 border-t border-chart-grid" />
-        <div class="absolute inset-x-0 top-[calc(100%+12px)] h-2 rounded bg-muted" />
+      <div data-skeleton class="relative ml-8 mt-4 h-40" aria-hidden="true">
+        <Skeleton
+          v-for="top in [0, 50, 100]"
+          :key="`y${top}`"
+          class="absolute right-[calc(100%+8px)] h-2.5 w-5"
+          :style="{ top: `calc(${top}% - 5px)` }"
+        />
+        <div v-for="top in [0, 50, 100]" :key="`g${top}`" class="absolute inset-x-0 border-t border-chart-grid" :style="{ top: `${top}%` }" />
+        <svg class="absolute inset-0 size-full overflow-visible" :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="none">
+          <path
+            :d="skeletonWave"
+            fill="none"
+            class="tidy-skeleton-line"
+            stroke-width="2"
+            stroke-dasharray="6 6"
+            stroke-linecap="round"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+        <div class="absolute inset-x-0 top-[calc(100%+8px)] flex h-4 items-center justify-between">
+          <Skeleton v-for="n in 5" :key="n" class="h-2.5 w-8" />
+        </div>
       </div>
     </template>
   </div>
@@ -209,6 +225,7 @@ import { mapState } from 'pinia'
 import useUnitStore from '@/stores/unit'
 import weatherMixin from '@/mixins/weatherMixin'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { Skeleton } from '@/components/ui/skeleton'
 import { compassPoint, smoothPath, temperatureScale } from '@/utils/hourly'
 
 // plot box in viewBox units; X keeps an 8-unit inset so end dots are not clipped
@@ -226,7 +243,7 @@ const COLORS = {
 
 export default {
   name: 'HourlyTrends',
-  components: { AppIcon },
+  components: { AppIcon, Skeleton },
   mixins: [weatherMixin],
   props: {
     /** hourlyWindow() output */
@@ -244,6 +261,16 @@ export default {
     return { W, H, scrubIndex: null, scrubTouch: false }
   },
   computed: {
+    // the skeleton's placeholder curve: a gentle wave across the plot
+    skeletonWave() {
+      let d = ''
+      for (let i = 0; i <= 48; i++) {
+        const f = i / 48
+        const y = H / 2 - Math.cos(f * Math.PI * 3 + 0.6) * (H * 0.25)
+        d += `${i ? ' L' : 'M'}${(INSET + f * (W - 2 * INSET)).toFixed(1)},${y.toFixed(1)}`
+      }
+      return d
+    },
     ...mapState(useUnitStore, ['unit']),
     celsius() {
       return this.unit === 'celsius'

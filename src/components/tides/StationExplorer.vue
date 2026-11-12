@@ -11,6 +11,7 @@
         @close-auto-focus.prevent="opener?.focus({ preventScroll: true })"
       >
         <!-- design/TidyTideExplorer. Below md the panel dissolves, so the order is search → globe → list -->
+        <p role="status" class="sr-only">{{ listLoading ? $t('loading.stations') : '' }}</p>
         <header
           class="flex h-[calc(56px+env(safe-area-inset-top))] flex-none items-center gap-2 border-b pl-1 pr-4 pt-[env(safe-area-inset-top)] md:h-[68px] md:pl-3 md:pr-6 md:pt-0"
         >
@@ -64,7 +65,8 @@
                 type="button"
                 data-near
                 :aria-pressed="String(near)"
-                class="flex h-11 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-sm font-semibold outline-ring hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2"
+                :disabled="listLoading"
+                class="flex h-11 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-sm font-semibold outline-ring hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-50"
                 :class="near ? 'bg-accent text-accent-foreground' : 'text-foreground'"
                 @click="nearMe"
               >
@@ -77,17 +79,25 @@
               role="region"
               :aria-label="$t('tides.explorer.listLabel')"
               data-station-list
+              :aria-busy="listLoading ? 'true' : undefined"
               class="order-3 min-h-60 flex-1 md:min-h-0"
             >
               <!-- 16px on the right keeps the bar off the chevrons -->
               <div class="pb-[calc(24px+env(safe-area-inset-bottom))] pl-1 pr-4 pt-2 md:pb-6 md:pl-3 md:pt-1">
-                <div v-if="!index && !loadFailed" data-list-loading class="flex flex-col gap-3 px-3 py-2">
-                  <div class="h-3 w-2/5 rounded bg-muted" />
-                  <div class="h-4 w-4/5 rounded bg-muted" />
-                  <div class="h-4 w-[70%] rounded bg-muted" />
+                <!-- skeleton (design/TidySkeleton ex*): a section label and its 56px rows -->
+                <div v-if="listLoading" data-list-loading data-skeleton aria-hidden="true">
+                  <div v-for="(group, g) in skeletonGroups" :key="g" class="flex flex-col gap-0.5" :class="{ 'pb-3': g === 0 }">
+                    <div class="flex min-h-8 items-center px-3">
+                      <Skeleton class="h-2.5" :style="{ width: `${group.label}px` }" />
+                    </div>
+                    <div v-for="([titleW, subW], i) in group.rows" :key="i" class="flex min-h-14 flex-col justify-center gap-2 px-3 py-2">
+                      <Skeleton class="h-3.5" :style="{ width: `${titleW}px` }" />
+                      <Skeleton class="h-2.5" :style="{ width: `${subW}px` }" />
+                    </div>
+                  </div>
                 </div>
                 <p v-if="message" data-message class="px-3 py-4 text-sm leading-5 text-muted-foreground">{{ message }}</p>
-                <div v-for="section in sections" :key="section.title" data-section class="flex flex-col gap-0.5 pb-3">
+                <div v-for="section in listLoading ? [] : sections" :key="section.title" data-section class="flex flex-col gap-0.5 pb-3">
                   <div class="flex min-h-8 items-center justify-between gap-2 px-3">
                     <span class="truncate text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-muted-foreground">{{ section.title }}</span>
                     <button
@@ -134,6 +144,7 @@
             :is-md="isMd"
             :aria-label="globeLabel"
             :credit="creditLine"
+            :loading="listLoading"
             class="order-2 h-[min(46vh,380px)] flex-none border-b md:h-auto md:flex-1 md:border-b-0"
             @update:pick="pick = $event"
             @view="view"
@@ -146,11 +157,14 @@
 
 <script>
 import { mapStores } from 'pinia'
+import { ref, shallowRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
 import AppIcon from '@/components/common/AppIcon.vue'
 import TideGlobe from '@/components/tides/TideGlobe.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useSkeletonGate } from '@/composables/useSkeletonGate'
 import { API_ENDPOINTS } from '@/constants/api'
 import backToClose from '@/mixins/backToClose'
 import tideMixin from '@/mixins/tideMixin'
@@ -162,10 +176,18 @@ import { haversineKm } from '@/utils/tides'
 const SEARCH_DELAY_MS = 200
 const COUNTRY_RESULTS = 6
 const COUNTRY_ROWS = 200
+// the list's skeleton: [label width, rows of [title, sub] widths] (design/TidySkeleton ex*)
+const SKELETON_GROUPS = [
+  { label: 84, rows: [[98, 62]] },
+  {
+    label: 112,
+    rows: [[124, 62], [62, 62], [86, 62], [158, 54], [88, 62], [78, 72], [66, 54], [98, 62], [80, 54], [74, 62], [56, 62], [84, 62]]
+  }
+]
 
 export default {
   name: 'StationExplorer',
-  components: { AppIcon, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, ScrollArea, TideGlobe },
+  components: { AppIcon, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, ScrollArea, Skeleton, TideGlobe },
   mixins: [weatherMixin, tideMixin, backToClose],
   props: {
     open: { type: Boolean, default: false },
@@ -178,15 +200,18 @@ export default {
   },
   emits: ['pick', 'close'],
   setup() {
-    return { isMd: useMediaQuery('(min-width: 768px)') }
+    // here rather than in data(), so the skeleton gate can watch them from the start
+    // a reopening finds the index already downloaded, so no skeleton then
+    const index = shallowRef(useTidesStore().explorer?.index ?? null)
+    const loadFailed = ref(false)
+    const { showSkeleton } = useSkeletonGate(() => !index.value && !loadFailed.value)
+    return { isMd: useMediaQuery('(min-width: 768px)'), index, loadFailed, showSkeleton, skeletonGroups: SKELETON_GROUPS }
   },
   data() {
     return {
       historyKey: 'tidyExplorer',
-      index: null,
       stations: [],
       land: null,
-      loadFailed: false,
       query: '',
       results: null,
       near: false,
@@ -198,6 +223,10 @@ export default {
   },
   computed: {
     ...mapStores(useTidesStore),
+    // the station index is on its way (held for the skeleton's minimum)
+    listLoading() {
+      return this.showSkeleton || (!this.index && !this.loadFailed)
+    },
     countLine() {
       if (!this.index) return this.$t('tides.explorer.loading')
       return this.$t('tides.explorer.count', {

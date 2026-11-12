@@ -77,6 +77,30 @@ describe('tides store', () => {
     expect(store.chosen.status).toBe('loading')
   })
 
+  it('keeps the same station on screen while it refreshes', async () => {
+    vi.useFakeTimers()
+    await store.loadStation('same')
+    vi.advanceTimersByTime(31 * 60 * 1000)
+    let finish
+    fetchMock.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)))
+    const refresh = store.loadStation('same')
+    expect(store.chosen.status).toBe('loading')
+    expect(store.chosen.data.station.name).toBe('same')
+    finish(payload('same, newer'))
+    await refresh
+    expect(store.chosen.data.station.name).toBe('same, newer')
+  })
+
+  it('keeps the last good prediction when a refresh fails', async () => {
+    vi.useFakeTimers()
+    await store.loadStation('same')
+    vi.advanceTimersByTime(31 * 60 * 1000)
+    fetchMock.mockRejectedValueOnce(new Error('network'))
+    await store.loadStation('same')
+    expect(store.chosen.status).toBe('ready')
+    expect(store.chosen.data.station.name).toBe('same')
+  })
+
   it('tells an unknown station from a failed request', async () => {
     fetchMock.mockRejectedValueOnce({ statusCode: 404 })
     await store.loadStation('nope')

@@ -1,155 +1,187 @@
 <template>
   <div class="-mt-2 xl:-mt-3">
-    <!-- design/TidyTides; breakpoints and placement from "Tidy Tides Responsive" section 04 -->
-    <NuxtLink
-      to="/"
-      class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
-    >
-      <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
-      <span>{{ $t('tides.page.back') }}</span>
-    </NuxtLink>
+    <!-- design/TidyTides; breakpoints and placement from "Tidy Tides Responsive" section 04.
+         SkeletonGate holds the per-section skeletons while the station loads. -->
+    <SkeletonGate v-slot="{ showSkeleton, fadeClass }" :loading="state === 'loading'">
+      <p role="status" class="sr-only">{{ showSkeleton ? $t('loading.tides') : '' }}</p>
+      <NuxtLink
+        to="/"
+        class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
+      >
+        <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
+        <span>{{ $t('tides.page.back') }}</span>
+      </NuxtLink>
 
-    <div class="mb-4 flex flex-col items-start gap-3 md:mb-6 md:flex-row md:items-end md:justify-between md:gap-6">
-      <div class="min-w-0">
-        <div class="mb-1 text-[13px] font-medium leading-4 text-muted-foreground">{{ $t('tides.title') }}</div>
-        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 class="text-[clamp(1.25rem,1rem+1vw,1.625rem)] font-semibold leading-[1.2] tracking-[-0.01em]">
-            {{ station?.name || $t('tides.tideTimes') }}
-          </h1>
-          <span v-if="meta" data-meta class="text-[15px] text-muted-foreground">{{ meta }}</span>
-        </div>
-        <div v-if="distanceLine" data-distance class="mt-1 text-[13px] leading-[18px] tabular-nums text-muted-foreground">{{ distanceLine }}</div>
-      </div>
-      <button type="button" data-change aria-haspopup="dialog" :class="pillButton" @click="openExplorer($event)">
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          class="size-[18px] flex-none"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18" />
-          <path d="M12 3a14 14 0 0 1 0 18" />
-          <path d="M12 3a14 14 0 0 0 0 18" />
-        </svg>
-        <span>{{ $t('tides.page.changeStation') }}</span>
-      </button>
-    </div>
-
-    <div v-if="station" class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6">
-      <!-- source order is the phone order; md and xl re-place the cards -->
-      <TideNow
-        :tides="tides"
-        :now="now"
-        :home-zone="coords?.tzId"
-        class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-2 xl:col-span-4"
-      />
-
-      <DashboardCard :title="$t('tides.chart.title')" class="col-span-12 md:row-start-1">
-        <template #actions>
-          <SegmentedControl
-            kind="tabs"
-            :aria-label="$t('tides.chart.rangeLabel')"
-            :options="views"
-            :model-value="view"
-            @update:model-value="view = $event"
-          />
-        </template>
-        <div class="flex min-h-12 items-center justify-between gap-2">
-          <button
-            v-if="view === 'day'"
-            type="button"
-            data-previous
-            :aria-label="$t('tides.chart.previousDay')"
-            :disabled="day <= -1"
-            :class="dayButton"
-            @click="day -= 1"
-          >
-            <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
-          </button>
-          <div aria-live="polite" class="flex min-w-0 flex-1 flex-col items-center text-center">
-            <span data-range-title class="whitespace-nowrap text-base font-semibold leading-6">{{ rangeTitle }}</span>
-            <span data-range-tag class="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-primary">{{ rangeTag }}</span>
+      <div class="mb-4 flex flex-col items-start gap-3 md:mb-6 md:flex-row md:items-end md:justify-between md:gap-6">
+        <div class="min-w-0" :class="{ 'w-full md:w-auto': showSkeleton }" :aria-busy="showSkeleton ? 'true' : undefined">
+          <div class="mb-1 text-[13px] font-medium leading-4 text-muted-foreground">{{ $t('tides.title') }}</div>
+          <!-- skeleton: station name, region and the distance line -->
+          <div v-if="showSkeleton" data-skeleton class="flex flex-col">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <Skeleton class="my-[4.5px] h-[22px] w-[170px] md:my-[5px] md:w-[210px]" />
+              <Skeleton class="my-[5px] h-3 w-[150px]" />
+            </div>
+            <Skeleton class="mt-1 h-2.5 w-full max-w-[260px] md:my-1 md:max-w-[330px]" />
           </div>
-          <button
-            v-if="view === 'day'"
-            type="button"
-            data-next-day
-            :aria-label="$t('tides.chart.nextDay')"
-            :disabled="day >= 6"
-            :class="dayButton"
-            @click="day += 1"
+          <template v-else>
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1" :class="fadeClass">
+              <h1 class="text-[clamp(1.25rem,1rem+1vw,1.625rem)] font-semibold leading-[1.2] tracking-[-0.01em]">
+                {{ station?.name || $t('tides.tideTimes') }}
+              </h1>
+              <span v-if="meta" data-meta class="text-[15px] text-muted-foreground">{{ meta }}</span>
+            </div>
+            <div v-if="distanceLine" data-distance class="mt-1 text-[13px] leading-[18px] tabular-nums text-muted-foreground" :class="fadeClass">{{ distanceLine }}</div>
+          </template>
+        </div>
+        <!-- real from the first frame; waits at 50% until there is a station to change from -->
+        <button
+          type="button"
+          data-change
+          aria-haspopup="dialog"
+          :disabled="showSkeleton"
+          :class="pillButton"
+          @click="openExplorer($event)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            class="size-[18px] flex-none"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <AppIcon name="chevron-right" :size="18" :stroke-width="2" />
-          </button>
-        </div>
-        <TideChart :tides="tides" :view="view" :day="day" :now="now" />
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-4 text-muted-foreground">
-          <span class="flex items-center gap-1.5"><span class="size-[9px] rounded-full bg-tide" />{{ $t('tides.chart.high') }}</span>
-          <span class="flex items-center gap-1.5"><span class="size-[9px] rounded-full border-2 border-tide" />{{ $t('tides.chart.low') }}</span>
-          <span class="flex items-center gap-1.5">
-            <span class="h-[9px] w-3.5 rounded-sm bg-chart-night shadow-[inset_0_0_0_1px_hsl(var(--border))]" />{{ $t('tides.chart.night') }}
-          </span>
-          <span data-note>{{ chartNote }}</span>
-        </div>
-      </DashboardCard>
-
-      <TodayTides
-        :tides="tides"
-        :now="now"
-        :day="view === 'day' ? day : 0"
-        class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-2 xl:col-span-4 xl:col-start-5"
-      />
-      <TideWeek :tides="tides" :now="now" class="col-span-12 md:row-start-3 xl:col-span-8" />
-      <MoonTides
-        :tides="tides"
-        :now="now"
-        :day="view === 'day' ? day : 0"
-        class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-2"
-      />
-      <StationAbout
-        :station="station"
-        :attribution="tides.credit.attribution"
-        class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-3"
-      />
-      <NearbyStations
-        :stations="station.nearby"
-        class="col-span-12 md:row-start-5 xl:row-start-4"
-        @select="selectStation"
-        @explore="openExplorer"
-      />
-    </div>
-
-    <DashboardCard v-else-if="state === 'loading'" :title="$t('tides.chart.title')">
-      <div data-loading>
-        <TideChart :tides="null" :now="now" />
+            <circle cx="12" cy="12" r="9" />
+            <path d="M3 12h18" />
+            <path d="M12 3a14 14 0 0 1 0 18" />
+            <path d="M12 3a14 14 0 0 0 0 18" />
+          </svg>
+          <span>{{ $t('tides.page.changeStation') }}</span>
+        </button>
       </div>
-    </DashboardCard>
 
-    <section v-else data-empty class="flex flex-col items-start gap-4 rounded-card border bg-card p-6 md:p-10">
-      <svg viewBox="0 0 48 48" aria-hidden="true" class="size-12 fill-none stroke-tide" stroke-width="2" stroke-linecap="round">
-        <path d="M4 20c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4" />
-        <path d="M4 30c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4" opacity="0.5" />
-      </svg>
-      <div class="flex max-w-[560px] flex-col gap-1.5">
-        <span class="text-lg font-semibold leading-6">{{ $t(emptyCopy.title) }}</span>
-        <span class="text-sm leading-[21px] text-muted-foreground [text-wrap:pretty]">{{ $t(emptyCopy.body) }}</span>
+      <!-- skeleton: one card per section, in the loaded page's placement (see below) -->
+      <div v-if="showSkeleton" data-loading class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6">
+        <TideNowSkeleton class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-2 xl:col-span-4" />
+        <TideChartSkeleton class="col-span-12 md:row-start-1" />
+        <TodayTidesSkeleton class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-2 xl:col-span-4 xl:col-start-5" />
+        <TideWeekSkeleton class="col-span-12 md:row-start-3 xl:col-span-8" />
+        <MoonTidesSkeleton
+          class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-2"
+        />
+        <StationAboutSkeleton
+          class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-3"
+        />
+        <NearbyStationsSkeleton class="col-span-12 md:row-start-5 xl:row-start-4" />
       </div>
-      <button v-if="state === 'notFound'" type="button" data-back-home :class="pillButton" @click="clearStation">{{ backLabel }}</button>
-      <button v-else-if="state === 'error'" type="button" data-retry :class="pillButton" @click="load(true)">{{ $t('tides.empty.retry') }}</button>
-      <button v-else type="button" data-empty-explore aria-haspopup="dialog" :class="pillButton" @click="openExplorer($event)">
-        {{ $t('tides.none.cta') }}
-      </button>
-    </section>
 
-    <footer class="mt-6 flex max-w-[760px] flex-col gap-1.5 border-t pt-5 text-[13px] leading-[19px] text-muted-foreground md:mt-8">
-      <p>{{ $t('tides.footer.disclaimer') }}</p>
-      <TideCredit v-if="footerCredit" data-credit :text="footerCredit" class="[overflow-wrap:anywhere]" />
-    </footer>
+      <div v-else-if="station" class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6" :class="fadeClass">
+        <!-- source order is the phone order; md and xl re-place the cards -->
+        <TideNow
+          :tides="tides"
+          :now="now"
+          :home-zone="coords?.tzId"
+          class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-2 xl:col-span-4"
+        />
+
+        <DashboardCard :title="$t('tides.chart.title')" class="col-span-12 md:row-start-1">
+          <template #actions>
+            <SegmentedControl
+              kind="tabs"
+              :aria-label="$t('tides.chart.rangeLabel')"
+              :options="views"
+              :model-value="view"
+              @update:model-value="view = $event"
+            />
+          </template>
+          <div class="flex min-h-12 items-center justify-between gap-2">
+            <button
+              v-if="view === 'day'"
+              type="button"
+              data-previous
+              :aria-label="$t('tides.chart.previousDay')"
+              :disabled="day <= -1"
+              :class="dayButton"
+              @click="day -= 1"
+            >
+              <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
+            </button>
+            <div aria-live="polite" class="flex min-w-0 flex-1 flex-col items-center text-center">
+              <span data-range-title class="whitespace-nowrap text-base font-semibold leading-6">{{ rangeTitle }}</span>
+              <span data-range-tag class="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-primary">{{ rangeTag }}</span>
+            </div>
+            <button
+              v-if="view === 'day'"
+              type="button"
+              data-next-day
+              :aria-label="$t('tides.chart.nextDay')"
+              :disabled="day >= 6"
+              :class="dayButton"
+              @click="day += 1"
+            >
+              <AppIcon name="chevron-right" :size="18" :stroke-width="2" />
+            </button>
+          </div>
+          <TideChart :tides="tides" :view="view" :day="day" :now="now" />
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-4 text-muted-foreground">
+            <span class="flex items-center gap-1.5"><span class="size-[9px] rounded-full bg-tide" />{{ $t('tides.chart.high') }}</span>
+            <span class="flex items-center gap-1.5"><span class="size-[9px] rounded-full border-2 border-tide" />{{ $t('tides.chart.low') }}</span>
+            <span class="flex items-center gap-1.5">
+              <span class="h-[9px] w-3.5 rounded-sm bg-chart-night shadow-[inset_0_0_0_1px_hsl(var(--border))]" />{{ $t('tides.chart.night') }}
+            </span>
+            <span data-note>{{ chartNote }}</span>
+          </div>
+        </DashboardCard>
+
+        <TodayTides
+          :tides="tides"
+          :now="now"
+          :day="view === 'day' ? day : 0"
+          class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-2 xl:col-span-4 xl:col-start-5"
+        />
+        <TideWeek :tides="tides" :now="now" class="col-span-12 md:row-start-3 xl:col-span-8" />
+        <MoonTides
+          :tides="tides"
+          :now="now"
+          :day="view === 'day' ? day : 0"
+          class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-2"
+        />
+        <StationAbout
+          :station="station"
+          :attribution="tides.credit.attribution"
+          class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-3"
+        />
+        <NearbyStations
+          :stations="station.nearby"
+          class="col-span-12 md:row-start-5 xl:row-start-4"
+          @select="selectStation"
+          @explore="openExplorer"
+        />
+      </div>
+
+      <section v-else data-empty class="flex flex-col items-start gap-4 rounded-card border bg-card p-6 md:p-10">
+        <svg viewBox="0 0 48 48" aria-hidden="true" class="size-12 fill-none stroke-tide" stroke-width="2" stroke-linecap="round">
+          <path d="M4 20c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4" />
+          <path d="M4 30c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4" opacity="0.5" />
+        </svg>
+        <div class="flex max-w-[560px] flex-col gap-1.5">
+          <span class="text-lg font-semibold leading-6">{{ $t(emptyCopy.title) }}</span>
+          <span class="text-sm leading-[21px] text-muted-foreground [text-wrap:pretty]">{{ $t(emptyCopy.body) }}</span>
+        </div>
+        <button v-if="state === 'notFound'" type="button" data-back-home :class="pillButton" @click="clearStation">{{ backLabel }}</button>
+        <button v-else-if="state === 'error'" type="button" data-retry :class="pillButton" @click="load(true)">{{ $t('tides.empty.retry') }}</button>
+        <button v-else type="button" data-empty-explore aria-haspopup="dialog" :class="pillButton" @click="openExplorer($event)">
+          {{ $t('tides.none.cta') }}
+        </button>
+      </section>
+
+      <footer class="mt-6 flex max-w-[760px] flex-col gap-1.5 border-t pt-5 text-[13px] leading-[19px] text-muted-foreground md:mt-8">
+        <p>{{ $t('tides.footer.disclaimer') }}</p>
+        <TideCredit v-if="footerCredit" data-credit :text="footerCredit" class="[overflow-wrap:anywhere]" />
+      </footer>
+
+    </SkeletonGate>
 
     <ClientOnly>
       <StationExplorer
@@ -180,6 +212,15 @@ import TideCredit from '@/components/tides/TideCredit.vue'
 import TideNow from '@/components/tides/TideNow.vue'
 import TideWeek from '@/components/tides/TideWeek.vue'
 import TodayTides from '@/components/tides/TodayTides.vue'
+import MoonTidesSkeleton from '@/components/skeletons/MoonTidesSkeleton.vue'
+import NearbyStationsSkeleton from '@/components/skeletons/NearbyStationsSkeleton.vue'
+import StationAboutSkeleton from '@/components/skeletons/StationAboutSkeleton.vue'
+import TideChartSkeleton from '@/components/skeletons/TideChartSkeleton.vue'
+import TideNowSkeleton from '@/components/skeletons/TideNowSkeleton.vue'
+import TideWeekSkeleton from '@/components/skeletons/TideWeekSkeleton.vue'
+import TodayTidesSkeleton from '@/components/skeletons/TodayTidesSkeleton.vue'
+import { Skeleton } from '@/components/ui/skeleton'
+import SkeletonGate from '@/components/common/SkeletonGate.vue'
 import tideMixin from '@/mixins/tideMixin'
 import tideNow from '@/mixins/tideNow'
 import weatherMixin from '@/mixins/weatherMixin'
@@ -197,16 +238,25 @@ export default {
     AppIcon,
     DashboardCard,
     MoonTides,
+    MoonTidesSkeleton,
     NearbyStations,
+    NearbyStationsSkeleton,
     SegmentedControl,
+    Skeleton,
+    SkeletonGate,
     StationAbout,
+    StationAboutSkeleton,
     // the globe and its data only load when someone opens it
     StationExplorer: defineAsyncComponent(() => import('@/components/tides/StationExplorer.vue')),
     TideChart,
     TideCredit,
+    TideChartSkeleton,
     TideNow,
+    TideNowSkeleton,
     TideWeek,
-    TodayTides
+    TideWeekSkeleton,
+    TodayTides,
+    TodayTidesSkeleton
   },
   mixins: [weatherMixin, tideMixin, tideNow],
   setup() {
@@ -223,14 +273,14 @@ export default {
       // set while the explorer closes: on a phone that takes a history step
       pendingStation: null,
       pillButton:
-        'inline-flex h-11 flex-none items-center gap-2 whitespace-nowrap rounded-full border bg-card px-[18px] text-sm font-semibold text-foreground outline-ring hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:bg-foreground/10',
+        'inline-flex h-11 flex-none items-center gap-2 whitespace-nowrap rounded-full border bg-card px-[18px] text-sm font-semibold text-foreground outline-ring hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:bg-foreground/10 disabled:pointer-events-none disabled:opacity-50',
       dayButton:
         'flex size-11 flex-none items-center justify-center rounded-full border outline-ring enabled:hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-35'
     }
   },
   computed: {
     ...mapStores(useTidesStore),
-    ...mapState(useWeatherStore, ['coords', 'isLoading']),
+    ...mapState(useWeatherStore, ['coords', 'weatherPending']),
     stationId() {
       const id = this.$route.query.station
       return typeof id === 'string' && id ? id : null
@@ -249,7 +299,7 @@ export default {
       if (this.slot.status === 'notFound' || this.slot.status === 'error') return this.slot.status
       if (this.tides) return 'none'
       // nothing to look up until the weather says where we are
-      if (!this.stationId && !this.coords && !this.isLoading) return 'pick'
+      if (!this.stationId && !this.coords && !this.weatherPending) return 'pick'
       return 'loading'
     },
     emptyCopy() {

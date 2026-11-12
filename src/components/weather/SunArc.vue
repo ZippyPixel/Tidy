@@ -8,9 +8,9 @@
         </div>
         <span v-if="extra" class="pb-1 text-right text-[13px] leading-4 tabular-nums text-muted-foreground">{{ extra }}</span>
       </template>
-      <div v-else class="flex flex-col gap-2" aria-hidden="true">
-        <div class="h-2.5 w-8 rounded bg-muted" />
-        <div class="h-4 w-[120px] rounded bg-muted" />
+      <div v-else data-skeleton class="flex flex-col gap-2" aria-hidden="true">
+        <Skeleton class="h-2.5 w-8" />
+        <Skeleton class="h-4 w-[124px]" />
       </div>
     </div>
     <CelestialArc
@@ -34,6 +34,7 @@
 </template>
 
 <script>
+import { Skeleton } from '@/components/ui/skeleton'
 import { currentIntlTag } from '@/i18n'
 import { formatAstroTime, parseMinutes, sunState } from '@/utils/astro'
 import durationMixin from '@/mixins/durationMixin'
@@ -41,7 +42,7 @@ import CelestialArc from './CelestialArc.vue'
 
 export default {
   name: 'SunArc',
-  components: { CelestialArc },
+  components: { CelestialArc, Skeleton },
   mixins: [durationMixin],
   props: {
     astro: { type: Object, default: () => ({}) },

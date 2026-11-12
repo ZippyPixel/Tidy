@@ -1,5 +1,5 @@
 <template>
-  <DashboardCard :title="$t('hourly.title')" class="overflow-hidden">
+  <DashboardCard :title="$t('hourly.title')" :busy="loading" class="overflow-hidden">
     <!-- design/TidyHourly: Summary (scrolling hour cards) / Trends (metric chart),
          both over the same 24-hour window starting now (or 00:00 on a picked day) -->
     <template #actions>
@@ -13,7 +13,7 @@
       />
     </template>
 
-    <div class="relative h-[232px]">
+    <div class="relative h-[232px]" :class="fadeClass">
       <div
         role="tabpanel"
         :aria-label="$t('hourly.summary')"
@@ -61,6 +61,7 @@ import HourlySummary from '@/components/weather/HourlySummary.vue'
 import HourlyTrends from '@/components/weather/HourlyTrends.vue'
 import { hourlyStrip, hourlyWindow, previousHour } from '@/utils/hourly'
 import { locationClock } from '@/utils/astro'
+import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 
 const MODE_KEY = 'tidy.hourly.mode'
 const METRIC_KEY = 'tidy.hourly.metric'
@@ -86,6 +87,9 @@ function writePref(key, value) {
 export default {
   name: 'DailyChart',
   components: { DashboardCard, SegmentedControl, HourDetailModal, HourlySummary, HourlyTrends },
+  setup() {
+    return useWeatherSkeleton()
+  },
   data() {
     return {
       mode: 'summary',
@@ -97,7 +101,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(useWeatherStore, ['hourly', 'forecast', 'date', 'today', 'zoneOffsetMs', 'isLoading']),
+    ...mapState(useWeatherStore, ['hourly', 'forecast', 'date', 'today', 'zoneOffsetMs']),
     modes() {
       return [
         { value: 'summary', label: this.$t('hourly.summary') },
@@ -122,7 +126,7 @@ export default {
       return hourlyStrip(this.points, this.forecast)
     },
     loading() {
-      return this.isLoading && !this.points.length
+      return this.showSkeleton
     }
   },
   mounted() {

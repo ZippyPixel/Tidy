@@ -15,6 +15,7 @@ function setup(component, props = {}, state = {}) {
   const pinia = createPinia()
   const store = useWeatherStore(pinia)
   store.$patch({
+    awaitingLocation: false,
     condition: 'Patchy rain nearby',
     conditionCode: 1063,
     isDay: 1,

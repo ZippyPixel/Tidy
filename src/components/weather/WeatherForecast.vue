@@ -1,9 +1,25 @@
 <template>
-  <DashboardCard :title="forecastDayCount">
+  <DashboardCard :title="forecastDayCount" :busy="showSkeleton">
     <!-- V3 list: day/date · icon · rain · low · range bar · high, 64px rows.
          Range bars share one scale across all days; the selected day is highlighted
          and today carries a dot for the current reading. -->
-    <div class="-mx-3 flex flex-col gap-1">
+    <!-- skeleton: the same 64px rows and column grid -->
+    <div v-if="showSkeleton" data-skeleton class="-mx-3 flex flex-col gap-1">
+      <div
+        v-for="(dayW, i) in skeletonDays"
+        :key="i"
+        class="grid h-16 grid-cols-[minmax(60px,1fr)_32px_48px_32px_minmax(24px,1fr)_32px] items-center gap-2 rounded-[var(--radius)] px-3 md:grid-cols-[minmax(120px,1fr)_32px_56px_40px_minmax(120px,2fr)_40px] md:gap-4"
+        :class="{ 'bg-surface-raised': i === 0 }"
+      >
+        <Skeleton class="h-3.5 max-w-full" :class="dayW" />
+        <Skeleton class="mx-auto size-7 rounded-full" />
+        <Skeleton class="h-3 w-[38px] max-w-full" />
+        <Skeleton class="ml-auto h-3.5 w-6" />
+        <Skeleton class="h-1.5 rounded-[3px]" />
+        <Skeleton class="ml-auto h-3.5 w-6" />
+      </div>
+    </div>
+    <div v-else class="-mx-3 flex flex-col gap-1" :class="fadeClass">
       <button
         v-for="day in rows"
         :key="day.date"
@@ -62,19 +78,32 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import DashboardCard from '@/components/common/DashboardCard.vue'
 import { getWeatherIcon } from '@/constants/weatherIcons'
 import { DATE_FORMATS } from '@/constants/weather'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
+
+// the days the forecast asks for, so the title is real before the data lands
+const FORECAST_DAYS = 3
 
 export default {
   name: 'WeatherForecast',
   components: {
     AppIcon,
-    DashboardCard
+    DashboardCard,
+    Skeleton
   },
   mixins: [weatherMixin],
+  setup() {
+    return {
+      ...useWeatherSkeleton(),
+      // day-name bar widths: phone (short names) / md+ (full names)
+      skeletonDays: ['w-16 md:w-[150px] lg:w-24', 'w-[72px] md:w-[164px] lg:w-[104px]', 'w-[60px] md:w-[142px] lg:w-[92px]']
+    }
+  },
   computed: {
     ...mapState(useWeatherStore, ['forecast', 'selectedForecastDate', 'today', 'rawTemperature']),
     ...mapState(useUnitStore, ['unit']),
     forecastDayCount() {
-      const days = this.forecast?.length || 0
+      const days = this.forecast?.length || FORECAST_DAYS
       return this.$t('forecast.dayCount', { count: this.formatNumber(days) }, days)
     },
     // one °C scale for every bar (proportions are the same in °F)

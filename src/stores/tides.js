@@ -25,10 +25,11 @@ export default defineStore('tides', {
       const fresh = Date.now() - slot.fetchedAt < FRESH_FOR_MS
       if (slot.key === key && (slot.status === 'loading' || (slot.status === 'ready' && fresh))) return
 
+      // a station the user has moved on from must not show under the new one's name;
+      // a refresh of the same one keeps its numbers until the new ones arrive
+      if (slot.key !== key) slot.data = null
       slot.key = key
       slot.status = 'loading'
-      // a station the user has moved on from must not show under the new one's name
-      slot.data = null
       try {
         const data = await $fetch(API_ENDPOINTS.TIDES, { query: { ...query, days: DAYS } })
         // a slower, older request lost the race
@@ -39,6 +40,11 @@ export default defineStore('tides', {
         slot.fetchedAt = Date.now()
       } catch (error) {
         if (slot.key !== key) return
+        // a failed refresh leaves the last good prediction on screen
+        if (slot.data) {
+          slot.status = 'ready'
+          return
+        }
         slot.status = error?.statusCode === 404 || error?.response?.status === 404 ? 'notFound' : 'error'
       }
     },

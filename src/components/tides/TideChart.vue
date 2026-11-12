@@ -167,7 +167,7 @@
         <path
           :d="skeletonPath"
           fill="none"
-          class="stroke-muted"
+          class="tidy-skeleton-line"
           stroke-width="3"
           stroke-dasharray="6 6"
           stroke-linecap="round"

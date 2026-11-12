@@ -1,9 +1,9 @@
 <template>
-  <DashboardCard :title="$t('astro.title')" class="lg:h-full">
+  <DashboardCard :title="$t('astro.title')" :busy="loading" class="lg:h-full">
     <!-- design/TidySunMoon. Groups stack on phones, sit side by side on md (all four
          times on one row), and stack again in the lg+ right column, where the arcs
          grow to fill the card. -->
-    <div class="flex flex-col gap-6 md:flex-row md:gap-8 lg:flex-1 lg:flex-col lg:gap-6">
+    <div class="flex flex-col gap-6 md:flex-row md:gap-8 lg:flex-1 lg:flex-col lg:gap-6" :class="fadeClass">
       <SunArc :astro="astro" :next-astro="nextAstro" :now="now" :loading="loading" />
       <MoonArc :astro="astro" :next-astro="nextAstro" :now="now" :loading="loading" />
     </div>
@@ -17,17 +17,21 @@ import DashboardCard from '@/components/common/DashboardCard.vue'
 import { locationClock } from '@/utils/astro'
 import SunArc from './SunArc.vue'
 import MoonArc from './MoonArc.vue'
+import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 
 export default {
   name: 'PlanetaryInfo',
   components: { DashboardCard, SunArc, MoonArc },
+  setup() {
+    return useWeatherSkeleton()
+  },
   data() {
     return { nowMs: Date.now(), clockTimer: null }
   },
   computed: {
-    ...mapState(useWeatherStore, ['astro', 'forecast', 'date', 'today', 'zoneOffsetMs', 'isLoading']),
+    ...mapState(useWeatherStore, ['astro', 'forecast', 'date', 'today', 'zoneOffsetMs']),
     loading() {
-      return this.isLoading && !this.astro?.sunrise
+      return this.showSkeleton
     },
     nextAstro() {
       const i = this.forecast.findIndex((d) => d.date === this.date)

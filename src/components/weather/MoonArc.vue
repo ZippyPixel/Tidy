@@ -8,7 +8,7 @@
           <path :d="posterLit" class="fill-moon-lit" />
           <circle r="48" fill="none" class="stroke-moon-arc-ahead" stroke-width="1" />
         </svg>
-        <div v-else class="absolute inset-2 rounded-full bg-muted" aria-hidden="true" />
+        <Skeleton v-else class="absolute inset-2 rounded-full" />
       </div>
       <div v-if="!loading" class="flex min-w-0 flex-col gap-1">
         <span class="text-[13px] leading-4 text-muted-foreground">{{ $t('astro.moon') }}</span>
@@ -16,10 +16,10 @@
         <span v-if="phaseLine" class="text-sm leading-5 tabular-nums text-muted-foreground">{{ phaseLine }}</span>
         <span v-if="note" class="text-[13px] font-semibold leading-4">{{ note }}</span>
       </div>
-      <div v-else class="flex flex-col gap-2" aria-hidden="true">
-        <div class="h-2.5 w-10 rounded bg-muted" />
-        <div class="h-4 w-[120px] rounded bg-muted" />
-        <div class="h-3 w-40 rounded bg-muted" />
+      <div v-else data-skeleton class="flex flex-col gap-2" aria-hidden="true">
+        <Skeleton class="h-2.5 w-10" />
+        <Skeleton class="h-4 w-[124px]" />
+        <Skeleton class="h-3 w-[164px] max-w-full" />
       </div>
     </div>
     <CelestialArc
@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { Skeleton } from '@/components/ui/skeleton'
 import { currentIntlTag } from '@/i18n'
 import { formatAstroTime, moonLitPath, moonPhase, moonState, parseMinutes } from '@/utils/astro'
 import durationMixin from '@/mixins/durationMixin'
@@ -53,7 +54,7 @@ import CelestialArc from './CelestialArc.vue'
 
 export default {
   name: 'MoonArc',
-  components: { CelestialArc },
+  components: { CelestialArc, Skeleton },
   mixins: [durationMixin, weatherMixin],
   props: {
     astro: { type: Object, default: () => ({}) },

@@ -19,7 +19,7 @@
           </linearGradient>
         </defs>
         <template v-if="loading">
-          <path :d="fullPath" fill="none" class="stroke-muted" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+          <path :d="fullPath" fill="none" class="tidy-skeleton-line" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" vector-effect="non-scaling-stroke" />
         </template>
         <template v-else>
           <path :d="fullPath" fill="none" :stroke="`url(#${fadeId})`" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
@@ -38,8 +38,10 @@
     <div class="relative h-10">
       <template v-if="loading">
         <div class="flex h-full items-end justify-around" aria-hidden="true">
-          <div class="h-4 w-[72px] rounded bg-muted" />
-          <div class="h-4 w-[72px] rounded bg-muted" />
+          <div v-for="n in 2" :key="n" class="flex flex-col items-center gap-2">
+            <Skeleton class="h-2.5 w-14" />
+            <Skeleton class="h-4 w-[76px]" />
+          </div>
         </div>
       </template>
       <template v-else-if="window">
@@ -58,6 +60,7 @@
 </template>
 
 <script>
+import { Skeleton } from '@/components/ui/skeleton'
 import { useId } from 'vue'
 import { curveDepth, curvePath } from '@/utils/astro'
 
@@ -69,6 +72,7 @@ const BOTTOM = 8
 
 export default {
   name: 'CelestialArc',
+  components: { Skeleton },
   props: {
     /** celestialWindow() result: { rise, set, now, up } as 0..1 fractions; null hides the arc */
     window: { type: Object, default: null },

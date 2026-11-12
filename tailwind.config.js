@@ -54,6 +54,10 @@ module.exports = {
           },
           track: 'hsl(var(--scrollbar-track))'
         },
+        skeleton: {
+          DEFAULT: 'hsl(var(--skeleton))',
+          highlight: 'hsl(var(--skeleton-highlight))'
+        },
         tide: {
           DEFAULT: 'hsl(var(--tide) / <alpha-value>)',
           soft: 'hsl(var(--tide-soft) / <alpha-value>)'

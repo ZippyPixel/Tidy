@@ -16,8 +16,18 @@
       @pointerleave="onLeave"
     />
 
+    <!-- while the stations load: the globe's disc (0.8 / 0.84 of the box's short side,
+         the radius draw() uses), pulsing on the skeleton clock -->
+    <div
+      v-if="loading"
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 flex items-center justify-center [container-type:size]"
+    >
+      <div data-globe-skeleton class="tidy-skeleton-soft size-[80cqmin] flex-none rounded-full shadow-[0_0_0_1px_hsl(var(--border))] md:size-[84cqmin]" />
+    </div>
+
     <div class="absolute right-3 top-3 flex flex-col gap-2 md:right-5 md:top-5">
-      <button type="button" data-spin :aria-label="$t(spinning ? 'tides.explorer.spinStop' : 'tides.explorer.spinStart')" :class="controlClass" @click="toggleSpin">
+      <button type="button" data-spin :disabled="loading" :aria-label="$t(spinning ? 'tides.explorer.spinStop' : 'tides.explorer.spinStart')" :class="controlClass" @click="toggleSpin">
         <svg v-if="spinning" viewBox="0 0 24 24" aria-hidden="true" class="size-4 fill-current">
           <rect x="6" y="5" width="4" height="14" rx="1" />
           <rect x="14" y="5" width="4" height="14" rx="1" />
@@ -26,18 +36,18 @@
           <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" />
         </svg>
       </button>
-      <button type="button" data-zoom-in :aria-label="$t('tides.explorer.zoomIn')" :class="controlClass" @click="zoomBy(zoomStep)">
+      <button type="button" data-zoom-in :disabled="loading" :aria-label="$t('tides.explorer.zoomIn')" :class="controlClass" @click="zoomBy(zoomStep)">
         <svg viewBox="0 0 24 24" aria-hidden="true" class="size-[18px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M12 5v14" />
           <path d="M5 12h14" />
         </svg>
       </button>
-      <button type="button" data-zoom-out :aria-label="$t('tides.explorer.zoomOut')" :class="controlClass" @click="zoomBy(1 / zoomStep)">
+      <button type="button" data-zoom-out :disabled="loading" :aria-label="$t('tides.explorer.zoomOut')" :class="controlClass" @click="zoomBy(1 / zoomStep)">
         <svg viewBox="0 0 24 24" aria-hidden="true" class="size-[18px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M5 12h14" />
         </svg>
       </button>
-      <button type="button" data-recenter :aria-label="$t('tides.explorer.recenter')" :class="controlClass" @click="recenter">
+      <button type="button" data-recenter :disabled="loading" :aria-label="$t('tides.explorer.recenter')" :class="controlClass" @click="recenter">
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
@@ -138,7 +148,9 @@ export default {
     pickSub: { type: String, default: '' },
     isMd: { type: Boolean, default: false },
     ariaLabel: { type: String, default: '' },
-    credit: { type: String, default: '' }
+    credit: { type: String, default: '' },
+    /** the station index is still on its way: a pulsing disc, controls waiting at 50% */
+    loading: { type: Boolean, default: false }
   },
   emits: ['update:pick', 'view'],
   data() {
@@ -147,7 +159,7 @@ export default {
       hover: null,
       zoomStep: ZOOM_STEP,
       controlClass:
-        'flex size-11 items-center justify-center rounded-full border bg-popover text-popover-foreground shadow-[0_2px_8px_hsl(220_30%_4%/0.08)] outline-ring hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 md:size-10'
+        'flex size-11 items-center justify-center rounded-full border bg-popover text-popover-foreground shadow-[0_2px_8px_hsl(220_30%_4%/0.08)] outline-ring hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 md:size-10'
     }
   },
   watch: {
@@ -165,6 +177,9 @@ export default {
       this.$nextTick(() => this.draw())
     },
     isMd() {
+      this.draw()
+    },
+    loading() {
       this.draw()
     }
   },
@@ -221,6 +236,8 @@ export default {
       }
       context.setTransform(ratio, 0, 0, ratio, 0, 0)
       context.clearRect(0, 0, width, height)
+      // the skeleton disc stands in for the globe until there are stations to put on it
+      if (this.loading) return
 
       const styles = getComputedStyle(canvas)
       const color = (token, alpha) =>

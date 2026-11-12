@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import useWeatherStore from '@/stores/weather'
 import fixture from '@/utils/__tests__/fixtures/weatherapi-forecast.json'
@@ -150,5 +150,74 @@ describe('current conditions for the detail modals', () => {
     store.setSelectedForecastDate(fixture.forecast.forecastday[2])
     expect(store.current.last_updated).toBe('2026-11-06 12:45')
     expect(store.next24Hours[0].date).toBe('2026-11-06')
+  })
+})
+
+describe('weatherPending (when cards show their skeleton)', () => {
+  let store
+  let resolveFetch
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    store = useWeatherStore()
+    vi.stubGlobal(
+      '$fetch',
+      vi.fn(() => new Promise((resolve) => (resolveFetch = resolve)))
+    )
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('is pending before anything has been asked for', () => {
+    expect(store.weatherPending).toBe(true)
+  })
+
+  it('is pending on the first load, and not once it lands', async () => {
+    const load = store.getCityWeather('Dhaka')
+    expect(store.weatherPending).toBe(true)
+    resolveFetch(response())
+    await load
+    expect(store.weatherPending).toBe(false)
+  })
+
+  it('stops waiting when there is no location to wait for', async () => {
+    vi.stubGlobal('navigator', {})
+    await expect(store.detectUserLocation()).rejects.toThrow()
+    expect(store.weatherPending).toBe(false)
+  })
+
+  it('is pending again when the city changes', async () => {
+    const first = store.getCityWeather('Dhaka')
+    resolveFetch(response())
+    await first
+    const next = store.getCityWeather('Chittagong')
+    expect(store.weatherPending).toBe(true)
+    resolveFetch(response())
+    await next
+    expect(store.weatherPending).toBe(false)
+  })
+
+  it('is not pending for a refresh of the same city, and keeps the old numbers', async () => {
+    const first = store.getCityWeather('Dhaka')
+    resolveFetch(response())
+    await first
+    const refresh = store.refetchWeather()
+    expect(store.isLoading).toBe(true)
+    expect(store.weatherPending).toBe(false)
+    expect(store.location).toBe('Chhota Magbazar, Bangladesh')
+    resolveFetch(response())
+    await refresh
+  })
+
+  it('refetches the city still on its way, not the one on screen', async () => {
+    const first = store.getCityWeather('Dhaka')
+    resolveFetch(response())
+    await first
+    store.getCityWeather('Chittagong')
+    store.refetchWeather()
+    expect(store.pendingQuery).toBe('Chittagong')
+    expect($fetch).toHaveBeenLastCalledWith('/api/forecast', expect.objectContaining({
+      query: expect.objectContaining({ q: 'Chittagong' })
+    }))
   })
 })
