@@ -133,6 +133,14 @@ const COMPASS = [
 ]
 export const compassPoint = (az) => COMPASS[Math.round((((az % 360) + 360) % 360) / 22.5) % 16]
 
+/** "Where to look" compass (240 × 240, rim radius 92): overhead in the centre, the horizon
+    on the rim, a body below the horizon just outside it */
+export const COMPASS_R = 92
+export function compassXY(alt, az) {
+  const r = alt >= 0 ? COMPASS_R * (1 - alt / 90) : COMPASS_R + 9
+  return [120 + r * Math.sin(az * RAD), 120 - r * Math.cos(az * RAD)]
+}
+
 /** the lit edge's direction as seen from here: bearing from the moon to the sun, clockwise from up */
 export function moonTilt(sun, moon) {
   const dAz = (sun.az - moon.az) * RAD

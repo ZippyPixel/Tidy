@@ -87,6 +87,24 @@
           @open-place="openExplorer"
           @reset-place="resetPlace"
         />
+        <SkyPathChart
+          :class="layout.chart"
+          :t="t"
+          :tz="tz"
+          :day="day"
+          :next-day="nextDay"
+          :now="now"
+          @preview="preview(atMinute(t, tz, $event))"
+          @commit="commit(atMinute(t, tz, $event))"
+        />
+        <WhereToLook
+          :class="layout.look"
+          :t="t"
+          :tz="tz"
+          :day="day"
+          :next-day="nextDay"
+          :now="now"
+        />
       </div>
 
       <footer
@@ -120,11 +138,14 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import SkeletonGate from '@/components/common/SkeletonGate.vue'
 import SkySkeleton from '@/components/skeletons/SkySkeleton.vue'
 import { SKY_GRID, SKY_PLACE } from '@/components/sky/layout'
+import SkyPathChart from '@/components/sky/SkyPathChart.vue'
 import TimeBar from '@/components/sky/TimeBar.vue'
+import WhereToLook from '@/components/sky/WhereToLook.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import skyMixin from '@/mixins/skyMixin'
 import useWeatherStore from '@/stores/weather'
 import {
+  atMinute,
   createSky,
   dayStart,
   dayStartAt,
@@ -154,7 +175,9 @@ export default {
     SkySkeleton,
     // the globe and its data only load when someone opens it
     StationExplorer: defineAsyncComponent(() => import('@/components/tides/StationExplorer.vue')),
-    TimeBar
+    SkyPathChart,
+    TimeBar,
+    WhereToLook
   },
   mixins: [skyMixin],
   setup() {
@@ -274,6 +297,7 @@ export default {
     if (this.frame) cancelAnimationFrame(this.frame)
   },
   methods: {
+    atMinute,
     async loadAstronomy() {
       try {
         this.astronomy = markRaw(await import('astronomy-engine'))

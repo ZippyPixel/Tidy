@@ -634,10 +634,27 @@
       "day": "{date}, moon {lit}% lit"
     },
     "chart": {
-      "title": "Path across the sky"
+      "title": "Path across the sky",
+      "night": "Night",
+      "horizon": "Horizon",
+      "above": "{n}° above the horizon",
+      "below": "{n}° below the horizon",
+      "sunLabel": "Sun · {light}",
+      "moonLabel": "Moon · {phase}, {lit}% lit",
+      "aria": "Height of the sun and moon through {date}. Sunrise {sunrise}, sunset {sunset}, moonrise {moonrise}, moonset {moonset}."
     },
     "look": {
-      "title": "Where to look"
+      "title": "Where to look",
+      "n": "N",
+      "e": "E",
+      "s": "S",
+      "w": "W",
+      "up": "{n}° high, towards the {point} ({az})",
+      "down": "Below the horizon to the {point}.",
+      "downRises": "Below the horizon to the {point}. Rises {time}.",
+      "downSets": "Below the horizon to the {point}. Sets {time}.",
+      "aria": "Compass view of the sky. Sun: {sun} Moon: {moon}",
+      "note": "The edge is the horizon and the centre is straight overhead. Dotted lines are the day's paths. A hollow marker is below the horizon."
     },
     "sun": {
       "title": "Sun"
@@ -656,6 +673,13 @@
     },
     "ahead": {
       "title": "Coming up"
+    },
+    "light": {
+      "daylight": "Daylight",
+      "goldenHour": "Golden hour",
+      "twilight": "Twilight",
+      "deepTwilight": "Deep twilight",
+      "night": "Night"
     }
   }
 }
