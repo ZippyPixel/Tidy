@@ -156,23 +156,31 @@
             {{ pmLabel }}
           </button>
         </div>
-        <span
-          v-if="live"
-          data-live
-          class="inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground"
-        >
-          <span aria-hidden="true" class="size-2 rounded-full bg-current" />{{ $t('sky.bar.live') }}
-        </span>
-        <button
-          v-else
-          type="button"
-          data-back-to-now
-          class="inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground outline-ring hover:shadow-[inset_0_0_0_999px_hsl(var(--primary-foreground)/0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          @click="$emit('live')"
-        >
-          <AppIcon name="rotate-ccw" :size="16" :stroke-width="2" />
-          <span>{{ $t('sky.bar.backToNow') }}</span>
-        </button>
+        <!-- Live and Back to now share one grid cell: the slot is as wide as the longer label in any language, and nothing moves when they swap -->
+        <div data-live-slot class="inline-grid flex-auto md:flex-none">
+          <span
+            data-live
+            :aria-hidden="String(!live)"
+            class="flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground [grid-area:1/1]"
+            :class="{ invisible: !live }"
+          >
+            <span aria-hidden="true" class="size-2 rounded-full bg-current" />{{
+              $t('sky.bar.live')
+            }}
+          </span>
+          <button
+            type="button"
+            data-back-to-now
+            :aria-hidden="String(live)"
+            :tabindex="live ? -1 : undefined"
+            class="flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground outline-ring [grid-area:1/1] hover:shadow-[inset_0_0_0_999px_hsl(var(--primary-foreground)/0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            :class="{ invisible: live }"
+            @click="$emit('live')"
+          >
+            <AppIcon name="rotate-ccw" :size="16" :stroke-width="2" />
+            <span>{{ $t('sky.bar.backToNow') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
