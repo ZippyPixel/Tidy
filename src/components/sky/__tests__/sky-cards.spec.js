@@ -302,3 +302,26 @@ describe('coming up', () => {
     expect(document.querySelector('[data-event-note]').textContent).toContain('safe to watch')
   })
 })
+
+describe('sun, earth and moon', () => {
+  afterEach(() => wrapper?.unmount())
+
+  it("links to the tides nearest the page's place on the chosen date", async () => {
+    const { default: SunEarthMoon } = await import('@/components/sky/SunEarthMoon.vue')
+    const t = parseT('2026-11-17T10:00', TZ)
+    wrapper = mount(SunEarthMoon, {
+      props: { t, tz: TZ, now: sky.instant(t), place: PLACE },
+      global: { plugins: [createPinia(), activeI18n()] }
+    })
+    const link = wrapper.findComponent({ name: 'NuxtLink' })
+    expect(link.props('to')).toEqual({
+      path: '/tides',
+      query: {
+        date: '2026-11-17',
+        lat: String(PLACE.lat),
+        lon: String(PLACE.lon),
+        name: PLACE.name
+      }
+    })
+  })
+})

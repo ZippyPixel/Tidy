@@ -37,6 +37,7 @@ function setup({
   const store = useTidesStore(pinia)
   store.loadNearest = vi.fn()
   store.loadStation = vi.fn()
+  store.loadNear = vi.fn()
   store.nearest = nearest
   if (chosen) store.chosen = chosen
   const route = reactive({ query })
@@ -341,6 +342,37 @@ describe('Tides page', () => {
 
     it('ignores a malformed date', () => {
       const { store } = setup({ query: { date: 'soon' } })
+      expect(store.loadNearest).toHaveBeenCalledWith(COORDS, 7)
+    })
+  })
+
+  describe('a place link from Sun & Moon', () => {
+    const SYDNEY = { lat: '-33.8688', lon: '151.2093', name: 'Sydney', date: '2026-11-08' }
+
+    it('loads the station nearest that place, not the forecast location', async () => {
+      const { wrapper, store } = setup({ query: SYDNEY, chosen: ready(SF) })
+      await wrapper.vm.$nextTick()
+      expect(store.loadNear).toHaveBeenCalledWith({ lat: -33.8688, lon: 151.2093, name: 'Sydney' }, 14)
+      expect(store.loadStation).not.toHaveBeenCalled()
+      expect(wrapper.find('h1').text()).toBe(SF.station.name)
+      expect(wrapper.find('[data-distance]').text()).toContain('from Sydney')
+      expect(wrapper.find('[data-distance]').text()).not.toContain('Joar Sahara')
+    })
+
+    it('shows a skeleton while it loads, even with no forecast location', () => {
+      const { wrapper } = setup({ query: SYDNEY, coords: null, nearest: undefined })
+      expect(wrapper.find('[data-loading]').exists()).toBe(true)
+    })
+
+    it('lets a chosen station win over the place', () => {
+      const { store } = setup({ query: { ...SYDNEY, station: 'abc' }, chosen: ready(SF) })
+      expect(store.loadStation).toHaveBeenCalledWith('abc', 14)
+      expect(store.loadNear).not.toHaveBeenCalled()
+    })
+
+    it('ignores coordinates out of range', () => {
+      const { store } = setup({ query: { lat: '123', lon: '0' } })
+      expect(store.loadNear).not.toHaveBeenCalled()
       expect(store.loadNearest).toHaveBeenCalledWith(COORDS, 7)
     })
   })

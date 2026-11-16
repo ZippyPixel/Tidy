@@ -116,7 +116,7 @@
           :now="now"
           @commit="commit"
         />
-        <SunEarthMoon :class="layout.geo" :t="t" :tz="tz" :now="now" />
+        <SunEarthMoon :class="layout.geo" :t="t" :tz="tz" :now="now" :place="place" />
         <PrayerTimes :class="layout.prayer" :t="t" :tz="tz" :sky="sky" :ds="ds" />
         <PlanetsCard :class="layout.planet" :t="t" :tz="tz" :day="day" :now="now" />
         <ComingUp

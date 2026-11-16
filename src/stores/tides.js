@@ -14,7 +14,7 @@ const emptySlot = () => ({ key: null, data: null, status: 'idle', fetchedAt: 0 }
 
 // Two slots, because they answer different questions: `nearest` is the station for the
 // forecast location and always drives the dashboard card; `chosen` is the one in the
-// /tides?station= link. Looking at Sydney must not change what the dashboard shows.
+// /tides?station= link (or /tides?lat=&lon=). Looking at Sydney must not change what the dashboard shows.
 export default defineStore('tides', {
   state: () => ({
     nearest: emptySlot(),
@@ -59,6 +59,16 @@ export default defineStore('tides', {
         'nearest',
         keyFor(`${coords.lat},${coords.lon}`, days),
         { lat: coords.lat, lon: coords.lon },
+        days
+      )
+    },
+    // the station nearest a point that isn't the forecast location (/tides?lat=&lon= from
+    // Sun & Moon): it goes in `chosen`, so the dashboard keeps the forecast location's
+    loadNear(point, days = DAYS) {
+      return this.load(
+        'chosen',
+        keyFor(`near:${point.lat},${point.lon}`, days),
+        { lat: point.lat, lon: point.lon },
         days
       )
     },

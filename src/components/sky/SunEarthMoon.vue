@@ -121,7 +121,7 @@
     </div>
     <p data-explain class="text-[13px] leading-[19px] [text-wrap:pretty]">{{ explain }}</p>
     <NuxtLink
-      :to="{ path: '/tides', query: { date } }"
+      :to="tideLink"
       data-tide-link
       class="-my-1.5 inline-flex min-h-9 items-center gap-0.5 self-start rounded text-sm font-semibold text-primary outline-ring focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
     >
@@ -162,7 +162,9 @@ export default {
   props: {
     t: { type: Number, required: true },
     tz: { type: String, required: true },
-    now: { type: Object, required: true }
+    now: { type: Object, required: true },
+    /** the page's place: the tides link opens the station nearest it, not the forecast's */
+    place: { type: Object, default: null }
   },
   setup() {
     // useId so SSR and hydration agree on the gradient's id
@@ -260,6 +262,15 @@ export default {
     },
     date() {
       return localDate(this.t, this.tz)
+    },
+    tideLink() {
+      const query = { date: this.date }
+      if (this.place) {
+        query.lat = String(Math.round(this.place.lat * 1e4) / 1e4)
+        query.lon = String(Math.round(this.place.lon * 1e4) / 1e4)
+        if (this.place.name) query.name = this.place.name
+      }
+      return { path: '/tides', query }
     }
   }
 }

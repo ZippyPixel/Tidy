@@ -382,6 +382,23 @@ export default {
       const id = this.$route.query.station
       return typeof id === 'string' && id ? id : null
     },
+    // /tides?lat=&lon=&name= (from Sun & Moon): the station nearest that place, not the
+    // forecast location's; a ?station= wins over it
+    nearQuery() {
+      if (this.stationId) return null
+      const { lat, lon, name } = this.$route.query
+      const la = typeof lat === 'string' && lat ? Number(lat) : NaN
+      const lo = typeof lon === 'string' && lon ? Number(lon) : NaN
+      if (!(Math.abs(la) <= 90 && Math.abs(lo) <= 180)) return null
+      return { lat: la, lon: lo, name: typeof name === 'string' ? name : '' }
+    },
+    nearKey() {
+      return this.nearQuery ? `${this.nearQuery.lat},${this.nearQuery.lon}` : null
+    },
+    // the place distances are measured from
+    origin() {
+      return this.nearQuery ?? this.coords
+    },
     // /tides?date=YYYY-MM-DD (from Sun & Moon) opens the chart on that day in the station's zone
     dateQuery() {
       const date = this.$route.query.date
@@ -394,7 +411,7 @@ export default {
       return this.horizon - 1
     },
     slot() {
-      return this.stationId ? this.tidesStore.chosen : this.tidesStore.nearest
+      return this.stationId || this.nearQuery ? this.tidesStore.chosen : this.tidesStore.nearest
     },
     tides() {
       return this.slot.data
@@ -407,7 +424,7 @@ export default {
       if (this.slot.status === 'notFound' || this.slot.status === 'error') return this.slot.status
       if (this.tides) return 'none'
       // nothing to look up until the weather says where we are
-      if (!this.stationId && !this.coords && !this.weatherPending) return 'pick'
+      if (!this.stationId && !this.nearQuery && !this.coords && !this.weatherPending) return 'pick'
       return 'loading'
     },
     emptyCopy() {
@@ -433,7 +450,7 @@ export default {
     distanceKm() {
       if (!this.station) return null
       if (this.station.distanceKm !== null) return this.station.distanceKm
-      return this.coords ? Math.round(haversineKm(this.coords, this.station)) : null
+      return this.origin ? Math.round(haversineKm(this.origin, this.station)) : null
     },
     zoneText() {
       const { hours, minutes, negative } = offsetParts(zoneOffsetMin(this.now, this.zone))
@@ -446,11 +463,11 @@ export default {
     distanceLine() {
       if (!this.station) return ''
       const parts = [this.zoneText]
-      if (this.distanceKm !== null && this.coords) {
+      if (this.distanceKm !== null && this.origin?.name) {
         parts.unshift(
           this.$t('tides.page.kmFrom', {
             km: this.tideGrouped(this.distanceKm),
-            place: this.coords.name
+            place: this.origin.name
           })
         )
       }
@@ -504,6 +521,10 @@ export default {
       this.day = 0
       this.load()
     },
+    nearKey() {
+      this.day = 0
+      this.load()
+    },
     dateQuery() {
       this.load()
       this.openDate()
@@ -521,12 +542,13 @@ export default {
   },
   methods: {
     load(force = false) {
-      const slot = this.stationId ? 'chosen' : 'nearest'
+      const chosen = this.stationId || this.nearQuery
       // a retry has to get past the "already loaded this" check
-      if (force) this.tidesStore[slot].key = null
+      if (force) this.tidesStore[chosen ? 'chosen' : 'nearest'].key = null
       // the nearest one always loads, for the way back from a station that doesn't exist
-      this.tidesStore.loadNearest(this.coords, this.stationId ? DEFAULT_DAYS : this.horizon)
+      this.tidesStore.loadNearest(this.coords, chosen ? DEFAULT_DAYS : this.horizon)
       if (this.stationId) this.tidesStore.loadStation(this.stationId, this.horizon)
+      else if (this.nearQuery) this.tidesStore.loadNear(this.nearQuery, this.horizon)
     },
     openDate() {
       if (!this.dateQuery || !this.station || this.openedDate === this.dateQuery) return
