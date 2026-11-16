@@ -828,9 +828,15 @@
         "some": "Peaks around this night, up to about {zhr} an hour in a dark sky. Moon {lit}% lit.",
         "bright": "Peaks around this night, up to about {zhr} an hour in a dark sky. Moon {lit}% lit, which hides the fainter ones."
       },
-      "thisDay": "this day",
-      "nextDay": "next day",
-      "inDays": "in {n} day | in {n} days"
+      "inDays": "in {n} day | in {n} days",
+      "listLabel": "Upcoming events",
+      "more": "Show more",
+      "loading": "Loading more events…",
+      "end": "That's everything up to {date}.",
+      "today": "today",
+      "tomorrow": "tomorrow",
+      "yesterday": "yesterday",
+      "daysAgo": "{n} day ago | {n} days ago"
     },
     "light": {
       "daylight": "Daylight",
@@ -838,6 +844,45 @@
       "twilight": "Twilight",
       "deepTwilight": "Deep twilight",
       "night": "Night"
+    },
+    "event": {
+      "jump": "Show {date} on this page",
+      "peakNight": "Peak night",
+      "giveOrTake": "Give or take a day",
+      "rate": "Rate",
+      "perHour": "Up to {n} an hour",
+      "darkSky": "In a dark sky",
+      "moon": "Moon that night",
+      "bestTime": "Best time",
+      "afterMidnight": "After midnight",
+      "type": "Type",
+      "peak": "Peak",
+      "moonAtPeak": "Moon at the peak",
+      "sunAtPeak": "Sun at the peak",
+      "up": "{n}° up",
+      "belowHorizon": "Below the horizon",
+      "lasts": "Lasts",
+      "penumbralPhase": "Start to end",
+      "totality": "Totality",
+      "partialPhase": "Partial phase",
+      "covered": "Sun covered",
+      "begins": "Begins",
+      "ends": "Ends",
+      "moment": "Exact moment",
+      "dayLength": "Day length",
+      "sunrise": "Sunrise",
+      "sunset": "Sunset",
+      "distance": "Distance",
+      "size": "Size in the sky",
+      "phase": "Phase",
+      "time": "Time",
+      "notes": {
+        "shower": "Find a dark spot away from city lights, give your eyes 20 minutes to adjust and look at the whole sky rather than one point.",
+        "lunar": "A lunar eclipse is safe to watch with the naked eye, from anywhere the moon is up.",
+        "solar": "Never look at the sun directly, even when most of it is covered. Use eclipse glasses or a pinhole projector.",
+        "perigee": "When the closest point falls near a full moon, it is often called a supermoon. Tides run a little higher too.",
+        "apogee": "At its farthest the moon looks slightly smaller, and tides are a little gentler."
+      }
     }
   }
 }

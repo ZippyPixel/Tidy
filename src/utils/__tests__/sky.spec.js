@@ -128,13 +128,8 @@ describe('Joar Sahara, 2026-11-16 3:48 PM', () => {
     expect(clock(sky.prayer(ds, 0, false).asr, tz)).toBe('2:50 PM')
   })
 
-  it('has a coming-up list and a calendar month', () => {
-    const ahead = sky.ahead(ds)
-    expect(ahead.season.key).toBe('decemberSolstice')
-    expect(ahead.perigee.t).toBeGreaterThan(ds)
-    expect(ahead.apogee.t).toBeGreaterThan(ds)
-    const showers = sky.showers(ds)
-    expect(showers.map((s) => s.key)).toEqual(['leonids', 'geminids'])
+  it('has the next moon quarters and a calendar month', () => {
+    expect(sky.ahead(ds).quarters.map((q) => q.quarter)).toEqual([1, 2, 3, 0])
     const cells = sky.month(2026, 10)
     expect(cells.length % 7).toBe(0)
     expect(cells.find((c) => c.mo === 10 && c.d === 1)).toBeTruthy()
@@ -170,5 +165,53 @@ describe('Sydney in daylight saving, 2026-12-21', () => {
     const day = sky.day(ds)
     expect(clock(day.sun.rise, tz)).toBe('5:41 AM')
     expect(clock(day.sun.set, tz)).toBe('8:05 PM')
+  })
+})
+
+describe('coming-up event feed', () => {
+  const tz = 'Asia/Dhaka'
+  const ds = dayStart(parseT('2026-11-16T15:48', tz), tz)
+
+  it('gives events a page at a time, in time order', () => {
+    const feed = createSky(A, { lat: 23.817, lon: 90.417, tz }).events(ds)
+    expect(feed.items).toEqual([])
+    const page = feed.more(10)
+    expect(page).toHaveLength(10)
+    expect(
+      page
+        .map((e) => `${formatT(e.t, tz).slice(0, 10)} ${e.kind}${e.key ? `:${e.key}` : ''}`)
+        .slice(0, 5)
+    ).toEqual([
+      '2026-11-17 shower:leonids',
+      '2026-11-26 perigee',
+      '2026-12-11 apogee',
+      '2026-12-14 shower:geminids',
+      '2026-12-22 season:decemberSolstice'
+    ])
+    const next = feed.more(10)
+    expect(next[0].t).toBeGreaterThanOrEqual(page.at(-1).t)
+    expect(feed.items).toHaveLength(20)
+    expect(new Set(feed.items.map((e) => e.id)).size).toBe(20)
+  })
+
+  it('stops three years after the chosen day', () => {
+    const feed = createSky(A, { lat: 23.817, lon: 90.417, tz }).events(ds)
+    let pages = 0
+    while (!feed.done && pages < 50) {
+      feed.more(10)
+      pages++
+    }
+    expect(feed.done).toBe(true)
+    expect(formatT(feed.horizon, tz)).toBe('2029-11-16T00:00')
+    expect(feed.items.at(-1).t).toBeLessThan(feed.horizon)
+    const kinds = new Set(feed.items.map((e) => e.kind))
+    for (const k of ['shower', 'perigee', 'apogee', 'season', 'lunar', 'solar'])
+      expect(kinds.has(k)).toBe(true)
+    expect(feed.more(10)).toEqual([])
+  })
+
+  it('is cached per day', () => {
+    const sky = createSky(A, { lat: 23.817, lon: 90.417, tz })
+    expect(sky.events(ds)).toBe(sky.events(ds))
   })
 })

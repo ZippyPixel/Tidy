@@ -121,13 +121,12 @@
         <PlanetsCard :class="layout.planet" :t="t" :tz="tz" :day="day" :now="now" />
         <ComingUp
           :class="layout.ahead"
-          :t="t"
           :tz="tz"
+          :now="nowMs"
+          :sky="sky"
+          :ds="ds"
           :place-name="place.name"
           :lat="place.lat"
-          :ds="ds"
-          :ahead="ahead"
-          :showers="sky.showers(ds)"
           @commit="commit"
         />
       </div>
@@ -326,7 +325,8 @@ export default {
   mounted() {
     this.loadAstronomy()
     this.timer = setInterval(() => {
-      if (this.live && this.dragT == null) this.nowMs = Date.now()
+      // live mode follows it; a chosen moment still needs "today" (date tag, "in N days")
+      if (this.dragT == null) this.nowMs = Date.now()
     }, LIVE_TICK_MS)
   },
   beforeUnmount() {

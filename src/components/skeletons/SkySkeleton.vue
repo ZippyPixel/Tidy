@@ -86,7 +86,10 @@
     </DashboardCard>
 
     <DashboardCard :title="$t('sky.ahead.title')" busy :class="place.ahead">
-      <div class="flex flex-col gap-2"><Skeleton v-for="i in 6" :key="i" class="h-[52px]" /></div>
+      <!-- the loaded list is a fixed-height scroll area -->
+      <div class="flex h-[440px] flex-col gap-2 overflow-hidden md:h-[480px]">
+        <Skeleton v-for="i in 8" :key="i" class="h-[52px] flex-none" />
+      </div>
     </DashboardCard>
   </div>
 </template>

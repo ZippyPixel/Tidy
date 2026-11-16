@@ -12,6 +12,10 @@ const RAD = Math.PI / 180
 
 export { METHODS, PLANETS, SHOWERS }
 
+/** "Coming up" looks this far ahead of the chosen day, a page of events at a time */
+export const EVENT_YEARS = 3
+export const EVENT_PAGE = 10
+
 /* ---------------- the place's clock ---------------- */
 
 export const offsetMs = (t, tz) => zoneOffsetMin(t / 1000, tz) * MIN_MS
@@ -249,16 +253,10 @@ export function createSky(A, place) {
     })
   }
 
+  /** the next four moon quarters from ds (jump chips, Moon card) */
   function ahead(ds) {
     return memo('a' + ds, () => {
-      const out = {
-        quarters: [],
-        lunar: null,
-        solar: null,
-        season: null,
-        perigee: null,
-        apogee: null
-      }
+      const out = { quarters: [] }
       attempt(() => {
         let q = A.SearchMoonQuarter(D(ds))
         for (let i = 0; i < 4; i++) {
@@ -266,45 +264,131 @@ export function createSky(A, place) {
           q = A.NextMoonQuarter(q)
         }
       })
-      attempt(() => {
-        const e = A.SearchLunarEclipse(D(ds))
-        const t = e.peak.date.getTime()
-        out.lunar = { kind: e.kind, t, up: hor('Moon', t).alt > 0 }
-      })
-      attempt(() => {
-        const e = A.SearchLocalSolarEclipse(D(ds), obs)
-        out.solar = {
-          kind: e.kind,
-          t: e.peak.time.date.getTime(),
-          alt: e.peak.altitude,
-          cover: e.obscuration ?? null
-        }
-      })
-      attempt(() => {
-        const y = new Date(ds).getUTCFullYear()
-        const all = []
-        for (const yy of [y, y + 1]) {
-          const s = A.Seasons(yy)
-          all.push(
-            ['marchEquinox', s.mar_equinox],
-            ['juneSolstice', s.jun_solstice],
-            ['septemberEquinox', s.sep_equinox],
-            ['decemberSolstice', s.dec_solstice]
-          )
-        }
-        out.season =
-          all.map(([key, tm]) => ({ key, t: tm.date.getTime() })).find((s) => s.t >= ds) ?? null
-      })
-      attempt(() => {
-        let a = A.SearchLunarApsis(D(ds))
-        for (let i = 0; i < 2; i++) {
-          const o = { t: a.time.date.getTime(), km: a.dist_km }
-          if (a.kind === 0) out.perigee = o
-          else out.apogee = o
-          a = A.NextLunarApsis(a)
-        }
-      })
       return out
+    })
+  }
+
+  // ---- "Coming up": one ordered stream per kind of event, merged lazily ----
+  // Every stream is an endless generator in time order; a page asks the merge for the next
+  // n events, which advances only the streams whose head was taken. Nothing past
+  // EVENT_YEARS after the chosen day is ever computed.
+
+  function* lunarStream(from) {
+    let e = A.SearchLunarEclipse(D(from))
+    for (;;) {
+      const t = e.peak.date.getTime()
+      const m = hor('Moon', t)
+      yield {
+        kind: 'lunar',
+        t,
+        eclipse: e.kind,
+        up: m.alt > 0,
+        alt: m.alt,
+        // semi-durations in minutes (0 when that phase doesn't happen)
+        penumbral: e.sd_penum * 2,
+        partial: e.sd_partial * 2,
+        total: e.sd_total * 2
+      }
+      e = A.NextLunarEclipse(e.peak)
+    }
+  }
+
+  function* solarStream(from) {
+    let e = A.SearchLocalSolarEclipse(D(from), obs)
+    for (;;) {
+      const at = (x) => x?.time?.date.getTime() ?? null
+      yield {
+        kind: 'solar',
+        t: at(e.peak),
+        eclipse: e.kind,
+        alt: e.peak.altitude,
+        cover: e.obscuration ?? null,
+        begin: at(e.partial_begin),
+        end: at(e.partial_end)
+      }
+      e = A.NextLocalSolarEclipse(e.peak.time, obs)
+    }
+  }
+
+  function* seasonStream(from) {
+    for (let y = new Date(from).getUTCFullYear(); ; y++) {
+      const s = A.Seasons(y)
+      for (const [key, tm] of [
+        ['marchEquinox', s.mar_equinox],
+        ['juneSolstice', s.jun_solstice],
+        ['septemberEquinox', s.sep_equinox],
+        ['decemberSolstice', s.dec_solstice]
+      ]) {
+        const t = tm.date.getTime()
+        if (t >= from) yield { kind: 'season', key, t }
+      }
+    }
+  }
+
+  function* apsisStream(from) {
+    let a = A.SearchLunarApsis(D(from))
+    for (;;) {
+      yield { kind: a.kind === 0 ? 'perigee' : 'apogee', t: a.time.date.getTime(), km: a.dist_km }
+      a = A.NextLunarApsis(a)
+    }
+  }
+
+  // fixed yearly peaks (give or take a day) at 11 PM local, with the moon's lit fraction then
+  function* showerStream(from) {
+    for (let y = parts(from, tz).y; ; y++) {
+      for (const [key, mo, d, zhr] of SHOWERS) {
+        const t = wallToT(Date.UTC(y, mo, d, 23), tz)
+        if (t >= from)
+          yield { kind: 'shower', key, t, zhr, moon: A.Illumination('Moon', D(t)).phase_fraction }
+      }
+    }
+  }
+
+  /**
+   * Upcoming events from ds, EVENT_YEARS ahead at most, loaded a page at a time:
+   * `feed.more(n)` computes and appends the next n (in time order) and returns them;
+   * `feed.items` is everything so far; `feed.done` once the horizon is reached.
+   * Cached per day, so going back to a day keeps what was already loaded.
+   */
+  function events(ds) {
+    return memo('e' + ds, () => {
+      const p = parts(ds, tz)
+      const horizon = wallToT(Date.UTC(p.y + EVENT_YEARS, p.mo, p.d), tz)
+      const heads = [lunarStream, solarStream, seasonStream, apsisStream, showerStream].map(
+        (make) => {
+          const head = { it: null, ev: null }
+          attempt(() => {
+            head.it = make(ds)
+            head.ev = head.it.next().value ?? null
+          })
+          return head
+        }
+      )
+      const advance = (head) => {
+        head.ev = attempt(() => head.it.next().value ?? null)
+      }
+      const feed = {
+        items: [],
+        done: false,
+        horizon,
+        more(n = EVENT_PAGE) {
+          const added = []
+          while (added.length < n && !feed.done) {
+            let first = null
+            for (const h of heads)
+              if (h.ev && h.ev.t != null && (!first || h.ev.t < first.ev.t)) first = h
+            if (!first || first.ev.t >= horizon) {
+              feed.done = true
+              break
+            }
+            added.push({ ...first.ev, id: `${first.ev.kind}-${first.ev.key ?? ''}-${first.ev.t}` })
+            advance(first)
+          }
+          feed.items.push(...added)
+          return added
+        }
+      }
+      return feed
     })
   }
 
@@ -355,24 +439,6 @@ export function createSky(A, place) {
     })
   }
 
-  /** the next two meteor shower peaks (11 PM local) from ds, with the moon's lit fraction then */
-  function showers(ds) {
-    return memo('s' + ds, () => {
-      const y = parts(ds, tz).y
-      const list = []
-      for (const yy of [y, y + 1]) {
-        for (const [key, mo, d, zhr] of SHOWERS) {
-          const t = wallToT(Date.UTC(yy, mo, d, 23), tz)
-          if (t >= ds) list.push({ key, t, zhr })
-        }
-      }
-      return list
-        .sort((a, b) => a.t - b.t)
-        .slice(0, 2)
-        .map((s) => ({ ...s, moon: A.Illumination('Moon', D(s.t)).phase_fraction }))
-    })
-  }
-
   /** positions at one instant: not cached */
   function instant(t) {
     const d = D(t)
@@ -400,7 +466,7 @@ export function createSky(A, place) {
     }
   }
 
-  return { place, tz, hor, day, ahead, month, prayer, showers, instant }
+  return { place, tz, hor, day, ahead, events, month, prayer, instant }
 }
 
 /** times are shown rounded to the nearest minute, so 11:43:40 reads 11:44 */

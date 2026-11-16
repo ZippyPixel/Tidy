@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import * as A from 'astronomy-engine'
+import ComingUp from '@/components/sky/ComingUp.vue'
 import SkyPathChart from '@/components/sky/SkyPathChart.vue'
 import WhereToLook from '@/components/sky/WhereToLook.vue'
 import { activeI18n } from '@/i18n'
@@ -203,45 +204,101 @@ describe('planets', () => {
 })
 
 describe('coming up', () => {
-  afterEach(() => wrapper?.unmount())
+  afterEach(() => {
+    wrapper?.unmount()
+    vi.useRealTimers()
+  })
 
-  it('lists what is next in date order and jumps to each', async () => {
-    const { default: ComingUp } = await import('@/components/sky/ComingUp.vue')
-    const t = parseT('2026-11-16T15:48', TZ)
-    const ds = dayStart(t, TZ)
+  async function mountAhead({
+    now = parseT('2026-11-17T10:00', TZ),
+    at = '2026-11-16T15:48'
+  } = {}) {
+    const t = parseT(at, TZ)
     wrapper = mount(ComingUp, {
+      attachTo: document.body,
       props: {
-        t,
         tz: TZ,
+        now,
+        sky: createSky(A, PLACE),
+        ds: dayStart(t, TZ),
         placeName: 'Joar Sahara',
-        lat: PLACE.lat,
-        ds,
-        ahead: sky.ahead(ds),
-        showers: sky.showers(ds)
+        lat: PLACE.lat
       },
       global: { plugins: [createPinia(), activeI18n()] }
     })
+    return wrapper
+  }
+
+  it('shows the first 10 with the full date, counted from today rather than the chosen day', async () => {
+    await mountAhead()
     const rows = wrapper.findAll('[data-ahead]')
-    const labels = rows.map((r) => r.find('span span').text())
-    expect(labels).toEqual(
-      expect.arrayContaining([
-        'Leonids meteor shower',
-        'Geminids meteor shower',
-        'December solstice',
-        'Moon closest to Earth',
-        'Moon farthest from Earth'
-      ])
+    expect(rows).toHaveLength(10)
+    expect(rows[0].text()).toContain('Leonids meteor shower')
+    expect(rows[0].find('[data-ahead-date]').text()).toBe('Tue, Nov 17, 2026')
+    // today is Nov 17, though the page shows Nov 16
+    expect(rows[0].find('[data-ahead-in]').text()).toBe('today')
+    expect(rows[1].find('[data-ahead-date]').text()).toBe('Thu, Nov 26, 2026')
+    expect(rows[1].find('[data-ahead-in]').text()).toBe('in 9 days')
+  })
+
+  it('counts back for events before today', async () => {
+    await mountAhead({ now: parseT('2026-12-01T10:00', TZ) })
+    expect(wrapper.findAll('[data-ahead-in]')[1].text()).toBe('5 days ago')
+  })
+
+  it('loads the next 10 at the end of the list, up to three years', async () => {
+    vi.useFakeTimers()
+    await mountAhead()
+    await wrapper.find('[data-ahead-more]').trigger('click')
+    expect(wrapper.find('[data-ahead-loading]').exists()).toBe(true)
+    await vi.runAllTimersAsync()
+    expect(wrapper.findAll('[data-ahead]')).toHaveLength(20)
+    for (let i = 0; i < 20 && wrapper.find('[data-ahead-more]').exists(); i++) {
+      await wrapper.find('[data-ahead-more]').trigger('click')
+      await vi.runAllTimersAsync()
+    }
+    expect(wrapper.find('[data-ahead-end]').text()).toBe("That's everything up to November 2029.")
+    const dates = wrapper.findAll('[data-ahead-date]').map((d) => d.text())
+    expect(dates.at(-1)).toMatch(/2029$/)
+  })
+
+  it('opens the details instead of jumping, and jumps from there', async () => {
+    await mountAhead()
+    await wrapper.findAll('[data-ahead]')[1].trigger('click')
+    await flushPromises()
+    const detail = document.querySelector('[data-event-detail]')
+    expect(detail).not.toBeNull()
+    expect(wrapper.emitted('commit')).toBeUndefined()
+    expect(detail.querySelector('[data-event-label]').textContent).toBe('Moon closest to Earth')
+    expect(detail.querySelector('[data-event-when]').textContent).toMatch(
+      /^Thu, Nov 26, 2026 · \d+:\d\d [AP]M · in 9 days$/
     )
-    expect(labels.some((l) => l.endsWith('lunar eclipse'))).toBe(true)
-    expect(labels.some((l) => l.endsWith('solar eclipse'))).toBe(true)
-    expect(rows.find((r) => r.text().includes('December solstice')).text()).toContain(
-      'Shortest day of the year'
-    )
-    expect(rows.find((r) => r.text().includes('Leonids')).text()).toMatch(/Moon \d+% lit/)
-    // date order
-    const times = wrapper.vm.rows.map((r) => r.t)
-    expect([...times].sort((a, b) => a - b)).toEqual(times)
-    await rows[0].trigger('click')
-    expect(wrapper.emitted('commit')[0][0]).toBe(times[0])
+    const tiles = [...detail.querySelectorAll('[data-tile]')].map((x) => x.textContent)
+    expect(tiles[0]).toMatch(/^Distance359,\d{3} km/)
+    detail.querySelector('[data-event-jump]').click()
+    // on a phone the drawer closes through history.back(); the jump waits for that
+    await new Promise((resolve) => window.addEventListener('popstate', resolve, { once: true }))
+    await flushPromises()
+    expect(formatT(wrapper.emitted('commit')[0][0], TZ).slice(0, 10)).toBe('2026-11-26')
+  })
+
+  it('describes an eclipse in its detail', async () => {
+    vi.useFakeTimers()
+    await mountAhead()
+    while (!wrapper.findAll('[data-ahead]').some((r) => r.text().includes('lunar eclipse'))) {
+      await wrapper.find('[data-ahead-more]').trigger('click')
+      await vi.runAllTimersAsync()
+    }
+    vi.useRealTimers()
+    await wrapper
+      .findAll('[data-ahead]')
+      .find((r) => r.text().includes('lunar eclipse'))
+      .trigger('click')
+    await flushPromises()
+    const labels = [
+      ...document.querySelectorAll('[data-event-detail] [data-tile] span:first-child')
+    ].map((x) => x.textContent)
+    expect(labels).toEqual(expect.arrayContaining(['Type', 'Peak', 'Moon at the peak', 'Lasts']))
+    expect(document.querySelector('[data-event-note]').textContent).toContain('safe to watch')
   })
 })
