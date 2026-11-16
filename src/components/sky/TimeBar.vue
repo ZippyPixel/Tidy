@@ -16,6 +16,7 @@
           aria-haspopup="dialog"
           :aria-label="$t('sky.bar.placeAria', { name: place.name, country: place.country })"
           :class="fieldClass"
+          class="min-w-0"
           @click="$emit('open-place', $event)"
         >
           <AppIcon name="map-pin" :size="18" class="flex-none text-muted-foreground" />
