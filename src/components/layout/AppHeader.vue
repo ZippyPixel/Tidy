@@ -79,7 +79,7 @@ import useWeatherStore from '@/stores/weather'
 import AppIcon from '@/components/common/AppIcon.vue'
 import CitySearch from '@/components/layout/CitySearch.vue'
 import SettingsMenu from '@/components/layout/SettingsMenu.vue'
-import { showWeather } from '@/utils/navigation'
+import { followLocation } from '@/utils/navigation'
 
 export default {
   name: 'AppHeader',
@@ -111,7 +111,7 @@ export default {
     async handleLocationClick() {
       try {
         await this.detectUserLocation()
-        showWeather(this.$router)
+        followLocation(this.$router)
       } catch (error) {
         console.error('Location detection failed:', error)
       }

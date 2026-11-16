@@ -124,7 +124,7 @@ import { ref } from 'vue'
 import { mapActions } from 'pinia'
 import { ComboboxContent, ComboboxViewport } from 'reka-ui'
 import useWeatherStore from '@/stores/weather'
-import { showWeather } from '@/utils/navigation'
+import { followLocation } from '@/utils/navigation'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSkeletonGate } from '@/composables/useSkeletonGate'
@@ -230,7 +230,7 @@ export default {
       this.$emit('close')
       try {
         await this.getCityWeather(`id:${suggestion.id}`)
-        showWeather(this.$router)
+        followLocation(this.$router)
       } catch (error) {
         console.error('Failed to fetch city weather:', error)
       }
@@ -245,7 +245,7 @@ export default {
       try {
         await this.getCityWeather(cityName)
         this.cityName = '' // Clear input after successful fetch
-        showWeather(this.$router)
+        followLocation(this.$router)
       } catch (error) {
         console.error('Failed to fetch city weather:', error)
       }
