@@ -5,7 +5,8 @@
     "tides": "Loading tides…",
     "stations": "Loading stations…",
     "search": "Searching…",
-    "places": "Loading places…"
+    "places": "Loading places…",
+    "sky": "Working out the sky…"
   },
   "header": {
     "searchPlaceholder": "Search City",
@@ -547,6 +548,114 @@
       "use": "Use this location",
       "recenter": "Back to the selected location",
       "credit": "Places: GeoNames (CC BY 4.0)"
+    },
+    "title": "Sun & Moon",
+    "failed": "Couldn't load the astronomy data. Reload to try again.",
+    "noPlace": "Choose a place to see its sun and moon.",
+    "choosePlace": "Choose a location",
+    "footer": "Positions and times are calculated on your device with Astronomy Engine for {place}. Rise and set times assume a flat, clear horizon.",
+    "summary": "{date}, {time} · Sun {sun}, {next} · {phase}",
+    "sunUp": "up",
+    "sunDown": "down",
+    "upAllDay": "up all day",
+    "downAllDay": "stays below the horizon",
+    "risesIn": "rises {time} (in {in})",
+    "setsIn": "sets {time} (in {in})",
+    "minutes": "{m}m",
+    "hoursMinutes": "{h}h {m}m",
+    "km": "{n} km",
+    "mi": "{n} mi",
+    "degrees": "{n}°",
+    "phases": {
+      "newMoon": "New moon",
+      "waxingCrescent": "Waxing crescent",
+      "firstQuarter": "First quarter",
+      "waxingGibbous": "Waxing gibbous",
+      "fullMoon": "Full moon",
+      "waningGibbous": "Waning gibbous",
+      "lastQuarter": "Last quarter",
+      "waningCrescent": "Waning crescent"
+    },
+    "points": {
+      "N": "N",
+      "NNE": "NNE",
+      "NE": "NE",
+      "ENE": "ENE",
+      "E": "E",
+      "ESE": "ESE",
+      "SE": "SE",
+      "SSE": "SSE",
+      "S": "S",
+      "SSW": "SSW",
+      "SW": "SW",
+      "WSW": "WSW",
+      "W": "W",
+      "WNW": "WNW",
+      "NW": "NW",
+      "NNW": "NNW"
+    },
+    "bar": {
+      "label": "Date and time",
+      "placeAria": "Location: {name}, {country}. Change location",
+      "home": "Back to {name}",
+      "yours": "Your location",
+      "yoursWithCountry": "{country} · your location",
+      "chosen": "Chosen on the globe",
+      "chosenWithCountry": "{country} · chosen on the globe",
+      "previousDay": "Previous day",
+      "nextDay": "Next day",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "daysAhead": "{n} day ahead | {n} days ahead",
+      "daysAgo": "{n} day ago | {n} days ago",
+      "time": "Time",
+      "hour": "Hour",
+      "minute": "Minute",
+      "amPm": "AM or PM",
+      "live": "Live",
+      "backToNow": "Back to now",
+      "slider": "Time of day",
+      "jumpTo": "Jump to"
+    },
+    "jump": {
+      "sunrise": "Sunrise",
+      "solarNoon": "Solar noon",
+      "sunset": "Sunset",
+      "moonrise": "Moonrise",
+      "fullMoon": "Next full moon",
+      "newMoon": "Next new moon"
+    },
+    "calendar": {
+      "label": "Choose a date",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "note": "Moon phase shown under each day",
+      "day": "{date}, moon {lit}% lit"
+    },
+    "chart": {
+      "title": "Path across the sky"
+    },
+    "look": {
+      "title": "Where to look"
+    },
+    "sun": {
+      "title": "Sun"
+    },
+    "moon": {
+      "title": "Moon"
+    },
+    "geo": {
+      "title": "Sun, Earth and Moon"
+    },
+    "prayer": {
+      "title": "Prayer times"
+    },
+    "planets": {
+      "title": "Planets"
+    },
+    "ahead": {
+      "title": "Coming up"
     }
   }
 }
