@@ -49,20 +49,21 @@
         <div
           role="group"
           :aria-label="$t('sky.prayer.asrLabel')"
-          class="flex h-9 rounded-full bg-muted p-[3px]"
+          class="relative grid h-9 grid-cols-2 rounded-full bg-muted p-[3px]"
+          :style="{ '--pad': '3px', '--index': prayerStore.hanafi ? 1 : 0 }"
         >
+          <span
+            aria-hidden="true"
+            class="tidy-toggle-thumb pointer-events-none absolute rounded-full"
+          />
           <button
             v-for="opt in asrOptions"
             :key="opt.key"
             type="button"
             :data-asr="opt.key"
             :aria-pressed="String(opt.on)"
-            class="h-[30px] rounded-full px-3.5 text-[13px] font-semibold outline-ring focus-visible:outline focus-visible:outline-2"
-            :class="
-              opt.on
-                ? 'bg-card text-foreground shadow-[0_1px_2px_hsl(220_30%_4%/0.12)]'
-                : 'text-muted-foreground'
-            "
+            class="tidy-toggle-option relative h-[30px] rounded-full px-3.5 text-[13px] font-semibold outline-ring focus-visible:outline focus-visible:outline-2"
+            :class="opt.on ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'"
             @click="prayerStore.setHanafi(opt.hanafi)"
           >
             {{ $t(`sky.prayer.${opt.key}`) }}

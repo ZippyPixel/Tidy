@@ -130,8 +130,13 @@
         <div
           role="group"
           :aria-label="$t('sky.bar.amPm')"
-          class="flex h-12 rounded-lg bg-muted p-1"
+          class="relative grid h-12 grid-cols-2 rounded-lg bg-muted p-1"
+          :style="{ '--pad': '4px', '--index': pm ? 1 : 0 }"
         >
+          <span
+            aria-hidden="true"
+            class="tidy-toggle-thumb pointer-events-none absolute rounded-[calc(var(--radius)-4px)]"
+          />
           <button
             type="button"
             data-am
@@ -437,10 +442,8 @@ export default {
     },
     segmentClass(on) {
       return [
-        'w-12 h-10 rounded-[calc(var(--radius)-4px)] text-sm font-semibold outline-ring focus-visible:outline focus-visible:outline-2',
-        on
-          ? 'bg-card text-foreground shadow-[0_1px_2px_hsl(220_30%_4%/0.12)]'
-          : 'text-muted-foreground'
+        'tidy-toggle-option relative w-12 h-10 rounded-[calc(var(--radius)-4px)] text-sm font-semibold outline-ring focus-visible:outline focus-visible:outline-2',
+        on ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
       ]
     },
     // picking a day keeps the time of day
