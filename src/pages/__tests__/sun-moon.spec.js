@@ -80,7 +80,8 @@ describe('Sun & Moon page', () => {
     expect(wrapper.find('[data-summary]').text()).toBe(
       'Monday, November 16, 3:48 PM · Sun up, sets 5:12 PM (in 1h 24m) · Waxing crescent'
     )
-    expect(wrapper.find('[data-live]').exists()).toBe(true)
+    expect(wrapper.find('[data-live]').classes()).not.toContain('invisible')
+    expect(wrapper.find('[data-back-to-now]').classes()).toContain('invisible')
   })
 
   it('follows the clock every 30 seconds while live', async () => {
@@ -97,7 +98,8 @@ describe('Sun & Moon page', () => {
     expect(wrapper.find('[data-summary]').text()).toContain(
       'Thursday, December 3, 12:00 PM · Sun down, stays below the horizon'
     )
-    expect(wrapper.find('[data-back-to-now]').exists()).toBe(true)
+    expect(wrapper.find('[data-back-to-now]').classes()).not.toContain('invisible')
+    expect(wrapper.find('[data-live]').classes()).toContain('invisible')
     expect(wrapper.find('[data-home]').exists()).toBe(true)
   })
 

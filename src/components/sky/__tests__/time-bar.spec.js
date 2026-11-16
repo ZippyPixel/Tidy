@@ -39,6 +39,11 @@ function setup(props = {}) {
   return wrapper
 }
 const commits = () => wrapper.emitted('commit')?.map(([t]) => formatT(t, TZ)) ?? []
+/** jsdom has no stylesheet, so "visible" means: no `invisible` class and not aria-hidden */
+const shown = (selector) => {
+  const el = wrapper.find(selector)
+  return !el.classes('invisible') && el.attributes('aria-hidden') !== 'true'
+}
 const typeInto = async (selector, value) => {
   const input = wrapper.find(selector)
   input.element.value = value
@@ -57,15 +62,45 @@ describe('TimeBar', () => {
     expect(wrapper.find('[data-hour]').element.value).toBe('03')
     expect(wrapper.find('[data-minute]').element.value).toBe('48')
     expect(wrapper.find('[data-pm]').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.find('[data-live]').exists()).toBe(true)
+    expect(shown('[data-live]')).toBe(true)
+    expect(shown('[data-back-to-now]')).toBe(false)
     expect(wrapper.find('[data-home]').exists()).toBe(false)
   })
 
   it('names days ahead and offers the way back to now', () => {
     setup({ t: parseT('2026-11-21T09:00', TZ), live: false })
     expect(wrapper.find('[data-date-tag]').text()).toBe('5 days ahead')
+    expect(shown('[data-back-to-now]')).toBe(true)
+    expect(shown('[data-live]')).toBe(false)
     wrapper.find('[data-back-to-now]').trigger('click')
     expect(wrapper.emitted('live')).toHaveLength(1)
+  })
+
+  it.each([
+    ['live', { live: true }, '[data-live]', '[data-back-to-now]'],
+    [
+      'a chosen time',
+      { t: parseT('2026-11-21T09:00', TZ), live: false },
+      '[data-back-to-now]',
+      '[data-live]'
+    ]
+  ])('keeps Live and Back to now in one slot in %s mode', (_, props, active, inactive) => {
+    setup(props)
+    const slot = wrapper.find('[data-live-slot]')
+    expect(slot.classes()).toContain('inline-grid')
+    // both are always rendered in the same cell, so the slot is as wide as the longer label
+    for (const sel of [active, inactive]) {
+      expect(slot.find(sel).exists()).toBe(true)
+      expect(slot.find(sel).classes()).toContain('[grid-area:1/1]')
+    }
+    expect(shown(active)).toBe(true)
+    expect(shown(inactive)).toBe(false)
+    expect(wrapper.find(inactive).classes()).toContain('invisible')
+    expect(wrapper.find(inactive).attributes('aria-hidden')).toBe('true')
+    // the button can only be focused (and clicked) while it is the active one
+    const back = wrapper.find('[data-back-to-now]')
+    if (active === '[data-back-to-now]') expect(back.attributes('tabindex')).toBeUndefined()
+    else expect(back.attributes('tabindex')).toBe('-1')
   })
 
   it('steps a day either way at the same clock time', async () => {
