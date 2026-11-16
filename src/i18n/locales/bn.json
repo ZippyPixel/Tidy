@@ -301,7 +301,8 @@
     "durationMinutes": "{m} মি",
     "illuminated": "{phase} · {n}% আলোকিত",
     "noMoonrise": "আজ চন্দ্রোদয় নেই",
-    "noMoonriseNext": "আজ চন্দ্রোদয় নেই · পরের উদয় আগামীকাল, {time}"
+    "noMoonriseNext": "আজ চন্দ্রোদয় নেই · পরের উদয় আগামীকাল, {time}",
+    "details": "বিস্তারিত"
   },
   "moonPhases": {
     "newMoon": "অমাবস্যা",

@@ -301,7 +301,8 @@
     "durationMinutes": "{m}m",
     "illuminated": "{phase} · {n}% illuminated",
     "noMoonrise": "No moonrise today",
-    "noMoonriseNext": "No moonrise today · next rise tomorrow, {time}"
+    "noMoonriseNext": "No moonrise today · next rise tomorrow, {time}",
+    "details": "Details"
   },
   "moonPhases": {
     "newMoon": "New Moon",
