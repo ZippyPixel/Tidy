@@ -178,3 +178,70 @@ describe('prayer times', () => {
     expect(rows[4]).toMatch(/—$/)
   })
 })
+
+describe('planets', () => {
+  afterEach(() => wrapper?.unmount())
+
+  it('lists Mercury to Saturn with brightness and rise/set', async () => {
+    const { default: PlanetsCard } = await import('@/components/sky/PlanetsCard.vue')
+    mountCard(PlanetsCard, { t: parseT('2026-11-16T19:00', TZ) })
+    const rows = wrapper.findAll('[data-planet]')
+    expect(rows.map((r) => r.text().match(/^[A-Z][a-z]+/)[0])).toEqual([
+      'Mercury',
+      'Venus',
+      'Mars',
+      'Jupiter',
+      'Saturn'
+    ])
+    for (const r of rows) expect(r.text()).toMatch(/↑ (\d+:\d\d [AP]M|—)\s+↓ (\d+:\d\d [AP]M|—)$/)
+    // nothing is "visible" in daylight
+    wrapper.unmount()
+    mountCard(PlanetsCard)
+    expect(wrapper.find('[data-visible]').exists()).toBe(false)
+    expect(wrapper.text()).toMatch(/hidden by daylight|Below the horizon/)
+  })
+})
+
+describe('coming up', () => {
+  afterEach(() => wrapper?.unmount())
+
+  it('lists what is next in date order and jumps to each', async () => {
+    const { default: ComingUp } = await import('@/components/sky/ComingUp.vue')
+    const t = parseT('2026-11-16T15:48', TZ)
+    const ds = dayStart(t, TZ)
+    wrapper = mount(ComingUp, {
+      props: {
+        t,
+        tz: TZ,
+        placeName: 'Joar Sahara',
+        lat: PLACE.lat,
+        ds,
+        ahead: sky.ahead(ds),
+        showers: sky.showers(ds)
+      },
+      global: { plugins: [createPinia(), activeI18n()] }
+    })
+    const rows = wrapper.findAll('[data-ahead]')
+    const labels = rows.map((r) => r.find('span span').text())
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        'Leonids meteor shower',
+        'Geminids meteor shower',
+        'December solstice',
+        'Moon closest to Earth',
+        'Moon farthest from Earth'
+      ])
+    )
+    expect(labels.some((l) => l.endsWith('lunar eclipse'))).toBe(true)
+    expect(labels.some((l) => l.endsWith('solar eclipse'))).toBe(true)
+    expect(rows.find((r) => r.text().includes('December solstice')).text()).toContain(
+      'Shortest day of the year'
+    )
+    expect(rows.find((r) => r.text().includes('Leonids')).text()).toMatch(/Moon \d+% lit/)
+    // date order
+    const times = wrapper.vm.rows.map((r) => r.t)
+    expect([...times].sort((a, b) => a - b)).toEqual(times)
+    await rows[0].trigger('click')
+    expect(wrapper.emitted('commit')[0][0]).toBe(times[0])
+  })
+})

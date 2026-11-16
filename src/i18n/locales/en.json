@@ -762,10 +762,74 @@
       "note": "Worked out from the sun's position for this place. A local mosque timetable may differ by a few minutes."
     },
     "planets": {
-      "title": "Planets"
+      "title": "Planets",
+      "names": {
+        "Mercury": "Mercury",
+        "Venus": "Venus",
+        "Mars": "Mars",
+        "Jupiter": "Jupiter",
+        "Saturn": "Saturn"
+      },
+      "visible": "Visible now",
+      "high": "{n}° high in the {point}",
+      "daylight": ", hidden by daylight",
+      "low": ", too low to see well",
+      "below": "Below the horizon",
+      "belowRises": "Below the horizon, rises {time}",
+      "brightness": {
+        "brilliant": "Brilliant",
+        "veryBright": "Very bright",
+        "bright": "Bright",
+        "easy": "Easy to see",
+        "faint": "Faint"
+      }
     },
     "ahead": {
-      "title": "Coming up"
+      "title": "Coming up",
+      "kinds": {
+        "penumbral": "Penumbral",
+        "partial": "Partial",
+        "total": "Total",
+        "annular": "Annular"
+      },
+      "lunar": "{kind} lunar eclipse",
+      "solar": "{kind} solar eclipse",
+      "visibleAt": "Visible from {place}, peak at {time}",
+      "covered": ", {n}% of the sun covered",
+      "lunarHidden": "Not visible from {place} (the moon is down)",
+      "solarHidden": "Mostly below the horizon from {place}",
+      "seasons": {
+        "marchEquinox": "March equinox",
+        "juneSolstice": "June solstice",
+        "septemberEquinox": "September equinox",
+        "decemberSolstice": "December solstice"
+      },
+      "equal": "Day and night are nearly equal",
+      "shortest": "Shortest day of the year",
+      "longest": "Longest day of the year",
+      "perigee": "Moon closest to Earth",
+      "apogee": "Moon farthest from Earth",
+      "away": "{d} away",
+      "shower": "{name} meteor shower",
+      "showers": {
+        "quadrantids": "Quadrantids",
+        "lyrids": "Lyrids",
+        "etaAquariids": "Eta Aquariids",
+        "deltaAquariids": "Delta Aquariids",
+        "perseids": "Perseids",
+        "orionids": "Orionids",
+        "leonids": "Leonids",
+        "geminids": "Geminids",
+        "ursids": "Ursids"
+      },
+      "showerMoon": {
+        "dark": "Peaks around this night, up to about {zhr} an hour in a dark sky. Moon {lit}% lit, so skies stay dark.",
+        "some": "Peaks around this night, up to about {zhr} an hour in a dark sky. Moon {lit}% lit.",
+        "bright": "Peaks around this night, up to about {zhr} an hour in a dark sky. Moon {lit}% lit, which hides the fainter ones."
+      },
+      "thisDay": "this day",
+      "nextDay": "next day",
+      "inDays": "in {n} day | in {n} days"
     },
     "light": {
       "daylight": "Daylight",
