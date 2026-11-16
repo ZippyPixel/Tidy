@@ -4,7 +4,8 @@
     "weather": "Loading weather…",
     "tides": "Loading tides…",
     "stations": "Loading stations…",
-    "search": "Searching…"
+    "search": "Searching…",
+    "places": "Loading places…"
   },
   "header": {
     "searchPlaceholder": "Search City",
@@ -526,6 +527,26 @@
       "pickSub": "{country} · {km} from {place}",
       "km": "{km} km",
       "credit": "Stations: {project}"
+    }
+  },
+  "sky": {
+    "explorer": {
+      "title": "Choose a location",
+      "count": "{count} regions in {countries} countries",
+      "loading": "Loading places…",
+      "search": "Search regions or countries",
+      "searchLabel": "Search regions or countries",
+      "listLabel": "Places",
+      "regions": "Regions · {count}",
+      "regionCount": "{count} region | {count} regions",
+      "showing": "Showing {shown} of {total}. Keep typing to narrow it down.",
+      "noMatch": "No region or country matches “{query}”.",
+      "loadFailed": "Couldn't load the places. Try again in a moment.",
+      "globe": "Globe with {count} places. Drag to turn it, scroll or pinch to zoom, tap a dot to pick a place.",
+      "globeLoading": "Globe of places",
+      "use": "Use this location",
+      "recenter": "Back to the selected location",
+      "credit": "Places: GeoNames (CC BY 4.0)"
     }
   }
 }

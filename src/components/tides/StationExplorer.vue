@@ -11,7 +11,9 @@
         @close-auto-focus.prevent="opener?.focus({ preventScroll: true })"
       >
         <!-- design/TidyTideExplorer. Below md the panel dissolves, so the order is search → globe → list -->
-        <p role="status" class="sr-only">{{ listLoading ? $t('loading.stations') : '' }}</p>
+        <p role="status" class="sr-only">
+          {{ listLoading ? $t(places ? 'loading.places' : 'loading.stations') : '' }}
+        </p>
         <header
           class="flex h-[calc(56px+env(safe-area-inset-top))] flex-none items-center gap-2 border-b pl-1 pr-4 pt-[env(safe-area-inset-top)] md:h-[68px] md:pl-3 md:pr-6 md:pt-0"
         >
@@ -26,26 +28,39 @@
             <AppIcon name="x" :size="20" :stroke-width="2" class="hidden md:block" />
           </button>
           <div class="flex min-w-0 flex-col">
-            <DialogTitle as="h1" class="whitespace-nowrap text-lg font-semibold leading-6 tracking-[-0.01em]">
-              {{ $t('tides.explorer.title') }}
+            <DialogTitle
+              as="h1"
+              class="whitespace-nowrap text-lg font-semibold leading-6 tracking-[-0.01em]"
+            >
+              {{ $t(tk('title')) }}
             </DialogTitle>
-            <DialogDescription as="span" data-count class="whitespace-nowrap text-[13px] leading-4 tabular-nums text-muted-foreground">
+            <DialogDescription
+              as="span"
+              data-count
+              class="whitespace-nowrap text-[13px] leading-4 tabular-nums text-muted-foreground"
+            >
               {{ countLine }}
             </DialogDescription>
           </div>
         </header>
 
         <div class="flex min-h-0 flex-1 flex-col md:flex-row">
-          <aside class="contents md:flex md:min-h-0 md:w-80 md:flex-none md:flex-col md:border-r lg:w-[380px]">
-            <div class="order-1 flex flex-none items-center gap-2 px-4 py-3 md:px-6 md:pb-3 md:pt-5">
-              <div class="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full bg-muted pl-4 pr-1 text-muted-foreground">
+          <aside
+            class="contents md:flex md:min-h-0 md:w-80 md:flex-none md:flex-col md:border-r lg:w-[380px]"
+          >
+            <div
+              class="order-1 flex flex-none items-center gap-2 px-4 py-3 md:px-6 md:pb-3 md:pt-5"
+            >
+              <div
+                class="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full bg-muted pl-4 pr-1 text-muted-foreground"
+              >
                 <AppIcon name="search" :size="18" class="flex-none" />
                 <input
                   v-model="query"
                   data-search
                   type="text"
-                  :placeholder="$t('tides.explorer.search')"
-                  :aria-label="$t('tides.explorer.searchLabel')"
+                  :placeholder="$t(tk('search'))"
+                  :aria-label="$t(tk('searchLabel'))"
                   autocomplete="off"
                   spellcheck="false"
                   class="h-10 min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none"
@@ -77,29 +92,54 @@
 
             <ScrollArea
               role="region"
-              :aria-label="$t('tides.explorer.listLabel')"
+              :aria-label="$t(tk('listLabel'))"
               data-station-list
               :aria-busy="listLoading ? 'true' : undefined"
               class="order-3 min-h-60 flex-1 md:min-h-0"
             >
               <!-- 16px on the right keeps the bar off the chevrons -->
-              <div class="pb-[calc(24px+env(safe-area-inset-bottom))] pl-1 pr-4 pt-2 md:pb-6 md:pl-3 md:pt-1">
+              <div
+                class="pb-[calc(24px+env(safe-area-inset-bottom))] pl-1 pr-4 pt-2 md:pb-6 md:pl-3 md:pt-1"
+              >
                 <!-- skeleton (design/TidySkeleton ex*): a section label and its 56px rows -->
                 <div v-if="listLoading" data-list-loading data-skeleton aria-hidden="true">
-                  <div v-for="(group, g) in skeletonGroups" :key="g" class="flex flex-col gap-0.5" :class="{ 'pb-3': g === 0 }">
+                  <div
+                    v-for="(group, g) in skeletonGroups"
+                    :key="g"
+                    class="flex flex-col gap-0.5"
+                    :class="{ 'pb-3': g === 0 }"
+                  >
                     <div class="flex min-h-8 items-center px-3">
                       <Skeleton class="h-2.5" :style="{ width: `${group.label}px` }" />
                     </div>
-                    <div v-for="([titleW, subW], i) in group.rows" :key="i" class="flex min-h-14 flex-col justify-center gap-2 px-3 py-2">
+                    <div
+                      v-for="([titleW, subW], i) in group.rows"
+                      :key="i"
+                      class="flex min-h-14 flex-col justify-center gap-2 px-3 py-2"
+                    >
                       <Skeleton class="h-3.5" :style="{ width: `${titleW}px` }" />
                       <Skeleton class="h-2.5" :style="{ width: `${subW}px` }" />
                     </div>
                   </div>
                 </div>
-                <p v-if="message" data-message class="px-3 py-4 text-sm leading-5 text-muted-foreground">{{ message }}</p>
-                <div v-for="section in listLoading ? [] : sections" :key="section.title" data-section class="flex flex-col gap-0.5 pb-3">
+                <p
+                  v-if="message"
+                  data-message
+                  class="px-3 py-4 text-sm leading-5 text-muted-foreground"
+                >
+                  {{ message }}
+                </p>
+                <div
+                  v-for="section in listLoading ? [] : sections"
+                  :key="section.title"
+                  data-section
+                  class="flex flex-col gap-0.5 pb-3"
+                >
                   <div class="flex min-h-8 items-center justify-between gap-2 px-3">
-                    <span class="truncate text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-muted-foreground">{{ section.title }}</span>
+                    <span
+                      class="truncate text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-muted-foreground"
+                      >{{ section.title }}</span
+                    >
                     <button
                       v-if="section.back"
                       type="button"
@@ -121,13 +161,31 @@
                     @click="row.onClick"
                   >
                     <span class="flex min-w-0 flex-1 flex-col items-start gap-0.5">
-                      <span class="max-w-full truncate text-[15px] font-medium leading-5">{{ row.title }}</span>
-                      <span class="max-w-full truncate text-[13px] leading-4 text-muted-foreground">{{ row.sub }}</span>
+                      <span class="max-w-full truncate text-[15px] font-medium leading-5">{{
+                        row.title
+                      }}</span>
+                      <span
+                        class="max-w-full truncate text-[13px] leading-4 text-muted-foreground"
+                        >{{ row.sub }}</span
+                      >
                     </span>
-                    <span class="flex-none whitespace-nowrap text-[13px] leading-4 tabular-nums text-muted-foreground">{{ row.right }}</span>
-                    <AppIcon name="chevron-right" :size="16" :stroke-width="2" class="flex-none text-muted-foreground" />
+                    <span
+                      class="flex-none whitespace-nowrap text-[13px] leading-4 tabular-nums text-muted-foreground"
+                      >{{ row.right }}</span
+                    >
+                    <AppIcon
+                      name="chevron-right"
+                      :size="16"
+                      :stroke-width="2"
+                      class="flex-none text-muted-foreground"
+                    />
                   </button>
-                  <p v-if="section.more" class="mx-3 mt-1 text-[13px] leading-[18px] text-muted-foreground">{{ section.more }}</p>
+                  <p
+                    v-if="section.more"
+                    class="mx-3 mt-1 text-[13px] leading-[18px] text-muted-foreground"
+                  >
+                    {{ section.more }}
+                  </p>
                 </div>
               </div>
             </ScrollArea>
@@ -144,6 +202,8 @@
             :is-md="isMd"
             :aria-label="globeLabel"
             :credit="creditLine"
+            :action-label="places ? $t('sky.explorer.use') : ''"
+            :recenter-label="places ? $t('sky.explorer.recenter') : ''"
             :loading="listLoading"
             class="order-2 h-[min(46vh,380px)] flex-none border-b md:h-auto md:flex-1 md:border-b-0"
             @update:pick="pick = $event"
@@ -159,7 +219,14 @@
 import { mapStores } from 'pinia'
 import { ref, shallowRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
+import {
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle
+} from 'reka-ui'
 import AppIcon from '@/components/common/AppIcon.vue'
 import TideGlobe from '@/components/tides/TideGlobe.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -169,6 +236,7 @@ import { API_ENDPOINTS } from '@/constants/api'
 import backToClose from '@/mixins/backToClose'
 import tideMixin from '@/mixins/tideMixin'
 import weatherMixin from '@/mixins/weatherMixin'
+import usePlacesStore from '@/stores/places'
 import useTidesStore from '@/stores/tides'
 import { normalizeName } from '@/utils/globe'
 import { haversineKm } from '@/utils/tides'
@@ -176,18 +244,57 @@ import { haversineKm } from '@/utils/tides'
 const SEARCH_DELAY_MS = 200
 const COUNTRY_RESULTS = 6
 const COUNTRY_ROWS = 200
+const PLACE_RESULTS = 30
+const NEAR_RESULTS = 10
+// strings the places mode words differently (sky.explorer.*); everything else is shared
+const PLACE_KEYS = new Set([
+  'title',
+  'count',
+  'loading',
+  'search',
+  'searchLabel',
+  'listLabel',
+  'noMatch',
+  'loadFailed',
+  'globe',
+  'globeLoading'
+])
 // the list's skeleton: [label width, rows of [title, sub] widths] (design/TidySkeleton ex*)
 const SKELETON_GROUPS = [
   { label: 84, rows: [[98, 62]] },
   {
     label: 112,
-    rows: [[124, 62], [62, 62], [86, 62], [158, 54], [88, 62], [78, 72], [66, 54], [98, 62], [80, 54], [74, 62], [56, 62], [84, 62]]
+    rows: [
+      [124, 62],
+      [62, 62],
+      [86, 62],
+      [158, 54],
+      [88, 62],
+      [78, 72],
+      [66, 54],
+      [98, 62],
+      [80, 54],
+      [74, 62],
+      [56, 62],
+      [84, 62]
+    ]
   }
 ]
 
 export default {
   name: 'StationExplorer',
-  components: { AppIcon, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, ScrollArea, Skeleton, TideGlobe },
+  components: {
+    AppIcon,
+    DialogContent,
+    DialogDescription,
+    DialogOverlay,
+    DialogPortal,
+    DialogRoot,
+    DialogTitle,
+    ScrollArea,
+    Skeleton,
+    TideGlobe
+  },
   mixins: [weatherMixin, tideMixin, backToClose],
   props: {
     open: { type: Boolean, default: false },
@@ -196,21 +303,35 @@ export default {
     /** the station on the page */
     selected: { type: Object, default: null },
     /** weather store coords */
-    home: { type: Object, default: null }
+    home: { type: Object, default: null },
+    /** 'stations' picks a tide station; 'places' picks a region for the Sun & Moon page */
+    kind: {
+      type: String,
+      default: 'stations',
+      validator: (v) => ['stations', 'places'].includes(v)
+    }
   },
   emits: ['pick', 'close'],
-  setup() {
+  setup(props) {
     // here rather than in data(), so the skeleton gate can watch them from the start
     // a reopening finds the index already downloaded, so no skeleton then
-    const index = shallowRef(useTidesStore().explorer?.index ?? null)
+    const store = props.kind === 'places' ? usePlacesStore() : useTidesStore()
+    const index = shallowRef(store.explorer?.index ?? null)
     const loadFailed = ref(false)
     const { showSkeleton } = useSkeletonGate(() => !index.value && !loadFailed.value)
-    return { isMd: useMediaQuery('(min-width: 768px)'), index, loadFailed, showSkeleton, skeletonGroups: SKELETON_GROUPS }
+    return {
+      isMd: useMediaQuery('(min-width: 768px)'),
+      index,
+      loadFailed,
+      showSkeleton,
+      skeletonGroups: SKELETON_GROUPS
+    }
   },
   data() {
     return {
       historyKey: 'tidyExplorer',
       stations: [],
+      placeHits: 0,
       land: null,
       query: '',
       results: null,
@@ -222,23 +343,27 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useTidesStore),
+    ...mapStores(useTidesStore, usePlacesStore),
+    places() {
+      return this.kind === 'places'
+    },
     // the station index is on its way (held for the skeleton's minimum)
     listLoading() {
       return this.showSkeleton || (!this.index && !this.loadFailed)
     },
     countLine() {
-      if (!this.index) return this.$t('tides.explorer.loading')
-      return this.$t('tides.explorer.count', {
+      if (!this.index) return this.$t(this.tk('loading'))
+      return this.$t(this.tk('count'), {
         count: this.tideGrouped(this.index.count),
         countries: this.formatNumber(this.index.countries.length)
       })
     },
     globeLabel() {
-      if (!this.index) return this.$t('tides.explorer.globeLoading')
-      return this.$t('tides.explorer.globe', { count: this.tideGrouped(this.index.count) })
+      if (!this.index) return this.$t(this.tk('globeLoading'))
+      return this.$t(this.tk('globe'), { count: this.tideGrouped(this.index.count) })
     },
     creditLine() {
+      if (this.places) return this.index ? this.$t('sky.explorer.credit') : ''
       const project = this.index?.credit?.project
       return project ? this.$t('tides.explorer.credit', { project }) : ''
     },
@@ -257,13 +382,20 @@ export default {
     matchingCountries() {
       if (!this.index || !this.trimmedQuery) return []
       const wanted = normalizeName(this.trimmedQuery)
-      return this.index.countries.filter((c) => normalizeName(c.name).includes(wanted)).slice(0, COUNTRY_RESULTS)
+      return this.index.countries
+        .filter((c) => normalizeName(c.name).includes(wanted))
+        .slice(0, COUNTRY_RESULTS)
     },
     message() {
-      if (this.loadFailed) return this.$t('tides.explorer.loadFailed')
+      if (this.loadFailed) return this.$t(this.tk('loadFailed'))
       if (this.near && this.nearFailed) return this.$t('errors.locationFailed')
-      if (this.trimmedQuery && this.results && !this.results.length && !this.matchingCountries.length) {
-        return this.$t('tides.explorer.noMatch', { query: this.trimmedQuery })
+      if (
+        this.trimmedQuery &&
+        this.results &&
+        !this.results.length &&
+        !this.matchingCountries.length
+      ) {
+        return this.$t(this.tk('noMatch'), { query: this.trimmedQuery })
       }
       return ''
     },
@@ -272,12 +404,25 @@ export default {
       if (this.trimmedQuery) {
         const sections = []
         if (this.matchingCountries.length) {
-          sections.push({ title: this.$t('tides.explorer.countries'), rows: this.matchingCountries.map(this.countryRow) })
+          sections.push({
+            title: this.$t('tides.explorer.countries'),
+            rows: this.matchingCountries.map(this.countryRow)
+          })
         }
         if (this.results?.length) {
+          const total = this.places ? this.placeHits : this.results.length
           sections.push({
-            title: this.$t('tides.explorer.stations', { count: this.formatNumber(this.results.length) }),
-            rows: this.results.map((s) => this.stationRow(s))
+            title: this.$t(this.places ? 'sky.explorer.regions' : 'tides.explorer.stations', {
+              count: this.formatNumber(total)
+            }),
+            rows: this.results.map((s) => this.stationRow(s)),
+            more:
+              total > this.results.length
+                ? this.$t('sky.explorer.showing', {
+                    shown: this.formatNumber(this.results.length),
+                    total: this.formatNumber(total)
+                  })
+                : ''
           })
         }
         return sections
@@ -286,7 +431,9 @@ export default {
         if (!this.nearResults?.length) return []
         return [
           {
-            title: this.home ? this.$t('tides.explorer.nearestTo', { place: this.home.name }) : this.$t('tides.explorer.nearest'),
+            title: this.home
+              ? this.$t('tides.explorer.nearestTo', { place: this.home.name })
+              : this.$t('tides.explorer.nearest'),
             rows: this.nearResults.map((s) => this.stationRow(s, this.kmText(s.km)))
           }
         ]
@@ -294,25 +441,45 @@ export default {
       if (this.country) {
         const country = this.index.countries.find((c) => c.name === this.country)
         if (!country) return []
-        const rows = country.s
-          .slice(0, COUNTRY_ROWS)
-          .map(([id, name, lat, lon]) => this.stationRow({ id, name, country: country.name, lat, lon }))
+        const rows = this.places
+          ? this.stations
+              .filter((p) => p.country === country.name)
+              .slice(0, COUNTRY_ROWS)
+              .map((p) => this.stationRow(p))
+          : country.s
+              .slice(0, COUNTRY_ROWS)
+              .map(([id, name, lat, lon]) =>
+                this.stationRow({ id, name, country: country.name, lat, lon })
+              )
         return [
           {
-            title: this.$t('tides.explorer.countryHeading', { name: country.name, count: this.formatNumber(country.s.length) }),
+            title: this.$t('tides.explorer.countryHeading', {
+              name: country.name,
+              count: this.formatNumber(country.s.length)
+            }),
             back: true,
             rows,
             more:
               country.s.length > COUNTRY_ROWS
-                ? this.$t('tides.explorer.showing', { shown: this.formatNumber(COUNTRY_ROWS), total: this.formatNumber(country.s.length) })
+                ? this.$t('tides.explorer.showing', {
+                    shown: this.formatNumber(COUNTRY_ROWS),
+                    total: this.formatNumber(country.s.length)
+                  })
                 : ''
           }
         ]
       }
       const sections = []
       const suggested = this.index.countries.find((c) => c.name === this.home?.country)
-      if (suggested) sections.push({ title: this.$t('tides.explorer.suggested'), rows: [this.countryRow(suggested)] })
-      sections.push({ title: this.$t('tides.explorer.allCountries'), rows: this.index.countries.map(this.countryRow) })
+      if (suggested)
+        sections.push({
+          title: this.$t('tides.explorer.suggested'),
+          rows: [this.countryRow(suggested)]
+        })
+      sections.push({
+        title: this.$t('tides.explorer.allCountries'),
+        rows: this.index.countries.map(this.countryRow)
+      })
       return sections
     }
   },
@@ -336,7 +503,8 @@ export default {
   methods: {
     async loadData() {
       try {
-        const { index, land, stations } = await this.tidesStore.loadExplorerData()
+        const store = this.places ? this.placesStore : this.tidesStore
+        const { index, land, stations } = await store.loadExplorerData()
         this.index = index
         this.land = land
         this.stations = stations
@@ -344,7 +512,26 @@ export default {
         this.loadFailed = true
       }
     },
+    tk(key) {
+      return `${this.places && PLACE_KEYS.has(key) ? 'sky' : 'tides'}.explorer.${key}`
+    },
+    // places are a few thousand rows, already in the browser: search them here
+    searchPlaces(text) {
+      const wanted = normalizeName(text)
+      const hits = []
+      for (const place of this.stations) {
+        const at = normalizeName(place.name).indexOf(wanted)
+        if (at >= 0) hits.push([at === 0 ? 0 : 1, place])
+      }
+      hits.sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name))
+      this.placeHits = hits.length
+      return hits.slice(0, PLACE_RESULTS).map((h) => h[1])
+    },
     async search(text) {
+      if (this.places) {
+        this.results = this.searchPlaces(text)
+        return
+      }
       try {
         const { stations } = await $fetch(API_ENDPOINTS.TIDE_STATIONS, { query: { q: text } })
         if (text === this.trimmedQuery) this.results = stations
@@ -373,7 +560,16 @@ export default {
       try {
         const { lat, lon } = await this.position()
         this.$refs.globe?.flyTo(lon, lat, 2.2)
-        const { stations } = await $fetch(API_ENDPOINTS.TIDE_STATIONS, { query: { near: `${lat},${lon}` } })
+        if (this.places) {
+          this.nearResults = this.stations
+            .map((p) => ({ ...p, km: haversineKm({ lat, lon }, p) }))
+            .sort((a, b) => a.km - b.km)
+            .slice(0, NEAR_RESULTS)
+          return
+        }
+        const { stations } = await $fetch(API_ENDPOINTS.TIDE_STATIONS, {
+          query: { near: `${lat},${lon}` }
+        })
         this.nearResults = stations
       } catch {
         this.nearFailed = true
@@ -384,14 +580,19 @@ export default {
       this.near = false
     },
     kmText(km) {
-      return this.$t('tides.explorer.km', { km: km < 10 ? this.formatNumber(Math.round(km * 10) / 10) : this.tideGrouped(Math.round(km)) })
+      return this.$t('tides.explorer.km', {
+        km: km < 10 ? this.formatNumber(Math.round(km * 10) / 10) : this.tideGrouped(Math.round(km))
+      })
     },
     stationRow(station, right) {
       const distance = right ?? (this.home ? this.kmText(haversineKm(this.home, station)) : '')
       return {
         key: station.id,
         title: station.name,
-        sub: station.country,
+        sub:
+          station.city && station.city !== station.name
+            ? `${station.country} · ${station.city}`
+            : station.country,
         right: distance,
         aria: `${station.name}, ${station.country}`,
         active: this.pick?.id === station.id,
@@ -400,7 +601,11 @@ export default {
     },
     countryRow(country) {
       const count = country.s.length
-      const stations = this.$t('tides.explorer.stationCount', { count: this.formatNumber(count) }, count)
+      const stations = this.$t(
+        this.places ? 'sky.explorer.regionCount' : 'tides.explorer.stationCount',
+        { count: this.formatNumber(count) },
+        count
+      )
       return {
         key: country.name,
         title: country.name,
@@ -413,17 +618,28 @@ export default {
     },
     chooseStation(station) {
       this.pick = station
-      this.$refs.globe?.flyTo(station.lon, station.lat, Math.max(2.4, this.$refs.globe?.view?.zoom ?? 1))
+      this.$refs.globe?.flyTo(
+        station.lon,
+        station.lat,
+        Math.max(2.4, this.$refs.globe?.view?.zoom ?? 1)
+      )
     },
     chooseCountry(country) {
       this.country = country.name
       this.query = ''
       this.near = false
       this.pick = null
-      this.$refs.globe?.flyTo(country.center[0], country.center[1], country.s.length > 300 ? 1.6 : 2.4)
+      this.$refs.globe?.flyTo(
+        country.center[0],
+        country.center[1],
+        country.s.length > 300 ? 1.6 : 2.4
+      )
     },
     view(station) {
-      this.$emit('pick', station.id)
+      if (this.places) {
+        const { name, country, lat, lon, tz } = station
+        this.$emit('pick', { name, country, lat, lon, tz })
+      } else this.$emit('pick', station.id)
       this.requestClose()
     },
     onOpenChange(open) {

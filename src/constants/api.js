@@ -4,5 +4,6 @@ export const API_ENDPOINTS = {
   WEATHER: '/api/forecast',
   SEARCH: '/api/search',
   TIDES: '/api/tides',
-  TIDE_STATIONS: '/api/tide-stations'
+  TIDE_STATIONS: '/api/tide-stations',
+  PLACES: '/api/places'
 }
