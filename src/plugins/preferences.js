@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { createI18nInstance, setActiveI18n, resolveLocale, LOCALE_COOKIE_KEY } from '@/i18n'
 import { parsePrayerCookie, PRAYER_COOKIE_KEY, THEME_COOKIE_KEY } from '@/utils/preferences'
-import { METHODS } from '@/utils/sky'
+import { METHODS } from '@/constants/sky'
 import usePrayerStore from '@/stores/prayer'
 import useThemeStore from '@/stores/theme'
 import useLocaleStore from '@/stores/locale'

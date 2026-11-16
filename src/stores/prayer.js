@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { METHODS } from '@/utils/sky'
+import { METHODS } from '@/constants/sky'
 import { formatPrayerCookie, PRAYER_COOKIE_KEY, writePreferenceCookie } from '@/utils/preferences'
 
 // The prayer-time method (index into utils/sky METHODS; Karachi by default) and the Asr
