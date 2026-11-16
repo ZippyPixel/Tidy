@@ -32,7 +32,7 @@
           <AppIcon name="globe" :size="18" class="flex-none text-muted-foreground" />
         </button>
         <button
-          v-if="away"
+          v-if="away && homeName"
           type="button"
           data-home
           :aria-label="$t('sky.bar.home', { name: homeName })"

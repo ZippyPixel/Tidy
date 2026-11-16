@@ -10,7 +10,7 @@
         <span class="whitespace-nowrap text-xs font-medium leading-4 text-muted-foreground">{{
           tile.label
         }}</span>
-        <span class="whitespace-nowrap text-lg font-medium leading-6 tabular-nums">{{
+        <span class="text-lg font-medium leading-6 tabular-nums [text-wrap:balance]">{{
           tile.value
         }}</span>
         <span class="text-xs leading-4 tabular-nums text-muted-foreground [text-wrap:pretty]">{{

@@ -153,3 +153,12 @@ describe('TimeBar', () => {
     expect(wrapper.emitted('reset-place')).toHaveLength(1)
   })
 })
+
+describe('TimeBar without a forecast location', () => {
+  afterEach(() => wrapper?.unmount())
+
+  it('has no way back home when there is no home', () => {
+    setup({ away: true, homeName: '' })
+    expect(wrapper.find('[data-home]').exists()).toBe(false)
+  })
+})
