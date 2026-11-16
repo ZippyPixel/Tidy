@@ -1,4 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+
+// WSL with the repo on a Windows drive (/mnt/d/...): DrvFs refuses to rename a directory
+// whose files are in use, and that rename is how Vite swaps in re-optimized deps when it
+// finds a new one mid-session (Nuxt DevTools, or astronomy-engine on the first visit to
+// /sun-moon): "EACCES: permission denied, rename .../deps -> .../deps_temp_*", then 504
+// "Outdated Optimize Dep" in the browser. Keep Vite's cache on the Linux disk there.
+const onWindowsDrive = process.platform === 'linux' && /^\/mnt\/[a-z]\//.test(process.cwd())
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-08-18',
   devtools: { enabled: true },
@@ -28,6 +38,8 @@ export default defineNuxtConfig({
   // Nuxt's file-name-derived auto-import names. Everything under ui/ is imported
   // explicitly from those barrels, so keep it out of the scan entirely.
   components: [{ path: '~/components', pathPrefix: false, ignore: ['ui/**'] }],
+
+  vite: onWindowsDrive ? { cacheDir: join(homedir(), '.cache', 'tidy-vite') } : {},
 
   postcss: {
     plugins: {
