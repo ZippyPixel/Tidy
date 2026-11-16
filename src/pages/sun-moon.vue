@@ -105,6 +105,18 @@
           :next-day="nextDay"
           :now="now"
         />
+        <SunCard :class="layout.sun" :t="t" :tz="tz" :day="day" :prev-day="prevDay" :now="now" />
+        <MoonCard
+          :class="layout.moon"
+          :t="t"
+          :tz="tz"
+          :sky="sky"
+          :day="day"
+          :ahead="ahead"
+          :now="now"
+          @commit="commit"
+        />
+        <SunEarthMoon :class="layout.geo" :t="t" :tz="tz" :now="now" />
       </div>
 
       <footer
@@ -138,7 +150,10 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import SkeletonGate from '@/components/common/SkeletonGate.vue'
 import SkySkeleton from '@/components/skeletons/SkySkeleton.vue'
 import { SKY_GRID, SKY_PLACE } from '@/components/sky/layout'
+import MoonCard from '@/components/sky/MoonCard.vue'
 import SkyPathChart from '@/components/sky/SkyPathChart.vue'
+import SunCard from '@/components/sky/SunCard.vue'
+import SunEarthMoon from '@/components/sky/SunEarthMoon.vue'
 import TimeBar from '@/components/sky/TimeBar.vue'
 import WhereToLook from '@/components/sky/WhereToLook.vue'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -175,7 +190,10 @@ export default {
     SkySkeleton,
     // the globe and its data only load when someone opens it
     StationExplorer: defineAsyncComponent(() => import('@/components/tides/StationExplorer.vue')),
+    MoonCard,
     SkyPathChart,
+    SunCard,
+    SunEarthMoon,
     TimeBar,
     WhereToLook
   },

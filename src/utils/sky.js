@@ -414,6 +414,7 @@ export function createSky(A, place) {
       waxing: phase < 180,
       elongation: A.AngleFromSun('Moon', d),
       moonKm: ill.geo_dist * A.KM_PER_AU,
+      sunKm: sun.dist * A.KM_PER_AU,
       tilt: moonTilt(sun, moon),
       planets
     }

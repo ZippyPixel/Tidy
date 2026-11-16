@@ -11,10 +11,23 @@ import sample from '@/utils/__tests__/fixtures/tides-sample.json'
 
 const payload = sample.stations[sample.defaultStation]
 const SF = sample.stations['ticon/sanfrancisco_fort_point-9414920-usa-da_sat']
-const COORDS = { name: 'Joar Sahara', country: 'Bangladesh', lat: 23.817, lon: 90.417, tzId: 'Asia/Dhaka' }
+const COORDS = {
+  name: 'Joar Sahara',
+  country: 'Bangladesh',
+  lat: 23.817,
+  lon: 90.417,
+  tzId: 'Asia/Dhaka'
+}
 const ready = (data) => ({ key: 'x', status: 'ready', fetchedAt: 0, data })
 
-function setup({ query = {}, nearest = ready(payload), chosen, coords = COORDS, unit = 'celsius', awaitingLocation = false } = {}) {
+function setup({
+  query = {},
+  nearest = ready(payload),
+  chosen,
+  coords = COORDS,
+  unit = 'celsius',
+  awaitingLocation = false
+} = {}) {
   const pinia = createPinia()
   useUnitStore(pinia).unit = unit
   const weather = useWeatherStore(pinia)
@@ -36,7 +49,14 @@ function setup({ query = {}, nearest = ready(payload), chosen, coords = COORDS, 
     global: {
       plugins: [pinia, activeI18n()],
       mocks: { $route: route, $router: router },
-      stubs: { StationExplorer: { name: 'StationExplorer', props: ['open'], emits: ['pick', 'close'], template: '<div data-explorer />' } }
+      stubs: {
+        StationExplorer: {
+          name: 'StationExplorer',
+          props: ['open'],
+          emits: ['pick', 'close'],
+          template: '<div data-explorer />'
+        }
+      }
     }
   })
   return { wrapper, store, route, router }
@@ -56,14 +76,24 @@ describe('Tides page', () => {
     const { wrapper, store } = setup()
     expect(wrapper.find('h1').text()).toBe('Charchanga')
     expect(wrapper.find('[data-meta]').text()).toBe('Bangladesh · Khulna Division')
-    expect(wrapper.find('[data-distance]').text()).toBe('189 km from Joar Sahara · Times in Asia/Dhaka (UTC+6)')
-    expect(store.loadNearest).toHaveBeenCalledWith(COORDS)
+    expect(wrapper.find('[data-distance]').text()).toBe(
+      '189 km from Joar Sahara · Times in Asia/Dhaka (UTC+6)'
+    )
+    expect(store.loadNearest).toHaveBeenCalledWith(COORDS, 7)
     expect(store.loadStation).not.toHaveBeenCalled()
   })
 
   it('shows every section, with nothing left of the prototype', () => {
     const text = setup().wrapper.text()
-    for (const title of ['Right now', 'Tide chart', "Today's tides", 'Moon & tides', 'Next 7 days', 'About this station', 'Nearby stations']) {
+    for (const title of [
+      'Right now',
+      'Tide chart',
+      "Today's tides",
+      'Moon & tides',
+      'Next 7 days',
+      'About this station',
+      'Nearby stations'
+    ]) {
       expect(text).toContain(title)
     }
     expect(text).not.toMatch(/prototype/i)
@@ -87,7 +117,9 @@ describe('Tides page', () => {
   it('switches to feet with °F, in the chart note too', () => {
     const { wrapper } = setup({ unit: 'fahrenheit' })
     expect(wrapper.find('[data-level]').text()).toBe('9.4 ft')
-    expect(wrapper.find('[data-note]').text()).toBe('Heights in feet above lowest astronomical tide (LAT)')
+    expect(wrapper.find('[data-note]').text()).toBe(
+      'Heights in feet above lowest astronomical tide (LAT)'
+    )
   })
 
   it('steps days from yesterday to six ahead, and no further', async () => {
@@ -129,13 +161,19 @@ describe('Tides page', () => {
   describe('a station in the link', () => {
     it('loads it by id and shows it, working out the distance itself', () => {
       const { wrapper, store } = setup({ query: { station: SF.station.id }, chosen: ready(SF) })
-      expect(store.loadStation).toHaveBeenCalledWith(SF.station.id)
+      expect(store.loadStation).toHaveBeenCalledWith(SF.station.id, 7)
       expect(wrapper.find('h1').text()).toBe('San Francisco Fort Point')
-      expect(wrapper.find('[data-distance]').text()).toMatch(/^12,350 km from Joar Sahara · Times in America\/Los Angeles \(UTC−8\)$/)
+      expect(wrapper.find('[data-distance]').text()).toMatch(
+        /^12,350 km from Joar Sahara · Times in America\/Los Angeles \(UTC−8\)$/
+      )
     })
 
     it('still works with no forecast location', () => {
-      const { wrapper } = setup({ query: { station: SF.station.id }, chosen: ready({ ...SF, station: { ...SF.station, distanceKm: null } }), coords: null })
+      const { wrapper } = setup({
+        query: { station: SF.station.id },
+        chosen: ready({ ...SF, station: { ...SF.station, distanceKm: null } }),
+        coords: null
+      })
       expect(wrapper.find('[data-distance]').text()).toBe('Times in America/Los Angeles (UTC−8)')
     })
 
@@ -167,17 +205,30 @@ describe('Tides page', () => {
   })
 
   it('lets someone pick a station before the weather knows where they are', () => {
-    const { wrapper } = setup({ coords: null, nearest: { key: null, status: 'idle', fetchedAt: 0, data: null } })
+    const { wrapper } = setup({
+      coords: null,
+      nearest: { key: null, status: 'idle', fetchedAt: 0, data: null }
+    })
     expect(wrapper.text()).toContain('Find a tide station')
     expect(wrapper.find('[data-empty-explore]').exists()).toBe(true)
   })
 
   it('shows one skeleton per section while waiting, with the page chrome real', () => {
-    const { wrapper } = setup({ nearest: { key: 'x', status: 'loading', fetchedAt: 0, data: null } })
+    const { wrapper } = setup({
+      nearest: { key: 'x', status: 'loading', fetchedAt: 0, data: null }
+    })
     const grid = wrapper.find('[data-loading]')
     expect(grid.exists()).toBe(true)
     const titles = grid.findAll('section h2').map((h) => h.text())
-    expect(titles).toEqual(['Right now', 'Tide chart', "Today's tides", 'Next 7 days', 'Moon & tides', 'About this station', 'Nearby stations'])
+    expect(titles).toEqual([
+      'Right now',
+      'Tide chart',
+      "Today's tides",
+      'Next 7 days',
+      'Moon & tides',
+      'About this station',
+      'Nearby stations'
+    ])
     expect(grid.findAll('section').every((s) => s.attributes('aria-busy') === 'true')).toBe(true)
     // real: the back link, the kicker, the legend; waiting: Change station, at 50%
     expect(wrapper.find('a[href="/"]').text()).toContain('Weather')
@@ -189,18 +240,25 @@ describe('Tides page', () => {
     expect(wrapper.find('[role="status"]').text()).toBe('Loading tides…')
     // nothing in a skeleton takes focus
     const focusable = 'a, input, [tabindex]:not([tabindex="-1"]), button:not([disabled])'
-    for (const s of wrapper.findAll('[data-skeleton]')) expect(s.element.querySelector(focusable)).toBeNull()
+    for (const s of wrapper.findAll('[data-skeleton]'))
+      expect(s.element.querySelector(focusable)).toBeNull()
     expect(grid.element.querySelector('button:not([disabled]):not([inert] *)')).toBeNull()
   })
 
   it('waits for the forecast location before it can look up the nearest station', () => {
-    const { wrapper } = setup({ coords: null, awaitingLocation: true, nearest: { key: null, status: 'idle', fetchedAt: 0, data: null } })
+    const { wrapper } = setup({
+      coords: null,
+      awaitingLocation: true,
+      nearest: { key: null, status: 'idle', fetchedAt: 0, data: null }
+    })
     expect(wrapper.find('[data-loading]').exists()).toBe(true)
     expect(wrapper.find('[data-empty]').exists()).toBe(false)
   })
 
   it('swaps the skeleton for the sections after the minimum, faded in', async () => {
-    const { wrapper, store } = setup({ nearest: { key: 'x', status: 'loading', fetchedAt: 0, data: null } })
+    const { wrapper, store } = setup({
+      nearest: { key: 'x', status: 'loading', fetchedAt: 0, data: null }
+    })
     store.nearest = ready(payload)
     await vi.advanceTimersByTimeAsync(299)
     expect(wrapper.find('[data-loading]').exists()).toBe(true)
@@ -221,20 +279,24 @@ describe('Tides page', () => {
   })
 
   it('can retry a failed request', async () => {
-    const { wrapper, store } = setup({ nearest: { key: 'x', status: 'error', fetchedAt: 0, data: null } })
+    const { wrapper, store } = setup({
+      nearest: { key: 'x', status: 'error', fetchedAt: 0, data: null }
+    })
     store.loadNearest.mockClear()
     await wrapper.find('[data-retry]').trigger('click')
     expect(store.nearest.key).toBeNull()
-    expect(store.loadNearest).toHaveBeenCalledWith(COORDS)
+    expect(store.loadNearest).toHaveBeenCalledWith(COORDS, 7)
   })
 
   it('moves to a nearby station through the URL, back at today', async () => {
     const { wrapper, router, store } = setup()
     await wrapper.find('[data-next-day]').trigger('click')
     await wrapper.find('[data-nearby]').trigger('click')
-    expect(router.replace).toHaveBeenCalledWith({ query: { station: payload.station.nearby[0].id } })
+    expect(router.replace).toHaveBeenCalledWith({
+      query: { station: payload.station.nearby[0].id }
+    })
     await wrapper.vm.$nextTick()
-    expect(store.loadStation).toHaveBeenCalledWith(payload.station.nearby[0].id)
+    expect(store.loadStation).toHaveBeenCalledWith(payload.station.nearby[0].id, 7)
     expect(wrapper.vm.day).toBe(0)
   })
 
@@ -260,5 +322,26 @@ describe('Tides page', () => {
     wrapper.findComponent({ name: 'StationExplorer' }).vm.$emit('close')
     await wrapper.vm.$nextTick()
     expect(router.replace).not.toHaveBeenCalled()
+  })
+
+  describe('a ?date link from Sun & Moon', () => {
+    it('asks for two weeks and opens the chart on that day', async () => {
+      const { wrapper, store } = setup({ query: { date: '2026-11-08' } })
+      await wrapper.vm.$nextTick()
+      expect(store.loadNearest).toHaveBeenCalledWith(COORDS, 14)
+      expect(wrapper.find('[data-range-title]').text()).toBe('Sunday, November 8')
+      expect(wrapper.find('[data-range-tag]').text()).toBe('')
+    })
+
+    it('stays on today for a date out of range', async () => {
+      const { wrapper } = setup({ query: { date: '2027-01-30' } })
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('[data-range-tag]').text()).toBe('Today')
+    })
+
+    it('ignores a malformed date', () => {
+      const { store } = setup({ query: { date: 'soon' } })
+      expect(store.loadNearest).toHaveBeenCalledWith(COORDS, 7)
+    })
   })
 })

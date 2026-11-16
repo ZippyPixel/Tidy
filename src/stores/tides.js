@@ -6,6 +6,9 @@ import { flattenIndex } from '@/utils/globe'
 // One forecast is good for a while: predictions only change as the day rolls over.
 const FRESH_FOR_MS = 30 * 60 * 1000
 const DAYS = 7
+// what /tides?date= asks for, so a date up to 13 days ahead can open the chart (the server's limit)
+export const LONG_DAYS = 14
+const keyFor = (key, days) => (days === DAYS ? key : `${key}|${days}`)
 
 const emptySlot = () => ({ key: null, data: null, status: 'idle', fetchedAt: 0 })
 
@@ -20,10 +23,11 @@ export default defineStore('tides', {
     explorer: null
   }),
   actions: {
-    async load(slotName, key, query) {
+    async load(slotName, key, query, days = DAYS) {
       const slot = this[slotName]
       const fresh = Date.now() - slot.fetchedAt < FRESH_FOR_MS
-      if (slot.key === key && (slot.status === 'loading' || (slot.status === 'ready' && fresh))) return
+      if (slot.key === key && (slot.status === 'loading' || (slot.status === 'ready' && fresh)))
+        return
 
       // a station the user has moved on from must not show under the new one's name;
       // a refresh of the same one keeps its numbers until the new ones arrive
@@ -31,7 +35,7 @@ export default defineStore('tides', {
       slot.key = key
       slot.status = 'loading'
       try {
-        const data = await $fetch(API_ENDPOINTS.TIDES, { query: { ...query, days: DAYS } })
+        const data = await $fetch(API_ENDPOINTS.TIDES, { query: { ...query, days } })
         // a slower, older request lost the race
         if (slot.key !== key) return
         // read only and walked point by point while scrubbing, so no deep reactivity
@@ -45,19 +49,28 @@ export default defineStore('tides', {
           slot.status = 'ready'
           return
         }
-        slot.status = error?.statusCode === 404 || error?.response?.status === 404 ? 'notFound' : 'error'
+        slot.status =
+          error?.statusCode === 404 || error?.response?.status === 404 ? 'notFound' : 'error'
       }
     },
-    loadNearest(coords) {
+    loadNearest(coords, days = DAYS) {
       if (!coords) return undefined
-      return this.load('nearest', `${coords.lat},${coords.lon}`, { lat: coords.lat, lon: coords.lon })
+      return this.load(
+        'nearest',
+        keyFor(`${coords.lat},${coords.lon}`, days),
+        { lat: coords.lat, lon: coords.lon },
+        days
+      )
     },
-    loadStation(id) {
-      return this.load('chosen', id, { station: id })
+    loadStation(id, days = DAYS) {
+      return this.load('chosen', keyFor(id, days), { station: id }, days)
     },
     async loadExplorerData() {
       if (this.explorer) return this.explorer
-      this.explorerRequest ??= Promise.all([$fetch(API_ENDPOINTS.TIDE_STATIONS), $fetch('/globe-land.json')])
+      this.explorerRequest ??= Promise.all([
+        $fetch(API_ENDPOINTS.TIDE_STATIONS),
+        $fetch('/globe-land.json')
+      ])
       try {
         const [index, land] = await this.explorerRequest
         // thousands of rows that never change: reactivity would only slow them down

@@ -657,13 +657,78 @@
       "note": "The edge is the horizon and the centre is straight overhead. Dotted lines are the day's paths. A hollow marker is below the horizon."
     },
     "sun": {
-      "title": "Sun"
+      "title": "Sun",
+      "dayLength": "Day length",
+      "sameLength": "Same as the day before",
+      "longer": "{m}m {s}s longer than the day before",
+      "shorter": "{m}m {s}s shorter than the day before",
+      "shadow": "Shadow",
+      "noShadow": "No shadow",
+      "veryLong": "Very long",
+      "times": "{n} × height",
+      "isDown": "The sun is down",
+      "pole": "A 1 {unit} pole casts {n} {unit}",
+      "poleOver": "A 1 {unit} pole casts over {n} {unit}",
+      "m": "m",
+      "ft": "ft",
+      "golden": "Golden hour",
+      "blue": "Blue hour",
+      "evening": "Evening {range}",
+      "astroDawn": "Night ends (first hint of light)",
+      "civilDawn": "First light (civil dawn)",
+      "sunrise": "Sunrise",
+      "noon": "Solar noon",
+      "noonHigh": "Solar noon · sun {n}° high",
+      "sunset": "Sunset",
+      "civilDusk": "Last light (civil dusk)",
+      "astroDusk": "Full darkness"
     },
     "moon": {
-      "title": "Moon"
+      "title": "Moon",
+      "lit": "{n}% lit",
+      "phaseLine": "{lit} · {age} days old",
+      "tiltUp": "Drawn tilted the way it looks in the sky from here right now.",
+      "tiltDown": "Below the horizon now. Drawn as it would look from here.",
+      "inThe": "in the {point}",
+      "rise": "Moonrise",
+      "set": "Moonset",
+      "noRise": "No moonrise this day",
+      "noSet": "No moonset this day",
+      "highest": "Highest",
+      "notThisDay": "Not this day",
+      "distance": "Distance",
+      "average": "Average size in the sky",
+      "bigger": "Looks {n}% bigger than average",
+      "smaller": "Looks {n}% smaller than average",
+      "quarterAria": "{name}, {date}. Show this time"
     },
     "geo": {
-      "title": "Sun, Earth and Moon"
+      "title": "Sun, Earth and Moon",
+      "earth": "Earth",
+      "orbit": {
+        "new": "New",
+        "firstQuarter": "First quarter",
+        "full": "Full",
+        "lastQuarter": "Last quarter"
+      },
+      "millionKm": "{n}M km",
+      "millionMi": "{n}M mi",
+      "angle": "Angle",
+      "lit": "Lit",
+      "phase": "Phase",
+      "waxing": "Waxing",
+      "waning": "Waning",
+      "explain": "From Earth, the moon is {angle}° away from the sun, so we see {lit}% of its sunlit half.",
+      "growing": "The angle is growing by about 12° a day towards full moon.",
+      "shrinking": "The angle is shrinking by about 12° a day towards new moon.",
+      "tides": {
+        "spring": "The three are close to a straight line, so the sun and moon pull together and tides run biggest (spring tides).",
+        "neap": "The moon is at right angles to the sun, so their pulls work against each other and tides are smallest (neap tides).",
+        "between": "Tides are between their spring and neap sizes."
+      },
+      "aria": "Diagram of the Sun, Earth and Moon. The angle at Earth between the Sun and the Moon is {angle} degrees. {phase}.",
+      "tideLink": "See the tides for {date}",
+      "note": "Seen from above the north pole, with sunlight coming from the left. Sizes and distances are not to scale."
     },
     "prayer": {
       "title": "Prayer times"
