@@ -75,3 +75,17 @@ describe('sky route', () => {
     expect(samePlace(TROMSO, { ...TROMSO, tz: 'UTC' })).toBe(false)
   })
 })
+
+describe('prayer cookie', async () => {
+  const { formatPrayerCookie, parsePrayerCookie } = await import('@/utils/preferences')
+  const keys = ['karachi', 'mwl', 'egyptian', 'isna']
+
+  it('defaults to Karachi and Hanafi, and round-trips', () => {
+    expect(parsePrayerCookie(undefined, keys)).toEqual({ method: 0, hanafi: true })
+    expect(parsePrayerCookie('nope|x', keys)).toEqual({ method: 0, hanafi: true })
+    expect(parsePrayerCookie(formatPrayerCookie('isna', false), keys)).toEqual({
+      method: 3,
+      hanafi: false
+    })
+  })
+})

@@ -118,3 +118,63 @@ describe('commit format', () => {
     expect(formatT(parseT('2026-11-16T15:48', TZ), TZ)).toBe('2026-11-16T15:48')
   })
 })
+
+describe('prayer times', () => {
+  afterEach(() => wrapper?.unmount())
+
+  async function mountPrayer({
+    place = PLACE,
+    at = '2026-11-16T15:48',
+    pinia = createPinia()
+  } = {}) {
+    const { default: PrayerTimes } = await import('@/components/sky/PrayerTimes.vue')
+    const s = place === PLACE ? sky : createSky(A, place)
+    const t = parseT(at, place.tz)
+    wrapper = mount(PrayerTimes, {
+      props: { t, tz: place.tz, sky: s, ds: dayStart(t, place.tz) },
+      global: { plugins: [pinia, activeI18n()] }
+    })
+    return wrapper
+  }
+  const times = () => wrapper.findAll('[data-prayer]').map((r) => r.text())
+
+  it('lists Karachi / Hanafi times with the next prayer counted down', async () => {
+    await mountPrayer()
+    expect(times()).toEqual([
+      'FajrDawn4:55 AM',
+      'SunriseFajr ends6:13 AM',
+      'DhuhrJust after midday11:43 AM',
+      'AsrAfternoon3:37 PM',
+      'MaghribNext · in 1h 24m5:12 PM',
+      'IshaNight6:31 PM'
+    ])
+    expect(wrapper.find('[data-method]').text()).toBe('Karachi18° / 18°')
+  })
+
+  it('switches Asr to Standard and cycles the method, remembering both', async () => {
+    document.cookie = 'tidy-prayer=; max-age=0; path=/'
+    await mountPrayer()
+    await wrapper.find('[data-asr="standard"]').trigger('click')
+    expect(times()[3]).toBe('AsrAfternoon2:50 PM')
+    await wrapper.find('[data-method]').trigger('click')
+    expect(wrapper.find('[data-method]').text()).toBe('Muslim World League18° / 17°')
+    expect(document.cookie).toContain('tidy-prayer=mwl%7Cstandard')
+  })
+
+  it('shows tomorrow’s Fajr once Isha has passed', async () => {
+    await mountPrayer({ at: '2026-11-16T22:00' })
+    expect(wrapper.find('[data-prayer-day]').text()).toMatch(/^Fajr tomorrow 4:5\d AM$/)
+    expect(wrapper.find('[aria-current="time"]').exists()).toBe(false)
+  })
+
+  it('shows a dash where the sun never reaches the angle', async () => {
+    await mountPrayer({
+      place: { lat: 69.65, lon: 18.96, tz: 'Europe/Oslo' },
+      at: '2026-12-03T12:00'
+    })
+    const rows = times()
+    expect(rows[1]).toMatch(/—$/)
+    expect(rows[3]).toMatch(/—$/)
+    expect(rows[4]).toMatch(/—$/)
+  })
+})

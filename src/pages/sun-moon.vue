@@ -117,6 +117,7 @@
           @commit="commit"
         />
         <SunEarthMoon :class="layout.geo" :t="t" :tz="tz" :now="now" />
+        <PrayerTimes :class="layout.prayer" :t="t" :tz="tz" :sky="sky" :ds="ds" />
       </div>
 
       <footer
@@ -151,6 +152,7 @@ import SkeletonGate from '@/components/common/SkeletonGate.vue'
 import SkySkeleton from '@/components/skeletons/SkySkeleton.vue'
 import { SKY_GRID, SKY_PLACE } from '@/components/sky/layout'
 import MoonCard from '@/components/sky/MoonCard.vue'
+import PrayerTimes from '@/components/sky/PrayerTimes.vue'
 import SkyPathChart from '@/components/sky/SkyPathChart.vue'
 import SunCard from '@/components/sky/SunCard.vue'
 import SunEarthMoon from '@/components/sky/SunEarthMoon.vue'
@@ -191,6 +193,7 @@ export default {
     // the globe and its data only load when someone opens it
     StationExplorer: defineAsyncComponent(() => import('@/components/tides/StationExplorer.vue')),
     MoonCard,
+    PrayerTimes,
     SkyPathChart,
     SunCard,
     SunEarthMoon,

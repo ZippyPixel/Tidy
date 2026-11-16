@@ -1,6 +1,8 @@
 import { computed } from 'vue'
 import { createI18nInstance, setActiveI18n, resolveLocale, LOCALE_COOKIE_KEY } from '@/i18n'
-import { THEME_COOKIE_KEY } from '@/utils/preferences'
+import { parsePrayerCookie, PRAYER_COOKIE_KEY, THEME_COOKIE_KEY } from '@/utils/preferences'
+import { METHODS } from '@/utils/sky'
+import usePrayerStore from '@/stores/prayer'
 import useThemeStore from '@/stores/theme'
 import useLocaleStore from '@/stores/locale'
 
@@ -22,6 +24,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   const themeStore = useThemeStore(nuxtApp.$pinia)
 
   localeStore.setInitialLocale(locale)
+  usePrayerStore(nuxtApp.$pinia).setInitial(
+    parsePrayerCookie(
+      useCookie(PRAYER_COOKIE_KEY).value,
+      METHODS.map((m) => m.key)
+    )
+  )
 
   if (themeCookie.value === 'dark' || themeCookie.value === 'light') {
     themeStore.setInitialTheme(themeCookie.value === 'dark')

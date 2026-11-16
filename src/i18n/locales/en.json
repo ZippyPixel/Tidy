@@ -731,7 +731,35 @@
       "note": "Seen from above the north pole, with sunlight coming from the left. Sizes and distances are not to scale."
     },
     "prayer": {
-      "title": "Prayer times"
+      "title": "Prayer times",
+      "fajr": "Fajr",
+      "sunrise": "Sunrise",
+      "dhuhr": "Dhuhr",
+      "asr": "Asr",
+      "maghrib": "Maghrib",
+      "isha": "Isha",
+      "sub": {
+        "fajr": "Dawn",
+        "sunrise": "Fajr ends",
+        "dhuhr": "Just after midday",
+        "asr": "Afternoon",
+        "maghrib": "Sunset",
+        "isha": "Night"
+      },
+      "nextIn": "Next · in {in}",
+      "fajrTomorrow": "Fajr tomorrow {time}",
+      "method": "Method",
+      "methods": {
+        "karachi": "Karachi",
+        "mwl": "Muslim World League",
+        "egyptian": "Egyptian",
+        "isna": "ISNA"
+      },
+      "methodAria": "Calculation method: {name}, Fajr {fajr} degrees, Isha {isha} degrees. Change method",
+      "asrLabel": "Asr calculation",
+      "standard": "Standard",
+      "hanafi": "Hanafi",
+      "note": "Worked out from the sun's position for this place. A local mosque timetable may differ by a few minutes."
     },
     "planets": {
       "title": "Planets"
