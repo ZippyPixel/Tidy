@@ -3,8 +3,8 @@
     :aria-labelledby="titleId"
     class="flex min-w-0 flex-col gap-4 rounded-card border bg-card p-4 text-card-foreground sm:p-6"
   >
-    <!-- design/TidyWear "Fit it to you": figure, how warm you run, more coverage, and dresses and
-         skirts for the woman figure. Saved in the tidy-wear cookie, shared with the dashboard card. -->
+    <!-- design/TidyWear "Fit it to you": figure, style, how warm you run, more coverage, and
+         dresses and skirts for the woman figure. Saved in the tidy-wear cookie, shared with the dashboard card. -->
     <div class="flex flex-wrap items-baseline justify-between gap-3">
       <h2 :id="titleId" class="m-0 text-sm font-medium leading-6 text-muted-foreground">
         {{ $t('wear.page.fit') }}
@@ -23,6 +23,20 @@
           :options="figureOptions"
           :model-value="wear.figure"
           @update:model-value="wear.set('figure', $event)"
+        />
+      </div>
+      <div :class="row" class="flex-wrap">
+        <div :class="label">
+          <span class="text-[15px] font-semibold leading-5">{{ $t('wear.page.style') }}</span>
+          <span :class="sub">{{ $t('wear.page.styleSub') }}</span>
+        </div>
+        <SegmentedControl
+          kind="radio"
+          :aria-label="$t('wear.page.style')"
+          :options="styleOptions"
+          :model-value="wear.style"
+          data-wear-style
+          @update:model-value="wear.set('style', $event)"
         />
       </div>
       <div :class="row" class="flex-wrap">
@@ -64,6 +78,7 @@ import { useId } from 'vue'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import { Switch } from '@/components/ui/switch'
 import useWearStore from '@/stores/wear'
+import { WEAR_STYLES } from '@/utils/preferences'
 
 export default {
   name: 'WearSettings',
@@ -81,6 +96,9 @@ export default {
   computed: {
     figureOptions() {
       return ['man', 'woman'].map((value) => ({ value, label: this.$t(`wear.page.${value}`) }))
+    },
+    styleOptions() {
+      return WEAR_STYLES.map((value) => ({ value, label: this.$t(`wear.page.${value}`) }))
     },
     feelOptions() {
       return [

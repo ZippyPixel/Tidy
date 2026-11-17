@@ -2,14 +2,17 @@
  *
  *   summarize(hours)            hourly forecast rows (WeatherAPI shape) -> one summary of that time window
  *   windows(days, nowEpoch)     -> the windows the UI offers: now, today, tomorrow, and the parts of each day
- *   recommend(summary, prefs)   -> { band, outfit, headline, reasons, pieces, carry } (text as i18n messages)
+ *   recommend(summary, prefs)   -> { band, style, options, outfit, headline, reasons, pieces, carry }
+ *                                  (text as i18n messages). prefs: figure, feel, coverage, skirts, style
+ *                                  ('everyday' | 'traditional' | 'both'), exclude (piece ids), shuffle
+ *   wardrobe(figure)            -> the pieces a figure can own, grouped: [{ id, items }]
  *   figure(outfit, opts)        -> { viewBox, layers } : the character as flat SVG shapes, back to front
  *   scene(tod)                  -> the street behind the character, coloured by time of day (never by theme)
  *   todOf(summary, nowHour)     -> morning | day | evening | night
  *   sentence(rec)               -> the outfit as one sentence, as a template id and slots
  *
  * The outfit object is the contract between the rules and any renderer:
- *   { top, bottom, outer, feet, head, neck, hands, eyes, held, tone }   every value is an id or null
+ *   { top, bottom, outer, feet, head, neck, hands, eyes, mask, held, tone }   every value is an id or null
  */
 /* eslint-disable no-var */
 
@@ -87,6 +90,11 @@ function summarize(hours) {
     var k = kindOf(h.condition && h.condition.code)
     count[k] = (count[k] || 0) + 1
   })
+  /* smoke, haze and dust in the air (WeatherAPI 1036 "Smoky haze", or the words in the condition text) */
+  var hazy = hours.filter(function (h) {
+    var c = h.condition || {}
+    return c.code === 1036 || /haze|smok|dust|sand/i.test(c.text || '')
+  }).length
   var firstWet = hours.filter(function (h) {
     return (h.chance_of_rain || 0) >= 50
   })[0]
@@ -135,7 +143,8 @@ function summarize(hours) {
       sum(function (h) {
         return h.is_day ? 1 : 0
       }) >=
-      n / 2
+      n / 2,
+    haze: hazy / n
   }
 }
 
@@ -216,10 +225,293 @@ function bandOf(c) {
   return 'hot'
 }
 
-var SLOTS = ['outer', 'top', 'bottom', 'feet', 'head', 'eyes', 'neck', 'hands', 'held']
+var SLOTS = ['outer', 'top', 'bottom', 'feet', 'head', 'eyes', 'mask', 'neck', 'hands', 'held']
+
+/* Outfits that go together, per figure and feels-like band. s: 'e' everyday or 't' traditional (South Asian:
+   panjabi, kurti, salwar kameez); cov: long sleeves and long legs (used by "More coverage"). The weather rules
+   (rain, wind, sun, snow, cold) are added on top of whichever outfit is picked. */
+var C = function (s, cov, o) {
+  return { s: s, cov: !!cov, o: o }
+}
+var COMBOS = {
+  man: {
+    hot: [
+      C('e', 0, { top: 'tee', bottom: 'shorts', feet: 'sandals' }),
+      C('e', 0, { top: 'polo', bottom: 'shorts', feet: 'sneakers' }),
+      C('e', 0, { top: 'tank', bottom: 'sportshorts', feet: 'sneakers' }),
+      C('e', 0, { top: 'dropshoulder', bottom: 'shorts', feet: 'sandals' }),
+      C('e', 1, { top: 'formalshirt', bottom: 'chinos', feet: 'sneakers' }),
+      C('t', 1, { top: 'panjabi', bottom: 'pajama', feet: 'sandals' })
+    ],
+    warm: [
+      C('e', 0, { top: 'polo', bottom: 'chinos', feet: 'sneakers' }),
+      C('e', 0, { top: 'shirt', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 0, { top: 'dropshoulder', bottom: 'joggers', feet: 'sneakers' }),
+      C('e', 0, { top: 'tee', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 0, { top: 'tee', bottom: 'trousers', feet: 'sneakers' }),
+      C('e', 1, { top: 'formalshirt', bottom: 'chinos', feet: 'sneakers' }),
+      C('t', 1, { top: 'panjabi', bottom: 'pajama', feet: 'sandals' })
+    ],
+    mild: [
+      C('e', 1, { top: 'longsleeve', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 1, { top: 'raglan', bottom: 'joggers', feet: 'sneakers' }),
+      C('e', 1, { top: 'formalshirt', bottom: 'chinos', feet: 'sneakers' }),
+      C('e', 0, { top: 'polo', bottom: 'cargo', feet: 'sneakers' }),
+      C('t', 1, { top: 'panjabi', bottom: 'pajama', outer: 'waistcoat', feet: 'sandals' })
+    ],
+    cool: [
+      C('e', 1, { top: 'sweatshirt', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 1, { top: 'hoodie', bottom: 'joggers', feet: 'sneakers' }),
+      C('e', 1, { top: 'sweater', bottom: 'chinos', feet: 'sneakers' }),
+      C('e', 1, { top: 'longsleeve', bottom: 'cargo', outer: 'jacket', feet: 'sneakers' }),
+      C('t', 1, { top: 'panjabi', bottom: 'pajama', outer: 'jacket', feet: 'sneakers' })
+    ],
+    cold: [
+      C('e', 1, { top: 'sweater', bottom: 'jeans', outer: 'coat', neck: 'scarf', feet: 'boots' }),
+      C('e', 1, { top: 'hoodie', bottom: 'joggers', outer: 'puffer', feet: 'boots' }),
+      C('e', 1, {
+        top: 'sweatshirt',
+        bottom: 'chinos',
+        outer: 'coat',
+        neck: 'scarf',
+        feet: 'sneakers'
+      }),
+      C('t', 1, {
+        top: 'panjabi',
+        bottom: 'pajama',
+        outer: 'coat',
+        neck: 'scarf',
+        feet: 'sneakers'
+      })
+    ],
+    freezing: [
+      C('e', 1, {
+        top: 'sweater',
+        bottom: 'jeans',
+        outer: 'puffer',
+        head: 'beanie',
+        neck: 'scarf',
+        hands: 'gloves',
+        feet: 'boots'
+      }),
+      C('e', 1, {
+        top: 'hoodie',
+        bottom: 'cargo',
+        outer: 'puffer',
+        head: 'beanie',
+        hands: 'gloves',
+        feet: 'boots'
+      }),
+      C('t', 1, {
+        top: 'panjabi',
+        bottom: 'pajama',
+        outer: 'puffer',
+        head: 'beanie',
+        neck: 'scarf',
+        hands: 'gloves',
+        feet: 'boots'
+      })
+    ]
+  },
+  woman: {
+    hot: [
+      C('e', 0, { top: 'dress', feet: 'sandals' }),
+      C('e', 0, { top: 'top', bottom: 'palazzo', feet: 'sandals' }),
+      C('e', 0, { top: 'tee', bottom: 'shorts', feet: 'sneakers' }),
+      C('e', 0, { top: 'coord', bottom: 'coordpants', feet: 'sandals' }),
+      C('t', 1, { top: 'kurti', bottom: 'palazzo', feet: 'sandals' }),
+      C('t', 1, { top: 'kameez', bottom: 'salwar', feet: 'sandals' })
+    ],
+    warm: [
+      C('e', 1, { top: 'tunic', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 0, { top: 'top', bottom: 'palazzo', feet: 'sandals' }),
+      C('e', 0, { top: 'dress', feet: 'sneakers' }),
+      C('e', 0, { top: 'coord', bottom: 'coordpants', feet: 'sneakers' }),
+      C('e', 0, { top: 'tee', bottom: 'trousers', feet: 'sneakers' }),
+      C('t', 1, { top: 'kurti', bottom: 'leggings', feet: 'sandals' }),
+      C('t', 1, { top: 'kameez', bottom: 'salwar', neck: 'dupatta', feet: 'sandals' })
+    ],
+    mild: [
+      C('e', 1, { top: 'longsleeve', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 1, { top: 'top', bottom: 'cargo', outer: 'shrug', feet: 'sneakers' }),
+      C('e', 1, { top: 'tee', bottom: 'skirt', outer: 'shrug', feet: 'sneakers' }),
+      C('e', 1, { top: 'tunic', bottom: 'leggings', feet: 'sneakers' }),
+      C('t', 1, { top: 'kurti', bottom: 'palazzo', outer: 'shrug', feet: 'sandals' }),
+      C('t', 1, { top: 'kameez', bottom: 'salwar', neck: 'dupatta', feet: 'sandals' })
+    ],
+    cool: [
+      C('e', 1, { top: 'sweatshirt', bottom: 'jeans', feet: 'sneakers' }),
+      C('e', 1, { top: 'hoodie', bottom: 'joggers', feet: 'sneakers' }),
+      C('e', 1, { top: 'sweater', bottom: 'skirt', feet: 'boots' }),
+      C('e', 1, { top: 'longsleeve', bottom: 'cargo', outer: 'jacket', feet: 'sneakers' }),
+      C('t', 1, { top: 'kurti', bottom: 'leggings', outer: 'shrug', feet: 'sneakers' }),
+      C('t', 1, {
+        top: 'kameez',
+        bottom: 'salwar',
+        outer: 'shrug',
+        neck: 'dupatta',
+        feet: 'sneakers'
+      })
+    ],
+    cold: [
+      C('e', 1, { top: 'sweater', bottom: 'jeans', outer: 'coat', neck: 'scarf', feet: 'boots' }),
+      C('e', 1, { top: 'hoodie', bottom: 'leggings', outer: 'puffer', feet: 'boots' }),
+      C('e', 1, {
+        top: 'sweatshirt',
+        bottom: 'joggers',
+        outer: 'coat',
+        neck: 'scarf',
+        feet: 'sneakers'
+      }),
+      C('t', 1, { top: 'kurti', bottom: 'leggings', outer: 'coat', neck: 'scarf', feet: 'boots' })
+    ],
+    freezing: [
+      C('e', 1, {
+        top: 'sweater',
+        bottom: 'jeans',
+        outer: 'puffer',
+        head: 'beanie',
+        neck: 'scarf',
+        hands: 'gloves',
+        feet: 'boots'
+      }),
+      C('e', 1, {
+        top: 'hoodie',
+        bottom: 'leggings',
+        outer: 'puffer',
+        head: 'beanie',
+        hands: 'gloves',
+        feet: 'boots'
+      }),
+      C('t', 1, {
+        top: 'kameez',
+        bottom: 'salwar',
+        outer: 'puffer',
+        head: 'beanie',
+        neck: 'scarf',
+        hands: 'gloves',
+        feet: 'boots'
+      })
+    ]
+  }
+}
+/* What each figure can own, grouped like a wardrobe (for the "Your wardrobe" switches). */
+var GROUPS = [
+  ['tops', ['top']],
+  ['bottoms', ['bottom']],
+  ['layers', ['outer']],
+  ['shoes', ['feet']],
+  ['extras', ['head', 'eyes', 'mask', 'neck', 'hands', 'held']]
+]
+var EXTRAS = {
+  man: ['cap', 'beanie', 'sunglasses', 'mask', 'scarf', 'gloves', 'umbrella'],
+  woman: ['sunhat', 'beanie', 'sunglasses', 'mask', 'scarf', 'dupatta', 'gloves', 'umbrella']
+}
+var WEATHER_GEAR = ['raincoat', 'windbreaker', 'jacket', 'waistcoat', 'shrug']
+/* every piece id, in the order the wardrobe lists them */
+var PIECES = [
+  'tee',
+  'dropshoulder',
+  'tank',
+  'polo',
+  'shirt',
+  'longsleeve',
+  'raglan',
+  'formalshirt',
+  'panjabi',
+  'sweatshirt',
+  'hoodie',
+  'sweater',
+  'top',
+  'tunic',
+  'kurti',
+  'kameez',
+  'coord',
+  'dress',
+  'trousers',
+  'chinos',
+  'jeans',
+  'joggers',
+  'cargo',
+  'shorts',
+  'sportshorts',
+  'pajama',
+  'palazzo',
+  'leggings',
+  'salwar',
+  'skirt',
+  'coordpants',
+  'jacket',
+  'windbreaker',
+  'waistcoat',
+  'shrug',
+  'raincoat',
+  'coat',
+  'puffer',
+  'sandals',
+  'sneakers',
+  'boots',
+  'cap',
+  'sunhat',
+  'beanie',
+  'scarf',
+  'dupatta',
+  'gloves',
+  'sunglasses',
+  'mask',
+  'umbrella'
+]
+/* What a figure can own, grouped: [{ id: 'tops', items: ['tee', ...] }, ...]. Labels are wear.group.* and
+   wear.piece.* in the locale files. */
+function wardrobe(fig) {
+  fig = fig === 'woman' ? 'woman' : 'man'
+  var have = {}
+  Object.keys(COMBOS[fig]).forEach(function (b) {
+    COMBOS[fig][b].forEach(function (c) {
+      for (var k in c.o) have[c.o[k]] = k
+    })
+  })
+  var gear =
+    fig === 'man'
+      ? ['raincoat', 'windbreaker', 'jacket', 'boots']
+      : ['raincoat', 'shrug', 'jacket', 'boots']
+  gear.forEach(function (id) {
+    have[id] = id === 'boots' ? 'feet' : 'outer'
+  })
+  EXTRAS[fig].forEach(function (id) {
+    have[id] = 'extra'
+  })
+  return GROUPS.map(function (g) {
+    var ids = Object.keys(have).filter(function (id) {
+      return g[0] === 'extras'
+        ? have[id] === 'extra' || ['head', 'neck', 'hands'].indexOf(have[id]) >= 0
+        : g[1].indexOf(have[id]) >= 0
+    })
+    ids.sort(function (a, b) {
+      return PIECES.indexOf(a) - PIECES.indexOf(b)
+    })
+    return { id: g[0], items: ids }
+  })
+}
+function hash(str) {
+  var h = 2166136261
+  for (var i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
 
 function defaults(prefs) {
-  var p = { figure: 'man', feel: 0, coverage: false, skirts: true }
+  var p = {
+    figure: 'man',
+    feel: 0,
+    coverage: false,
+    skirts: true,
+    style: 'everyday',
+    exclude: [],
+    shuffle: 0
+  }
   for (var k in prefs || {}) if (prefs[k] !== undefined) p[k] = prefs[k]
   return p
 }
@@ -266,60 +558,102 @@ function recommend(s, prefs, fmt) {
     skirts = woman && p.skirts
   var o = {
     top: null,
-    bottom: 'trousers',
+    bottom: null, // set by the outfit; a dress has none
     outer: null,
     feet: 'sneakers',
     head: null,
     neck: null,
     hands: null,
     eyes: null,
+    mask: null,
     held: null,
     tone: 'mid'
   }
-  var why = {}
+  var why = {},
+    off = {}
+  ;(p.exclude || []).forEach(function (id) {
+    off[id] = 1
+  })
+  var fig = woman ? 'woman' : 'man'
 
-  if (band === 'hot') {
-    o.top = 'tee'
-    o.bottom = 'shorts'
-    o.feet = 'sandals'
-    o.tone = 'light'
-  } else if (band === 'warm') {
-    o.top = 'shirt'
-    o.tone = 'light'
-  } else if (band === 'mild') {
-    o.top = 'longsleeve'
-    if (windy || s.feelsMin + shift < 15) o.outer = 'jacket'
-  } else if (band === 'cool') {
-    o.top = 'sweater'
-    if (eff < 14 || windy) o.outer = 'jacket'
-  } else if (band === 'cold') {
-    o.top = 'sweater'
-    o.outer = 'coat'
-    o.neck = 'scarf'
-    o.tone = 'dark'
+  /* pick one outfit for this band: style, coverage, dresses and skirts, and the wardrobe switches narrow the
+     list; the day, band, figure and style seed the choice so the tile and the page agree, and shuffle moves it on */
+  var all = COMBOS[fig][band]
+  var styleOk = function (c) {
+    return p.style === 'both' ? true : p.style === 'traditional' ? c.s === 't' : c.s === 'e'
+  }
+  var skirtOk = function (c) {
+    return skirts || !woman ? true : c.o.top !== 'dress' && c.o.bottom !== 'skirt'
+  }
+  var ownOk = function (c) {
+    for (var k in c.o)
+      if (off[c.o[k]] && ['top', 'bottom', 'outer', 'feet', 'neck'].indexOf(k) >= 0) return false
+    return true
+  }
+  var steps = [
+    function (c) {
+      return styleOk(c) && skirtOk(c) && ownOk(c) && (!p.coverage || c.cov)
+    },
+    function (c) {
+      return styleOk(c) && skirtOk(c) && ownOk(c)
+    },
+    function (c) {
+      return skirtOk(c) && ownOk(c)
+    },
+    skirtOk,
+    function () {
+      return true
+    }
+  ]
+  var list = []
+  for (var i = 0; i < steps.length && !list.length; i++) list = all.filter(steps[i])
+  var day = Math.floor((s.from + 6 * 3600) / 86400)
+  var pickN = (hash(day + '|' + band + '|' + fig + '|' + p.style) + (p.shuffle || 0)) % list.length,
+    combo = list[pickN]
+  for (var ck in combo.o) o[ck] = combo.o[ck]
+  o.tone = {
+    hot: 'light',
+    warm: 'light',
+    mild: 'mid',
+    cool: 'mid',
+    cold: 'dark',
+    freezing: 'dark'
+  }[band]
+
+  /* layers on top of the outfit */
+  var trad = combo.s === 't'
+  if (band === 'mild' && !o.outer && (windy || s.feelsMin + shift < 15))
+    o.outer = trad
+      ? woman
+        ? 'shrug'
+        : 'waistcoat'
+      : windy
+      ? woman
+        ? 'jacket'
+        : 'windbreaker'
+      : woman
+      ? 'shrug'
+      : 'jacket'
+  if (band === 'cool' && !o.outer && (eff < 14 || windy))
+    o.outer = windy && !woman ? 'windbreaker' : 'jacket'
+  if (band === 'cold') {
     if (eff < 5) o.feet = 'boots'
     if (eff <= 1) o.hands = 'gloves'
-  } else {
-    o.top = 'sweater'
-    o.outer = 'puffer'
-    o.head = 'beanie'
-    o.neck = 'scarf'
-    o.hands = 'gloves'
-    o.feet = 'boots'
-    o.tone = 'dark'
   }
-
-  if (skirts && (band === 'hot' || band === 'warm')) {
-    o.top = 'dress'
-    o.bottom = null
-  } else if (skirts && band === 'mild') o.bottom = 'skirt'
-  if (p.coverage && (band === 'hot' || band === 'warm')) {
-    o.top = 'longsleeve'
-    o.bottom = skirts ? 'skirt' : 'trousers'
-    o.tone = 'light'
+  if (off[o.outer] && WEATHER_GEAR.indexOf(o.outer) >= 0) o.outer = null
+  /* More coverage, when no covered outfit was left to pick */
+  if (p.coverage && !combo.cov) {
+    if (['tee', 'polo', 'tank', 'dropshoulder', 'shirt', 'top', 'coord'].indexOf(o.top) >= 0)
+      o.top = woman ? 'tunic' : 'formalshirt'
+    if (o.top === 'dress') {
+      o.top = 'kurti'
+      o.bottom = 'palazzo'
+    }
+    if (['shorts', 'sportshorts'].indexOf(o.bottom) >= 0) o.bottom = woman ? 'palazzo' : 'chinos'
+    if (o.bottom === 'coordpants') o.bottom = 'palazzo'
     why.top = M('wear.why.coverage')
   }
-  if (p.coverage && o.bottom === 'shorts') o.bottom = 'trousers'
+  if (p.coverage && (band === 'hot' || band === 'warm')) why.top = M('wear.why.coverage')
 
   var one = Math.round(s.feelsMin) === Math.round(s.feelsMax)
   var range = one
@@ -346,7 +680,7 @@ function recommend(s, prefs, fmt) {
       why.outer = M('wear.why.rainWind', { speed: F.speed(Math.max(s.wind, s.gust)) })
     } else if (windy) {
       why.outer = M('wear.why.tooGusty', { speed: F.speed(Math.max(s.wind, s.gust)) })
-    } else {
+    } else if (!off.umbrella) {
       o.held = 'umbrella'
       why.held = rainTxt
     }
@@ -357,14 +691,26 @@ function recommend(s, prefs, fmt) {
     if (band === 'cold' && !o.head) o.head = 'beanie'
     why.feet = M('wear.why.snowGround')
   }
-  if (sunny) {
+  if (sunny && !off.sunglasses) {
     o.eyes = 'sunglasses'
     why.eyes = uvTxt
-    if (!o.head && (band === 'hot' || band === 'warm' || band === 'mild')) {
-      o.head = woman ? 'sunhat' : 'cap'
+  }
+  if (sunny && !o.head && (band === 'hot' || band === 'warm' || band === 'mild')) {
+    var hat = woman ? 'sunhat' : 'cap'
+    if (!off[hat]) {
+      o.head = hat
       why.head = uvTxt
     }
   }
+  var hazy = s.haze >= 0.35,
+    hazeTxt = M(s.haze >= 0.75 ? 'wear.why.hazeMost' : 'wear.why.hazePart')
+  if (s.haze >= 0.75 && !off.mask) {
+    o.mask = 'mask'
+    why.mask = hazeTxt
+  }
+  ;['head', 'neck', 'hands'].forEach(function (k) {
+    if (o[k] && off[o[k]] && o[k] !== 'hood') o[k] = null
+  })
 
   var pieces = SLOTS.filter(function (k) {
     return o[k]
@@ -372,7 +718,7 @@ function recommend(s, prefs, fmt) {
     var id = o[k],
       name = M('wear.piece.' + id)
     if (id === 'trousers' && o.tone === 'light') name = M('wear.piece.trousersLight')
-    if (id === 'longsleeve' && o.tone === 'light') name = M('wear.piece.longsleeveLight')
+    if (id === 'formalshirt' && o.tone === 'light') name = M('wear.piece.formalshirtLight')
     var w =
       why[k] ||
       (k === 'feet' && id === 'boots'
@@ -392,7 +738,13 @@ function recommend(s, prefs, fmt) {
   })
 
   var carry = []
-  if (maybeWet) carry.push({ id: 'umbrella', name: M('wear.carry.umbrella'), why: rainTxt })
+  /* the umbrella always shows up here too, so it is on the list when you head out */
+  if (o.held === 'umbrella')
+    carry.push({ id: 'umbrella', name: M('wear.carry.umbrellaFull'), why: rainTxt })
+  else if (maybeWet && !off.umbrella)
+    carry.push({ id: 'umbrella', name: M('wear.carry.umbrella'), why: rainTxt })
+  if (hazy && !o.mask && !off.mask)
+    carry.push({ id: 'mask', name: M('wear.carry.mask'), why: hazeTxt })
   if (swing && band !== 'freezing')
     carry.push({
       id: 'layer',
@@ -413,8 +765,14 @@ function recommend(s, prefs, fmt) {
   var base = {
     hot: 'hot',
     warm: 'warm',
-    mild: o.outer ? 'mildJacket' : 'mild',
-    cool: o.outer ? 'coolJacket' : 'cool',
+    mild: o.outer ? 'mildLayer' : 'mild',
+    cool: o.outer
+      ? 'coolLayer'
+      : o.top === 'hoodie'
+      ? 'coolHoodie'
+      : o.top === 'sweatshirt'
+      ? 'coolSweatshirt'
+      : 'cool',
     cold: 'cold',
     freezing: 'freezing'
   }[band]
@@ -441,6 +799,7 @@ function recommend(s, prefs, fmt) {
   reasons.push({ k: 'temp', t: range })
   if (windy) reasons.push({ k: 'wind', t: windTxt })
   if (sunny) reasons.push({ k: 'uv', t: uvTxt })
+  if (hazy) reasons.push({ k: 'haze', t: hazeTxt })
   if (swing)
     reasons.push({
       k: 'swing',
@@ -451,8 +810,15 @@ function recommend(s, prefs, fmt) {
 
   return {
     band: band,
+    style: combo.s === 't' ? 'traditional' : 'everyday',
+    options: list.length,
     outfit: o,
-    headline: M('wear.headline.' + headline),
+    headline: M(
+      'wear.headline.' + headline,
+      base === headline && o.outer && (band === 'mild' || band === 'cool')
+        ? { layer: M('wear.layer.' + o.outer) }
+        : undefined
+    ),
     reasons: reasons.slice(0, 3),
     allReasons: reasons,
     pieces: pieces,
@@ -499,12 +865,40 @@ var INK = '#241B1A',
 
 /* each piece: [light, mid, dark]. Flat fills; a darker side band is added by the renderer. */
 var COLORS = {
+  dropshoulder: ['#F3D3B8', '#8BA894', '#2F3542'],
+  tank: ['#F4F2EC', '#E3B04B', '#2C2F36'],
+  polo: ['#BFE0D0', '#2F4A78', '#6E2A35'],
+  raglan: ['#EEF0F2', '#E9E7E2', '#3A3F48'],
+  formalshirt: ['#E6EEF7', '#9FBCD9', '#3B4B66'],
+  panjabi: ['#F6F2E7', '#BFD7EA', '#3D4A5C'],
+  sweatshirt: ['#E2E4E8', '#9A8FC4', '#3A3F4E'],
+  hoodie: ['#E5E1DA', '#6F8F7A', '#2E3440'],
+  top: ['#F7C9B9', '#E58F7D', '#4B4466'],
+  tunic: ['#CFE3EE', '#7DA6C9', '#5B4566'],
+  kurti: ['#F6D9A0', '#2F8C8A', '#6B2E46'],
+  kameez: ['#F6DCE3', '#C8577A', '#3F4F7A'],
+  coord: ['#D7E7CF', '#7FA88E', '#4A4F6B'],
+  chinos: ['#E3D5B8', '#C8B08A', '#2F3B57'],
+  jeans: ['#9DB9DA', '#4F78AE', '#2C3B58'],
+  joggers: ['#C9CBD0', '#6E737C', '#2D3036'],
+  cargo: ['#C9C0A2', '#6F7552', '#3B3E33'],
+  sportshorts: ['#3A3F4A', '#23262E', '#1E2026'],
+  pajama: ['#F4F1EA', '#EFE8DB', '#DCD3C3'],
+  palazzo: ['#BFD3E6', '#C9714E', '#3E3A4F'],
+  leggings: ['#3A3A42', '#2B2B31', '#2B2B31'],
+  salwar: ['#F3E6D6', '#F1D9A6', '#2E3A5A'],
+  coordpants: ['#D7E7CF', '#7FA88E', '#4A4F6B'],
+  windbreaker: ['#DDE6EE', '#2F7F86', '#2B3445'],
+  waistcoat: ['#D9CDB4', '#3B4256', '#5A2E35'],
+  shrug: ['#F1E7D6', '#C9A9C9', '#4D5A6B'],
+  dupatta: ['#F7E7B6', '#E9B949', '#B4426A'],
+  mask: ['#DCEAF5', '#DCEAF5', '#3A3F4A'],
   tee: ['#F5F1E8', '#B9D2EE', '#3E4A63'],
-  shirt: ['#F1E6D2', '#D44C3F', '#4B5560'],
+  shirt: ['#CFE0F2', '#D44C3F', '#4B5560'],
   longsleeve: ['#F4EBDD', '#BC7B47', '#4F5A3E'],
   sweater: ['#EBDFCB', '#D6463B', '#2E3B5C'],
-  dress: ['#F5E4CC', '#E59CB6', '#7D4B66'],
-  shorts: ['#D9C9A8', '#5C86BE', '#3B4458'],
+  dress: ['#F7E2B5', '#E59CB6', '#7D4B66'],
+  shorts: ['#D9C9A8', '#BFA680', '#3B4458'],
   trousers: ['#DDD0BA', '#8C7E77', '#2A2A30'],
   skirt: ['#EADBC3', '#8C7E77', '#4A3A44'],
   jacket: ['#C9B8DD', '#6B4486', '#3F3552'],
@@ -521,6 +915,20 @@ var COLORS = {
   gloves: ['#2E2E33', '#2E2E33', '#2E2E33'],
   sunglasses: ['#1F2128', '#1F2128', '#1F2128'],
   umbrella: ['#CFE3F3', '#CFE3F3', '#CFE3F3']
+}
+var ACCENT = {
+  raglan: ['#3E5A85', '#2E3A4F', '#C9473C'],
+  windbreaker: ['#F2F2F0', '#F2C14E', '#5D6B8A'],
+  coord: ['#C9B08A', '#F2F0E8', '#C9C2E0'],
+  coordpants: ['#C9B08A', '#F2F0E8', '#C9C2E0'],
+  kurti: ['#C46B3C', '#F2C14E', '#E9B949'],
+  kameez: ['#C8577A', '#F6DCE3', '#E9B949'],
+  tunic: ['#C46B3C', '#F2F0E8', '#E9B949'],
+  panjabi: ['#C9A35A', '#7D98B0', '#C9A35A']
+}
+function accentOf(id, tone) {
+  var i = tone === 'light' ? 0 : tone === 'dark' ? 2 : 1
+  return (ACCENT[id] || ['#FFFFFF', '#FFFFFF', '#FFFFFF'])[i]
 }
 function colorOf(id, tone) {
   var i = tone === 'light' ? 0 : tone === 'dark' ? 2 : 1
@@ -1505,6 +1913,272 @@ function figure(outfit, opts) {
         )
       })
   }
+  /* the other trousers share one cut: ease at the hip, knee and hem, then their own details */
+  var PANTS = {
+    chinos: { e: 2.6, ek: 2.4, ea: 2.8, belt: 1, pockets: 1 },
+    jeans: { e: 3, ek: 2.6, ea: 3, cuff: 1, seams: 1 },
+    joggers: { e: 5, ek: 3.5, ea: 0.6, rib: 1, draw: 1 },
+    cargo: { e: 5, ek: 4.5, ea: 3.5, cargo: 1 },
+    pajama: { e: 6, ek: 7.5, ea: 8, draw: 1 },
+    palazzo: { e: 6.5, ek: 12, ea: 19, folds: 1 },
+    leggings: { e: 0.8, ek: 0.4, ea: 0.4 },
+    salwar: { e: 8, ek: 10, ea: 1.2, rib: 1, folds: 1 },
+    coordpants: { e: 5, ek: 6.5, ea: 9, dots: 1 },
+    sportshorts: { e: 5.5, short: 0.48, stripe: 1 }
+  }
+  var P = PANTS[o.bottom]
+  if (P) {
+    var pc = col(o.bottom),
+      pd = shade(pc, -0.12),
+      acc = accentOf(o.bottom, tone),
+      e0 = P.e
+    put(
+      'bottom',
+      sym(
+        [
+          [B.waist[0] + 1.5, B.waist[1] + 8, 3],
+          [B.hip[0] + e0 * 0.6, B.hip[1], 14],
+          [B.hipJ[0] + B.hipJ[2] + e0 - 1, B.hipJ[1] + 12, 6],
+          [3, B.crotch + 10, 3]
+        ],
+        4,
+        [B.waist[1] + 8, 2],
+        [B.crotch + 6, 2]
+      ),
+      pc
+    )
+    var legOut = function (s, d) {
+      var a = hipJ(s),
+        k = kn(s),
+        n = an(s)
+      if (P.short) {
+        var q = lerp(a, k, (P.short / 0.6) * 0.6)
+        return limb(a[0], a[1], B.hipJ[2] + e0 + d, q[0], q[1], B.hipJ[2] + e0 - 2 + d, true)
+      }
+      var hem = lerp(k, n, 0.985)
+      return (
+        limb(a[0], a[1], B.hipJ[2] + e0 + d, k[0], k[1], B.knee[2] + P.ek + d) +
+        limb(k[0], k[1], B.knee[2] + P.ek + d, hem[0], hem[1], B.ankle[2] + P.ea + d, true)
+      )
+    }
+    both(function (s) {
+      put('bottom', legOut(s, 0), pd)
+    })
+    both(function (s) {
+      var a = hipJ(s),
+        k = kn(s),
+        n = an(s),
+        dx = -s * 1.6
+      if (P.short) {
+        var q = lerp(a, k, P.short)
+        put(
+          'bottom',
+          limb(a[0] + dx, a[1], B.hipJ[2] + e0 - 3, q[0] + dx, q[1] - 2, B.hipJ[2] + e0 - 5, true),
+          pc
+        )
+        return
+      }
+      put(
+        'bottom',
+        limb(a[0] + dx, a[1], B.hipJ[2] + e0 - 3, k[0] + dx, k[1], B.knee[2] + P.ek - 3) +
+          limb(
+            k[0] + dx,
+            k[1],
+            B.knee[2] + P.ek - 3,
+            n[0] + dx * 0.6,
+            n[1] - 6,
+            Math.max(2, B.ankle[2] + P.ea - 2.5),
+            true
+          ),
+        pc
+      )
+    })
+    line(
+      'bottom',
+      'M' + CX + ' ' + (B.waist[1] + 16) + 'L' + CX + ' ' + (B.crotch + 4),
+      shade(pc, -0.22),
+      1.2
+    )
+    if (P.draw)
+      [-1, 1].forEach(function (s) {
+        line(
+          'bottom',
+          'M' + (CX + s * 3) + ' ' + (B.waist[1] + 9) + 'l' + s * 0.6 + ' 12',
+          '#E9E6E1',
+          1.6
+        )
+      })
+    if (P.belt) {
+      put(
+        'bottom',
+        rpoly(
+          [
+            [CX - B.waist[0] - 2, B.waist[1] + 6],
+            [CX + B.waist[0] + 2, B.waist[1] + 6],
+            [CX + B.waist[0] + 2, B.waist[1] + 12],
+            [CX - B.waist[0] - 2, B.waist[1] + 12]
+          ],
+          2
+        ),
+        '#4A3428'
+      )
+      put(
+        'bottom',
+        rpoly(
+          [
+            [CX - 4, B.waist[1] + 5],
+            [CX + 4, B.waist[1] + 5],
+            [CX + 4, B.waist[1] + 13],
+            [CX - 4, B.waist[1] + 13]
+          ],
+          1.5
+        ),
+        '#C9A35A'
+      )
+    }
+    if (P.pockets)
+      both(function (s) {
+        line(
+          'bottom',
+          'M' +
+            (CX + s * (B.hip[0] - 4)) +
+            ' ' +
+            (B.waist[1] + 14) +
+            'Q' +
+            (CX + s * (B.hip[0] - 10)) +
+            ' ' +
+            (B.waist[1] + 24) +
+            ' ' +
+            (CX + s * (B.hip[0] + 1)) +
+            ' ' +
+            (B.hip[1] + 2),
+          shade(pc, -0.25),
+          1.2
+        )
+      })
+    if (P.seams)
+      both(function (s) {
+        var a = hipJ(s),
+          n = an(s)
+        line(
+          'bottom',
+          'M' + (a[0] + s * 4) + ' ' + (a[1] + 6) + 'L' + (n[0] + s * 4) + ' ' + (n[1] - 12),
+          shade(pc, 0.3),
+          1,
+          { dash: '2.5 2.5' }
+        )
+      })
+    if (P.cuff)
+      both(function (s) {
+        var k = kn(s),
+          n = an(s),
+          q0 = lerp(k, n, 0.9),
+          q1 = lerp(k, n, 0.985)
+        put(
+          'bottom',
+          limb(q0[0], q0[1], B.ankle[2] + P.ea + 1.2, q1[0], q1[1], B.ankle[2] + P.ea + 1.2, true),
+          shade(pc, 0.22)
+        )
+      })
+    if (P.rib)
+      both(function (s) {
+        var k = kn(s),
+          n = an(s),
+          q0 = lerp(k, n, 0.9),
+          q1 = lerp(k, n, 0.985)
+        put(
+          'bottom',
+          limb(q0[0], q0[1], B.ankle[2] + P.ea + 1.5, q1[0], q1[1], B.ankle[2] + P.ea + 1.5, true),
+          shade(pc, -0.2)
+        )
+      })
+    if (P.cargo)
+      both(function (s) {
+        var a = hipJ(s),
+          k = kn(s),
+          q = lerp(a, k, 0.62),
+          x = q[0] + s * (B.hipJ[2] + e0 - 8)
+        put(
+          'bottom',
+          rpoly(
+            [
+              [x - 8, q[1] - 12],
+              [x + 8, q[1] - 12],
+              [x + 8, q[1] + 12],
+              [x - 8, q[1] + 12]
+            ],
+            2
+          ),
+          pd
+        )
+        line(
+          'bottom',
+          'M' + (x - 8) + ' ' + (q[1] - 6) + 'L' + (x + 8) + ' ' + (q[1] - 6),
+          shade(pc, -0.3),
+          1.2
+        )
+      })
+    if (P.folds)
+      both(function (s) {
+        var k = kn(s),
+          n = an(s)
+        ;[0.3, 0.7].forEach(function (f) {
+          var x = n[0] + s * (B.ankle[2] + P.ea) * (f - 0.5) * 1.6
+          line(
+            'bottom',
+            'M' +
+              r1(k[0] + s * (f - 0.5) * 10) +
+              ' ' +
+              (k[1] - 30) +
+              'L' +
+              r1(x) +
+              ' ' +
+              (n[1] - 8),
+            pd,
+            1.2
+          )
+        })
+      })
+    if (P.stripe)
+      both(function (s) {
+        var a = hipJ(s),
+          k = kn(s),
+          q = lerp(a, k, P.short)
+        line(
+          'bottom',
+          'M' +
+            (CX + s * (B.hip[0] + e0 * 0.6 - 1.5)) +
+            ' ' +
+            (B.hip[1] - 6) +
+            'L' +
+            r1(q[0] + s * (B.hipJ[2] + e0 - 3.5)) +
+            ' ' +
+            r1(q[1] - 2),
+          '#F2F2F0',
+          2.4
+        )
+      })
+    if (P.dots) {
+      /* a small print, placed inside each leg */
+      var dots = ''
+      both(function (s) {
+        var a = hipJ(s),
+          k = kn(s),
+          n = an(s)
+        for (var yy = B.hipJ[1] + 6, row = 0; yy < n[1] - 10; yy += 13, row++) {
+          var up = yy < k[1],
+            t0 = up ? (yy - a[1]) / (k[1] - a[1]) : (yy - k[1]) / (n[1] - k[1])
+          var cxl = up ? a[0] + (k[0] - a[0]) * t0 : k[0] + (n[0] - k[0]) * t0
+          var hw = up
+            ? B.hipJ[2] + e0 + (B.knee[2] + P.ek - B.hipJ[2] - e0) * t0
+            : B.knee[2] + P.ek + (B.ankle[2] + P.ea - B.knee[2] - P.ek) * t0
+          for (var xx = -hw + 4 + (row % 2) * 5; xx < hw - 3; xx += 10)
+            dots += oval(cxl + xx, yy, 1.5, 1.5)
+        }
+      })
+      put('bottom', dots, acc, { o: 0.6 })
+    }
+  }
   if (o.bottom === 'skirt') {
     var sk = col('skirt')
     put(
@@ -1954,6 +2628,581 @@ function figure(outfit, opts) {
     })
   }
 
+  /* the new tops share the same cut; long tunics run past the hip with a flare */
+  var tunic = function (e, hemY, flare, neckW, neckDip) {
+    var hx = B.hip[0] + e + flare
+    return sym(
+      [
+        [B.neck + neckW, B.sy - 9 - e * 0.15, 3],
+        [B.sw * 0.62, B.sy - 6 - e * 0.3, 9],
+        [B.sw + 2 + e * 0.6, B.sy + 3, 8],
+        [B.chest[0] + e, B.chest[1], 16],
+        [B.waist[0] + e * 1.3, B.waist[1], 20],
+        [B.hip[0] + e + flare * 0.35, B.hip[1], 30],
+        [hx, hemY, 4]
+      ],
+      6,
+      [B.sy - 9 + neckDip, neckW * 1.6],
+      [hemY + 1.5, 60]
+    )
+  }
+  var fullSleeves = function (e, len, c, d) {
+    both(function (s) {
+      put('top', sleeve(s, e + 1.5, len), d)
+      var b = el(s)
+      var tip = len > 1 ? lerp(b, wr(s), Math.min(1, len - 1) * 0.9) : lerp(sh(s), b, len * 0.95)
+      put(
+        'top',
+        len > 1
+          ? limb(
+              sh(s)[0] - s * 2,
+              sh(s)[1],
+              B.shR + e - 2,
+              b[0] - s * 2,
+              b[1],
+              B.elbow[2] + e - 2
+            ) +
+              limb(
+                b[0] - s * 2,
+                b[1],
+                B.elbow[2] + e - 2,
+                tip[0] - s * 1.5,
+                tip[1],
+                B.wrist[2] + e - 1.5,
+                true
+              )
+          : limb(
+              sh(s)[0] - s * 2,
+              sh(s)[1],
+              B.shR + e - 2,
+              tip[0] - s * 1.5,
+              tip[1],
+              B.shR + e - 2.5,
+              true
+            ),
+        c
+      )
+    })
+  }
+  var slits = function (hemY, e, flare, c) {
+    both(function (s) {
+      var x = CX + s * (B.hip[0] + e + flare - 2)
+      line('top', 'M' + r1(x) + ' ' + hemY + 'L' + r1(x - s * 4) + ' ' + (hemY - 42), c, 1.6)
+    })
+  }
+  var neckRound = function (c, w) {
+    line(
+      'top',
+      'M' +
+        (CX - B.neck - 5) +
+        ' ' +
+        (B.sy - 8.5) +
+        'Q' +
+        CX +
+        ' ' +
+        (B.sy + 4) +
+        ' ' +
+        (CX + B.neck + 5) +
+        ' ' +
+        (B.sy - 8.5),
+      c,
+      w || 2.6
+    )
+  }
+  var hemBand = function (hemY, e, flare, c, h) {
+    var hx = B.hip[0] + e + flare
+    put(
+      'top',
+      'M' +
+        r1(CX - hx + 0.5) +
+        ' ' +
+        (hemY - h) +
+        'L' +
+        r1(CX + hx - 0.5) +
+        ' ' +
+        (hemY - h) +
+        'L' +
+        r1(CX + hx) +
+        ' ' +
+        hemY +
+        'Q' +
+        CX +
+        ' ' +
+        (hemY + 2) +
+        ' ' +
+        r1(CX - hx) +
+        ' ' +
+        hemY +
+        'Z',
+      c
+    )
+  }
+  var yoke = function (c, dots) {
+    put(
+      'top',
+      'M' +
+        (CX - B.neck - 8) +
+        ' ' +
+        (B.sy - 9) +
+        'Q' +
+        CX +
+        ' ' +
+        (B.sy - 2) +
+        ' ' +
+        (CX + B.neck + 8) +
+        ' ' +
+        (B.sy - 9) +
+        'L' +
+        (CX + 9) +
+        ' ' +
+        (B.sy + 26) +
+        'Q' +
+        CX +
+        ' ' +
+        (B.sy + 31) +
+        ' ' +
+        (CX - 9) +
+        ' ' +
+        (B.sy + 26) +
+        'Z',
+      c
+    )
+    var d = ''
+    ;[
+      [-12, -3],
+      [-7, 6],
+      [-3, 15],
+      [3, 15],
+      [7, 6],
+      [12, -3],
+      [0, 23]
+    ].forEach(function (q) {
+      d += oval(CX + q[0], B.sy + q[1], 1.6, 1.6)
+    })
+    put('top', d, dots)
+  }
+  if (
+    o.top === 'polo' ||
+    o.top === 'dropshoulder' ||
+    o.top === 'tank' ||
+    o.top === 'top' ||
+    o.top === 'coord'
+  ) {
+    var drop = o.top === 'dropshoulder',
+      isTop = o.top === 'top',
+      isCoord = o.top === 'coord',
+      pe = drop ? 8 : isCoord ? 6 : 4,
+      ph = B.hip[1] + (drop ? 12 : isTop ? 2 : 8)
+    if (o.top === 'tank') {
+      put(
+        'top',
+        sym(
+          [
+            [B.neck + 4, B.sy - 10, 2],
+            [B.neck + 11, B.sy - 10, 2],
+            [B.chest[0] - 4, B.sy + 26, 12],
+            [B.chest[0] + 3, B.chest[1] + 8, 12],
+            [B.waist[0] + 4, B.waist[1], 18],
+            [B.hip[0] + 4, ph, 4]
+          ],
+          4,
+          [B.sy + 12, 14],
+          [ph + 1.5, 40]
+        ),
+        td
+      )
+      put(
+        'top',
+        sym(
+          [
+            [B.neck + 5, B.sy - 9, 2],
+            [B.neck + 10, B.sy - 9, 2],
+            [B.chest[0] - 6, B.sy + 26, 12],
+            [B.chest[0] - 1, B.chest[1] + 8, 12],
+            [B.waist[0] + 1, B.waist[1], 18],
+            [B.hip[0] + 1, ph - 1, 4]
+          ],
+          4,
+          [B.sy + 14, 14],
+          [ph + 0.5, 40]
+        ),
+        tc
+      )
+    } else {
+      both(function (s) {
+        put('top', sleeve(s, pe + 1.5 + (isTop ? 2 : 0), drop ? 0.9 : isTop ? 0.4 : 0.55), td)
+        put('top', sleeve(s, pe - 0.5 + (isTop ? 2 : 0), drop ? 0.85 : isTop ? 0.36 : 0.5), tc)
+      })
+      shaded(
+        'top',
+        tc,
+        function () {
+          return isTop ? tunic(pe, ph + 10, 7, 7, 10) : torso(pe, ph, 6, o.top === 'polo' ? 8 : 7)
+        },
+        function () {
+          return isTop
+            ? tunic(pe - 4, ph + 10, 7, 7, 10)
+            : torso(pe - 4, ph, 6, o.top === 'polo' ? 8 : 7)
+        }
+      )
+      if (drop)
+        both(function (s) {
+          line(
+            'top',
+            'M' +
+              (CX + s * (B.sw + 5)) +
+              ' ' +
+              (B.sy - 1) +
+              'Q' +
+              (CX + s * (B.sw + 8)) +
+              ' ' +
+              (B.sy + 14) +
+              ' ' +
+              (CX + s * (B.sw + 6)) +
+              ' ' +
+              (B.sy + 30),
+            td,
+            1.4
+          )
+        })
+      if (o.top === 'polo') {
+        both(function (s) {
+          var a = sh(s),
+            b = el(s)
+          put('top', band(a, b, B.shR + pe + 0.6, B.shR + pe - 1, 0.42, 0.5), shade(tc, -0.25))
+          put(
+            'top',
+            rpoly(
+              [
+                [CX + s * (B.neck + 1), B.sy - 11],
+                [CX + s * (B.neck + 13), B.sy - 6],
+                [CX + s * 4, B.sy + 7]
+              ],
+              1.5
+            ),
+            shade(tc, 0.12)
+          )
+        })
+        put(
+          'top',
+          rpoly(
+            [
+              [CX - 3, B.sy - 4],
+              [CX + 3, B.sy - 4],
+              [CX + 3, B.sy + 24],
+              [CX - 3, B.sy + 24]
+            ],
+            1
+          ),
+          td
+        )
+        ;[B.sy + 6, B.sy + 16].forEach(function (y) {
+          put('top', oval(CX, y, 1.5, 1.5), '#F2F0EA')
+        })
+      } else neckRound(td, isTop ? 2 : 2.6)
+      if (isTop)
+        line(
+          'top',
+          'M' +
+            (CX - B.waist[0] - 5) +
+            ' ' +
+            (B.waist[1] + 4) +
+            'Q' +
+            CX +
+            ' ' +
+            (B.waist[1] + 8) +
+            ' ' +
+            (CX + B.waist[0] + 5) +
+            ' ' +
+            (B.waist[1] + 4),
+          td,
+          1.4
+        )
+      if (isCoord) {
+        var cd = '',
+          ca = accentOf('coord', tone)
+        for (var cy = B.sy + 12; cy < ph - 4; cy += 13)
+          for (var cx2 = -36; cx2 <= 36; cx2 += 12) {
+            var lx2 = CX + cx2 + ((cy / 13) % 2 ? 6 : 0)
+            if (Math.abs(lx2 - CX) < torsoHW(cy, pe - 3) - 3) cd += oval(lx2, cy, 1.6, 1.6)
+          }
+        put('top', cd, ca, { o: 0.75 })
+      }
+    }
+  }
+  if (
+    o.top === 'raglan' ||
+    o.top === 'formalshirt' ||
+    o.top === 'sweatshirt' ||
+    o.top === 'hoodie'
+  ) {
+    var rg = o.top === 'raglan',
+      fs = o.top === 'formalshirt',
+      hd2 = o.top === 'hoodie',
+      re2 = hd2 ? 6 : fs ? 4 : 5,
+      rh2 = B.hip[1] + (fs ? 12 : 8)
+    var slc = rg ? accentOf('raglan', tone) : tc,
+      sld = shade(slc, -0.16)
+    if (hd2)
+      put(
+        'top',
+        rpoly(
+          [
+            [CX - B.neck - 17, B.sy - 11],
+            [CX + B.neck + 17, B.sy - 11],
+            [CX + B.neck + 13, B.sy + 9],
+            [CX - B.neck - 13, B.sy + 9]
+          ],
+          9
+        ),
+        td
+      )
+    fullSleeves(re2, 2, slc, sld)
+    shaded(
+      'top',
+      tc,
+      function () {
+        return torso(re2, rh2, 6, fs ? 12 : 6)
+      },
+      function () {
+        return torso(re2 - 4, rh2, 6, fs ? 12 : 6)
+      }
+    )
+    if (rg)
+      both(function (s) {
+        put(
+          'top',
+          'M' +
+            (CX + s * (B.neck + 4)) +
+            ' ' +
+            (B.sy - 9) +
+            'L' +
+            (CX + s * (B.sw + 3 + re2 * 0.6)) +
+            ' ' +
+            (B.sy + 3) +
+            'L' +
+            (CX + s * (B.chest[0] + re2 - 4)) +
+            ' ' +
+            (B.sy + 26) +
+            'Z',
+          slc
+        )
+      })
+    if (!fs)
+      both(function (s) {
+        cuff('top', s, re2, sld)
+      })
+    if (o.top === 'sweatshirt' || hd2) {
+      var hb = rh2 - 9
+      put(
+        'top',
+        'M' +
+          r1(CX - torsoHW(hb, re2 - 4)) +
+          ' ' +
+          hb +
+          'L' +
+          r1(CX + torsoHW(hb, re2 - 4)) +
+          ' ' +
+          hb +
+          'L' +
+          r1(CX + torsoHW(rh2, re2)) +
+          ' ' +
+          rh2 +
+          'Q' +
+          CX +
+          ' ' +
+          (rh2 + 2) +
+          ' ' +
+          r1(CX - torsoHW(rh2, re2)) +
+          ' ' +
+          rh2 +
+          'Z',
+        td
+      )
+    }
+    if (o.top === 'sweatshirt' || rg)
+      neckRound(o.top === 'sweatshirt' ? td : slc, o.top === 'sweatshirt' ? 4 : 3)
+    if (hd2) {
+      ;[-1, 1].forEach(function (s) {
+        line(
+          'top',
+          'M' + (CX + s * 5) + ' ' + (B.sy + 4) + 'L' + (CX + s * 6) + ' ' + (B.sy + 34),
+          '#F2F0EA',
+          1.6
+        )
+      })
+      put(
+        'top',
+        rpoly(
+          [
+            [CX - 22, B.waist[1] - 2],
+            [CX + 22, B.waist[1] - 2],
+            [CX + 26, B.waist[1] + 26],
+            [CX - 26, B.waist[1] + 26]
+          ],
+          4
+        ),
+        td
+      )
+    }
+    if (fs) {
+      both(function (s) {
+        put(
+          'top',
+          rpoly(
+            [
+              [CX + s * (B.neck + 1), B.sy - 13],
+              [CX + s * (B.neck + 12), B.sy - 6],
+              [CX + s * 3, B.sy + 6]
+            ],
+            1.5
+          ),
+          shade(tc, 0.18)
+        )
+        cuff('top', s, re2, shade(tc, 0.12))
+      })
+      line('top', 'M' + CX + ' ' + (B.sy + 4) + 'L' + CX + ' ' + (rh2 - 1), td, 1.2)
+      ;[0, 1, 2, 3].forEach(function (i) {
+        put('top', oval(CX + 3, B.sy + 16 + i * 22, 1.6, 1.6), '#F2F0EA')
+      })
+      put(
+        'top',
+        rpoly(
+          [
+            [CX + 10, B.chest[1] - 10],
+            [CX + 22, B.chest[1] - 10],
+            [CX + 22, B.chest[1] + 2],
+            [CX + 10, B.chest[1] + 2]
+          ],
+          1.5
+        ),
+        td,
+        { o: 0.7 }
+      )
+    }
+  }
+  if (o.top === 'panjabi' || o.top === 'kurti' || o.top === 'kameez' || o.top === 'tunic') {
+    var TU = {
+      panjabi: [4.5, B.knee[1] - 2, 6, 1.95],
+      kurti: [3.5, B.knee[1] - 12, 12, 1.55],
+      kameez: [3.5, B.knee[1] + 8, 14, 1.9],
+      tunic: [4, B.hip[1] + 46, 9, 1.5]
+    }[o.top]
+    var te2 = TU[0],
+      th = TU[1],
+      tf = TU[2],
+      ta = accentOf(o.top, tone)
+    fullSleeves(te2, TU[3], tc, td)
+    if (o.top !== 'panjabi')
+      both(function (s) {
+        var b = el(s),
+          tip = lerp(b, wr(s), Math.min(1, TU[3] - 1) * 0.9),
+          q0 = lerp(b, wr(s), Math.min(1, TU[3] - 1) * 0.9 - 0.08)
+        put(
+          'top',
+          limb(
+            q0[0] - s * 1.5,
+            q0[1],
+            B.wrist[2] + te2 - 1,
+            tip[0] - s * 1.5,
+            tip[1],
+            B.wrist[2] + te2 - 1.2,
+            true
+          ),
+          ta
+        )
+      })
+    shaded(
+      'top',
+      tc,
+      function () {
+        return tunic(te2, th, tf, o.top === 'panjabi' ? 5 : 7, o.top === 'panjabi' ? 4 : 10)
+      },
+      function () {
+        return tunic(te2 - 4, th, tf, o.top === 'panjabi' ? 5 : 7, o.top === 'panjabi' ? 4 : 10)
+      }
+    )
+    if (o.top !== 'tunic') slits(th, te2, tf, td)
+    if (o.top === 'panjabi') {
+      put(
+        'top',
+        rpoly(
+          [
+            [CX - B.neck - 3, B.sy - 15],
+            [CX + B.neck + 3, B.sy - 15],
+            [CX + B.neck + 4, B.sy - 7],
+            [CX - B.neck - 4, B.sy - 7]
+          ],
+          3
+        ),
+        shade(tc, -0.08)
+      )
+      put(
+        'top',
+        rpoly(
+          [
+            [CX - 4, B.sy - 7],
+            [CX + 4, B.sy - 7],
+            [CX + 4, B.sy + 42],
+            [CX - 4, B.sy + 42]
+          ],
+          1.5
+        ),
+        td
+      )
+      ;[B.sy + 3, B.sy + 16, B.sy + 29].forEach(function (y) {
+        put('top', oval(CX, y, 1.9, 1.9), ta)
+      })
+      both(function (s) {
+        line(
+          'top',
+          'M' + (CX + s * 6) + ' ' + (B.sy - 6) + 'L' + (CX + s * 6) + ' ' + (B.sy + 41),
+          ta,
+          1,
+          { dash: '2 2' }
+        )
+      })
+    } else if (o.top === 'tunic') {
+      put(
+        'top',
+        'M' +
+          (CX - 5) +
+          ' ' +
+          (B.sy - 7) +
+          'L' +
+          CX +
+          ' ' +
+          (B.sy + 12) +
+          'L' +
+          (CX + 5) +
+          ' ' +
+          (B.sy - 7) +
+          'Z',
+        SKIN
+      )
+      line(
+        'top',
+        'M' +
+          (CX - B.waist[0] - 5) +
+          ' ' +
+          (B.waist[1] + 2) +
+          'Q' +
+          CX +
+          ' ' +
+          (B.waist[1] + 6) +
+          ' ' +
+          (CX + B.waist[0] + 5) +
+          ' ' +
+          (B.waist[1] + 2),
+        ta,
+        2.4
+      )
+    } else {
+      yoke(ta, shade(ta, 0.45))
+      hemBand(th, te2, tf, ta, 7)
+    }
+  }
+
   /* ---- outer layers */
   if (o.outer) {
     var oc = col(o.outer),
@@ -2132,9 +3381,9 @@ function figure(outfit, opts) {
       })
     }
     if (id === 'puffer') {
-      var pe = 11,
-        ph = B.hip[1] + 14
-      outerSleeves(pe - 1)
+      var pfe = 11,
+        pfh = B.hip[1] + 14
+      outerSleeves(pfe - 1)
       both(function (s) {
         ;[0.5].forEach(function (t) {
           var q = lerp(sh(s), el(s), t)
@@ -2149,15 +3398,15 @@ function figure(outfit, opts) {
         'outer',
         oc,
         function () {
-          return torso(pe, ph, 9, 2)
+          return torso(pfe, pfh, 9, 2)
         },
         function () {
-          return torso(pe - 4, ph, 9, 2)
+          return torso(pfe - 4, pfh, 9, 2)
         }
       )
       ;[0, 1, 2, 3].forEach(function (i) {
         var y = B.chest[1] - 8 + i * 26,
-          hw = torsoHW(y, pe) - 3
+          hw = torsoHW(y, pfe) - 3
         line(
           'outer',
           'M' + (CX - hw) + ' ' + y + 'Q' + CX + ' ' + (y + 3) + ' ' + (CX + hw) + ' ' + y,
@@ -2171,14 +3420,14 @@ function figure(outfit, opts) {
           [
             [CX - 6, B.sy - 6],
             [CX + 6, B.sy - 6],
-            [CX + 5, ph],
-            [CX - 5, ph]
+            [CX + 5, pfh],
+            [CX - 5, pfh]
           ],
           1
         ),
         '#F4F1EA'
       )
-      line('outer', 'M' + (CX + 7) + ' ' + (B.sy - 4) + 'L' + (CX + 6) + ' ' + ph, od, 1.6)
+      line('outer', 'M' + (CX + 7) + ' ' + (B.sy - 4) + 'L' + (CX + 6) + ' ' + pfh, od, 1.6)
       ;[-1, 1].forEach(function (s) {
         line(
           'outer',
@@ -2200,6 +3449,220 @@ function figure(outfit, opts) {
         ),
         od
       )
+    }
+    if (id === 'windbreaker') {
+      var we = 7,
+        wh = B.hip[1] + 8,
+        up = accentOf('windbreaker', tone)
+      put(
+        'outer',
+        rpoly(
+          [
+            [CX - B.neck - 15, B.sy - 14],
+            [CX + B.neck + 15, B.sy - 14],
+            [CX + B.neck + 12, B.sy + 4],
+            [CX - B.neck - 12, B.sy + 4]
+          ],
+          8
+        ),
+        od
+      )
+      outerSleeves(we)
+      shaded(
+        'outer',
+        oc,
+        function () {
+          return torso(we, wh, 8, 4)
+        },
+        function () {
+          return torso(we - 4, wh, 8, 4)
+        }
+      )
+      /* colour block across chest and sleeves */
+      var by0 = B.sy + 18,
+        by1 = B.sy + 34
+      put(
+        'outer',
+        'M' +
+          r1(CX - torsoHW(by0, we - 4)) +
+          ' ' +
+          by0 +
+          'L' +
+          r1(CX + torsoHW(by0, we - 4)) +
+          ' ' +
+          by0 +
+          'L' +
+          r1(CX + torsoHW(by1, we - 4)) +
+          ' ' +
+          by1 +
+          'L' +
+          r1(CX - torsoHW(by1, we - 4)) +
+          ' ' +
+          by1 +
+          'Z',
+        up
+      )
+      both(function (s) {
+        var a = sh(s),
+          b = el(s),
+          dy = b[1] - a[1]
+        put(
+          'outer',
+          band(a, b, B.shR + we - 1.5, B.elbow[2] + we - 1.5, (by0 - a[1]) / dy, (by1 - a[1]) / dy),
+          up
+        )
+      })
+      line('outer', 'M' + CX + ' ' + (B.sy - 4) + 'L' + CX + ' ' + wh, '#2B2E35', 1.6)
+      put(
+        'outer',
+        'M' +
+          r1(CX - torsoHW(wh - 7, we)) +
+          ' ' +
+          (wh - 7) +
+          'L' +
+          r1(CX + torsoHW(wh - 7, we)) +
+          ' ' +
+          (wh - 7) +
+          'L' +
+          r1(CX + torsoHW(wh, we)) +
+          ' ' +
+          wh +
+          'L' +
+          r1(CX - torsoHW(wh, we)) +
+          ' ' +
+          wh +
+          'Z',
+        od
+      )
+    }
+    if (id === 'waistcoat') {
+      var vh = B.hip[1] + 6
+      put(
+        'outer',
+        sym(
+          [
+            [B.neck + 3, B.sy - 11, 2],
+            [B.sw - 3, B.sy - 3, 6],
+            [B.chest[0] - 1, B.sy + 22, 14],
+            [B.chest[0] + 4, B.chest[1], 14],
+            [B.waist[0] + 6, B.waist[1], 18],
+            [B.hip[0] + 6, vh, 4]
+          ],
+          4,
+          null,
+          [vh + 1.5, 50]
+        ),
+        oc
+      )
+      put(
+        'outer',
+        'M' +
+          (CX - B.neck - 2) +
+          ' ' +
+          (B.sy - 9) +
+          'L' +
+          (CX + B.neck + 2) +
+          ' ' +
+          (B.sy - 9) +
+          'L' +
+          CX +
+          ' ' +
+          (B.sy + 40) +
+          'Z',
+        inner
+      )
+      put(
+        'outer',
+        rpoly(
+          [
+            [CX - B.neck - 3, B.sy - 15],
+            [CX + B.neck + 3, B.sy - 15],
+            [CX + B.neck + 4, B.sy - 8],
+            [CX - B.neck - 4, B.sy - 8]
+          ],
+          3
+        ),
+        od
+      )
+      line('outer', 'M' + CX + ' ' + (B.sy + 40) + 'L' + CX + ' ' + vh, od, 1.4)
+      ;[0, 1, 2].forEach(function (i) {
+        put('outer', oval(CX + 4, B.sy + 50 + i * 20, 1.8, 1.8), '#C9A35A')
+      })
+      ;[-1, 1].forEach(function (s) {
+        line(
+          'outer',
+          'M' +
+            (CX + s * 14) +
+            ' ' +
+            (B.waist[1] + 8) +
+            'L' +
+            (CX + s * 28) +
+            ' ' +
+            (B.waist[1] + 8),
+          od,
+          1.8
+        )
+      })
+    }
+    if (id === 'shrug') {
+      var se = 5.5,
+        sh3 = B.waist[1] + 10
+      both(function (s) {
+        put('outer', sleeve(s, se + 1.5, 1.6), od)
+        var b = el(s),
+          tip = lerp(b, wr(s), 0.55)
+        put(
+          'outer',
+          limb(
+            sh(s)[0] - s * 2,
+            sh(s)[1],
+            B.shR + se - 2,
+            b[0] - s * 2,
+            b[1],
+            B.elbow[2] + se - 2
+          ) +
+            limb(
+              b[0] - s * 2,
+              b[1],
+              B.elbow[2] + se - 2,
+              tip[0] - s * 1.5,
+              tip[1],
+              B.wrist[2] + se - 1,
+              true
+            ),
+          oc
+        )
+      })
+      ;[-1, 1].forEach(function (s) {
+        put(
+          'outer',
+          rpoly(
+            [
+              [CX + s * (B.neck + 2), B.sy - 10],
+              [CX + s * (B.sw + 3), B.sy + 2],
+              [CX + s * (B.chest[0] + se), B.chest[1]],
+              [CX + s * (B.waist[0] + se + 2), sh3],
+              [CX + s * 13, sh3 + 4],
+              [CX + s * 8, B.sy + 12]
+            ],
+            4
+          ),
+          oc
+        )
+        line(
+          'outer',
+          'M' + (CX + s * 9) + ' ' + (B.sy + 12) + 'L' + (CX + s * 13) + ' ' + (sh3 + 3),
+          od,
+          2.2
+        )
+      })
+      ;[B.sy + 30, B.sy + 50, B.sy + 70].forEach(function (y) {
+        both(function (s) {
+          line('outer', 'M' + (CX + s * 16) + ' ' + y + 'l' + s * 12 + ' 1', od, 1, {
+            dash: '1.5 2.5'
+          })
+        })
+      })
     }
     if (id === 'raincoat') {
       var re = 8,
@@ -2330,6 +3793,93 @@ function figure(outfit, opts) {
       3,
       { o: 0.8 }
     )
+  }
+  if (o.neck === 'dupatta') {
+    var du = col('dupatta'),
+      dud = shade(du, -0.15),
+      dua = shade(du, 0.4)
+    put(
+      'neck',
+      'M' +
+        (CX - B.neck - 9) +
+        ' ' +
+        (B.sy - 10) +
+        'Q' +
+        CX +
+        ' ' +
+        (B.sy + 2) +
+        ' ' +
+        (CX + B.neck + 9) +
+        ' ' +
+        (B.sy - 10) +
+        'L' +
+        (CX + B.neck + 12) +
+        ' ' +
+        (B.sy - 3) +
+        'Q' +
+        CX +
+        ' ' +
+        (B.sy + 10) +
+        ' ' +
+        (CX - B.neck - 12) +
+        ' ' +
+        (B.sy - 3) +
+        'Z',
+      du,
+      { o: 0.92 }
+    )
+    ;[-1, 1].forEach(function (s) {
+      var d =
+        'M' +
+        (CX + s * (B.neck + 6)) +
+        ' ' +
+        (B.sy - 10) +
+        'L' +
+        (CX + s * (B.sw + 6)) +
+        ' ' +
+        (B.sy - 2) +
+        'L' +
+        (CX + s * (B.sw + 8)) +
+        ' ' +
+        (B.hip[1] + 26) +
+        'L' +
+        (CX + s * (B.sw - 12)) +
+        ' ' +
+        (B.hip[1] + 30) +
+        'L' +
+        (CX + s * (B.neck + 4)) +
+        ' ' +
+        (B.sy + 4) +
+        'Z'
+      put('neck', d, du, { o: 0.92 })
+      line(
+        'neck',
+        'M' +
+          (CX + s * (B.sw - 11)) +
+          ' ' +
+          (B.hip[1] + 26) +
+          'L' +
+          (CX + s * (B.neck + 6)) +
+          ' ' +
+          (B.sy + 4),
+        dud,
+        2.4,
+        { o: 0.8 }
+      )
+      line(
+        'neck',
+        'M' +
+          (CX + s * (B.sw + 8)) +
+          ' ' +
+          (B.hip[1] + 23) +
+          'L' +
+          (CX + s * (B.sw - 12)) +
+          ' ' +
+          (B.hip[1] + 27),
+        dua,
+        3
+      )
+    })
   }
   var glove = function (s) {
     var gc = col('gloves'),
@@ -2496,6 +4046,52 @@ function figure(outfit, opts) {
         'M' + (CX + s * 19) + ' ' + (ey - 4) + 'L' + (CX + s * (fw + 1)) + ' ' + (ey - 2),
         g2,
         1.6
+      )
+    })
+  }
+
+  if (o.mask === 'mask') {
+    var mk = col('mask'),
+      my = ey + 9
+    both(function (s) {
+      line(
+        'mask',
+        'M' +
+          (CX + s * (fw - 7)) +
+          ' ' +
+          (my + 3) +
+          'Q' +
+          (CX + s * (fw + 2)) +
+          ' ' +
+          (my + 1) +
+          ' ' +
+          (CX + s * (fw + 1)) +
+          ' ' +
+          (fCheek + 4),
+        '#E4E8EE',
+        1.4
+      )
+    })
+    put(
+      'mask',
+      rpoly(
+        [
+          [CX - fw + 6, my],
+          [CX + fw - 6, my],
+          [CX + fw - 8, my + 18],
+          [CX, my + 23],
+          [CX - fw + 8, my + 18]
+        ],
+        6
+      ),
+      mk
+    )
+    ;[my + 6, my + 11, my + 16].forEach(function (y) {
+      line(
+        'mask',
+        'M' + (CX - fw + 10) + ' ' + y + 'L' + (CX + fw - 10) + ' ' + y,
+        shade(mk, -0.12),
+        1.1
       )
     })
   }
@@ -2895,6 +4491,7 @@ function scene(tod, opts) {
     ink: tod === 'night' || tod === 'evening' ? '#FFFFFF' : '#1E2742',
     ink2: tod === 'night' || tod === 'evening' ? 'rgba(255,255,255,0.78)' : 'rgba(30,39,66,0.72)',
     tod: tod,
+    road: P.road,
     layers: L
   }
 }
@@ -2905,9 +4502,14 @@ function sentence(rec) {
   var o = rec.outfit,
     lead = o.outer && o.top ? 'over' : 'one'
   var form = lead + (o.bottom ? 'With' : '')
-  var extra = [o.head && o.head !== 'hood' ? o.head : null, o.eyes, o.neck, o.hands, o.held].filter(
-    Boolean
-  )
+  var extra = [
+    o.head && o.head !== 'hood' ? o.head : null,
+    o.eyes,
+    o.mask,
+    o.neck,
+    o.hands,
+    o.held
+  ].filter(Boolean)
   return {
     form: form,
     slots: {
@@ -2935,6 +4537,9 @@ function wearText(t, msg) {
 
 export {
   summarize,
+  wardrobe,
+  COMBOS,
+  PIECES,
   windows,
   recommend,
   figure,

@@ -8,6 +8,7 @@ import WearScene from '@/components/wear/WearScene.vue'
 import { activeI18n } from '@/i18n'
 import useWeatherStore from '@/stores/weather'
 import useWearStore from '@/stores/wear'
+import { COMBOS } from '@/utils/wear'
 import { forecast, NOW, weatherState } from '@/components/wear/__tests__/fixtures'
 
 const i18n = activeI18n()
@@ -21,6 +22,8 @@ function setup(state = {}) {
 }
 
 const tabs = (w) => w.findAll('[data-wear-tab]')
+const inCombos = (fig, band, o) =>
+  COMBOS[fig][band].some((c) => Object.entries(c.o).every(([k, v]) => o[k] === v))
 
 describe('What to wear page', () => {
   beforeEach(() => {
@@ -48,13 +51,11 @@ describe('What to wear page', () => {
   it('shows the headline, the outfit sentence and an accessible character', () => {
     const { wrapper } = setup()
     expect(wrapper.find('[data-wear-hero-headline]').text()).toBe('Raincoat day')
-    expect(wrapper.find('[data-wear-sentence]').text()).toBe(
-      'A raincoat over a sweater with trousers and boots. Hood up.'
+    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(
+      /^A raincoat over an? .+ with .+ and boots\. Hood up\.$/
     )
     const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
-    expect(hero.props('label')).toBe(
-      'Mannequin wearing raincoat, sweater, trousers, boots, and hood up'
-    )
+    expect(hero.props('label')).toMatch(/^Mannequin wearing raincoat, .+, boots, and hood up$/)
   })
 
   it('says why the hood is up', () => {
@@ -85,7 +86,9 @@ describe('What to wear page', () => {
     await wrapper.find('[role="radiogroup"] [role="radio"]:last-of-type').trigger('click')
     await flushPromises()
     expect(useWearStore(pinia).figure).toBe('woman')
-    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(/^A light dress and sneakers\./)
+    const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
+    expect(hero.props('figure')).toBe('woman')
+    expect(inCombos('woman', 'warm', hero.props('outfit'))).toBe(true)
   })
 
   it('shows skeletons until the forecast is in', () => {
@@ -133,6 +136,44 @@ describe('What to wear page', () => {
     expect(wrapper.text()).toContain('This evening · 5 PM–10 PM')
   })
 
+  it('the hero offers looks; the pieces and the selected day tile follow the chosen one', async () => {
+    const { wrapper } = setup()
+    // the evening, a raincoat day: pick it so its tile is the selected one
+    await wrapper.findAll('[data-wear-part]')[1].trigger('click')
+    const dots = wrapper.findAll('[data-wear-dot]')
+    expect(dots.length).toBeGreaterThan(1)
+    const heroOutfit = () =>
+      wrapper.find('[data-wear-look]:not([aria-hidden])').findComponent(WearFigure).props('outfit')
+    const tileOutfit = () =>
+      wrapper.findAll('[data-wear-part]')[1].findComponent(WearFigure).props('outfit')
+    expect(tileOutfit()).toEqual(heroOutfit())
+    const first = heroOutfit()
+    await dots[1].trigger('click')
+    expect(heroOutfit()).not.toEqual(first)
+    expect(tileOutfit()).toEqual(heroOutfit())
+    // What you're wearing lists the chosen look
+    for (const row of wrapper.findAll('[data-wear-piece]'))
+      expect(row.findComponent(WearFigure).props('outfit')).toEqual(heroOutfit())
+  })
+
+  it('a new window or setting goes back to look 1', async () => {
+    const { wrapper, pinia } = setup()
+    const current = () =>
+      wrapper.findAll('[data-wear-dot]').findIndex((d) => d.attributes('aria-current') === 'true')
+    await wrapper.findAll('[data-wear-dot]')[1].trigger('click')
+    expect(current()).toBe(1)
+    await tabs(wrapper)[2].trigger('click')
+    expect(current()).toBe(0)
+    await wrapper.findAll('[data-wear-dot]')[1].trigger('click')
+    useWearStore(pinia).set('feel', 1)
+    await flushPromises()
+    expect(current()).toBe(0)
+    await wrapper.findAll('[data-wear-dot]')[1].trigger('click')
+    useWearStore(pinia).set('style', 'both')
+    await flushPromises()
+    expect(current()).toBe(0)
+  })
+
   it('Why this outfit gives the reasons and the numbers', () => {
     const { wrapper } = setup()
     const why = wrapper.findAll('[data-wear-why]').map((r) => r.text())
@@ -162,7 +203,9 @@ describe('What to wear page', () => {
     const wear = useWearStore(pinia)
     await wrapper.find('[data-wear-switch="coverage"]').trigger('click')
     expect(wear.coverage).toBe(true)
-    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(/^A long-sleeve top with trousers/)
+    const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
+    expect(['tee', 'polo', 'tank', 'dropshoulder']).not.toContain(hero.props('outfit').top)
+    expect(['shorts', 'sportshorts']).not.toContain(hero.props('outfit').bottom)
     // the skirts switch only shows for the woman figure
     expect(wrapper.find('[data-wear-switch="skirts"]').exists()).toBe(false)
     wear.set('figure', 'woman')
@@ -171,6 +214,17 @@ describe('What to wear page', () => {
     const colder = wrapper.find('[data-wear-feel] [role="radio"]')
     await colder.trigger('click')
     expect(wear.feel).toBe(-1)
+  })
+
+  it('the style control picks traditional outfits and is saved', async () => {
+    const { wrapper, pinia } = setup()
+    const radios = wrapper.findAll('[data-wear-style] [role="radio"]')
+    expect(radios.map((r) => r.text())).toEqual(['Everyday', 'Traditional', 'Both'])
+    await radios[1].trigger('click')
+    expect(useWearStore(pinia).style).toBe('traditional')
+    expect(document.cookie).toContain('traditional')
+    const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
+    expect(hero.props('outfit').top).toBe('panjabi')
   })
 
   it('ends with the guidance line for the place', () => {

@@ -41,6 +41,7 @@ import { figure } from '@/utils/wear'
 const CROP = {
   head: '56 -2 128 128',
   eyes: '72 46 96 96',
+  mask: '72 50 96 96',
   top: '52 104 136 136',
   outer: '44 100 152 152',
   neck: '64 82 112 112',

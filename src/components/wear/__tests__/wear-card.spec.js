@@ -8,6 +8,7 @@ import { activeI18n } from '@/i18n'
 import useWeatherStore from '@/stores/weather'
 import useUnitStore from '@/stores/unit'
 import useWearStore from '@/stores/wear'
+import { COMBOS } from '@/utils/wear'
 import { forecast, NOW, weatherState } from './fixtures'
 
 const i18n = activeI18n()
@@ -96,7 +97,10 @@ describe('What to wear card', () => {
     await flushPromises()
     const fig = wrapper.findComponent(WearFigure)
     expect(fig.props('figure')).toBe('woman')
-    expect(fig.props('outfit')).toMatchObject({ top: 'dress', bottom: null })
+    const o = fig.props('outfit')
+    expect(COMBOS.woman.warm.some((c) => Object.entries(c.o).every(([k, v]) => o[k] === v))).toBe(
+      true
+    )
   })
 
   it('shows the shared skeleton while the forecast loads', () => {
