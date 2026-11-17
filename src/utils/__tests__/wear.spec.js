@@ -293,3 +293,45 @@ describe('figure and scene', () => {
     expect(day.layers.at(-1).d).toContain('L0 300')
   })
 })
+
+describe('messages', () => {
+  it('every key the engine can return exists in en.json', async () => {
+    const en = (await import('@/i18n/locales/en.json')).default
+    const has = (key) => key.split('.').reduce((o, k) => (o ? o[k] : undefined), en) !== undefined
+    const keys = new Set()
+    const walk = (m) => {
+      if (!m || typeof m !== 'object') return
+      if (m.key) keys.add(m.key)
+      Object.values(m.params || {}).forEach(walk)
+    }
+    for (const feels of [-8, 3, 8, 12, 16, 22, 28, 35])
+      for (const over of [
+        {},
+        { rain: 80, rainH: 9 },
+        { rain: 80, wind: 40 },
+        { rain: 40 },
+        { snow: 85, kind: 'snow' },
+        { kind: 'storm', rain: 90 },
+        { uv: 11, uvH: 12 },
+        { uv: 8 },
+        { uv: 6 },
+        { feelsMin: feels - 6, feelsMax: feels + 6 }
+      ])
+        for (const prefs of [
+          {},
+          { figure: 'woman' },
+          { coverage: true },
+          { feel: -1 },
+          { feel: 1 }
+        ]) {
+          const r = recommend(S({ feels, feelsMin: feels, feelsMax: feels, ...over }), prefs)
+          walk(r.headline)
+          r.allReasons.forEach((x) => walk(x.t))
+          r.pieces.forEach((p) => (walk(p.name), walk(p.why), keys.add(`wear.a.${p.id}`)))
+          r.carry.forEach((c) => (walk(c.name), walk(c.why)))
+          keys.add(`wear.sentence.${sentence(r).form}`)
+        }
+    const missing = [...keys].filter((k) => k !== 'wear.a.hood' && !has(k))
+    expect(missing).toEqual([])
+  })
+})

@@ -6,7 +6,8 @@
     "stations": "Loading stations…",
     "search": "Searching…",
     "places": "Loading places…",
-    "sky": "Working out the sky…"
+    "sky": "Working out the sky…",
+    "wear": "Picking an outfit…"
   },
   "header": {
     "searchPlaceholder": "Search City",
@@ -885,6 +886,240 @@
         "perigee": "When the closest point falls near a full moon, it is often called a supermoon. Tides run a little higher too.",
         "apogee": "At its farthest the moon looks slightly smaller, and tides are a little gentler."
       }
+    }
+  },
+  "wear": {
+    "title": "What to wear",
+    "openLabel": "What to wear. Open details",
+    "cardLabel": "What to wear. {when}. {headline}. Open details",
+    "restOfToday": "Rest of today",
+    "kicker": "{when} · {span}",
+    "span": "{from}–{to}",
+    "take": "Take",
+    "next3": "Next 3 hours",
+    "window": {
+      "now": "Now",
+      "today": "Today",
+      "tonight": "Tonight",
+      "tomorrow": "Tomorrow",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "part": {
+      "today": {
+        "morning": "This morning",
+        "afternoon": "This afternoon",
+        "evening": "This evening"
+      },
+      "tomorrow": {
+        "morning": "Tomorrow morning",
+        "afternoon": "Tomorrow afternoon",
+        "evening": "Tomorrow evening"
+      }
+    },
+    "feels": {
+      "one": "Feels like {t}",
+      "span": "Feels like {lo} to {hi}"
+    },
+    "feelsLow": {
+      "one": "feels like {t}",
+      "span": "feels like {lo} to {hi}"
+    },
+    "feelsShort": {
+      "one": "Feels {t}",
+      "span": "Feels {lo} to {hi}"
+    },
+    "tempSpan": "{lo} to {hi}",
+    "why": {
+      "coverage": "Long and loose keeps the sun off",
+      "hoodRain": "Keeps the rain off your head",
+      "rainWind": "Rain with wind up to {speed}, so skip the umbrella",
+      "tooGusty": "Wind up to {speed}: too gusty for an umbrella",
+      "rain": "{pct}% chance of rain",
+      "rainAt": "{pct}% chance of rain around {hour}",
+      "uv": "UV {uv}",
+      "uvAt": "UV {uv} around {hour}",
+      "wind": "Wind up to {speed}",
+      "snowGround": "Snow on the ground",
+      "wetGround": "Wet ground",
+      "coldGround": "Cold ground, {range}",
+      "dryHot": "Dry and hot",
+      "heatIn": "Keeps the heat in",
+      "lightColours": "{range}, light colours stay cooler",
+      "dropsTo": "Drops to {t} at the coolest",
+      "hotOut": "It is hot out",
+      "uvLevel": "UV {uv}, {level}"
+    },
+    "uvLevel": {
+      "extreme": "extreme",
+      "veryHigh": "very high",
+      "high": "high"
+    },
+    "piece": {
+      "tee": "Short-sleeve tee",
+      "shirt": "Short-sleeve shirt",
+      "longsleeve": "Long-sleeve top",
+      "longsleeveLight": "Loose long-sleeve top",
+      "sweater": "Sweater",
+      "dress": "Light dress",
+      "shorts": "Shorts",
+      "trousers": "Trousers",
+      "trousersLight": "Light trousers",
+      "skirt": "Long skirt",
+      "jacket": "Light jacket",
+      "raincoat": "Raincoat",
+      "coat": "Coat",
+      "puffer": "Insulated jacket",
+      "sandals": "Sandals",
+      "sneakers": "Sneakers",
+      "boots": "Boots",
+      "cap": "Cap",
+      "sunhat": "Sun hat",
+      "beanie": "Beanie",
+      "hood": "Hood up",
+      "scarf": "Scarf",
+      "gloves": "Gloves",
+      "sunglasses": "Sunglasses",
+      "umbrella": "Umbrella"
+    },
+    "a": {
+      "tee": "a short-sleeve tee",
+      "shirt": "a short-sleeve shirt",
+      "longsleeve": "a long-sleeve top",
+      "sweater": "a sweater",
+      "dress": "a light dress",
+      "shorts": "shorts",
+      "trousers": "trousers",
+      "skirt": "a long skirt",
+      "jacket": "a light jacket",
+      "raincoat": "a raincoat",
+      "coat": "a coat",
+      "puffer": "an insulated jacket",
+      "sandals": "sandals",
+      "sneakers": "sneakers",
+      "boots": "boots",
+      "cap": "a cap",
+      "sunhat": "a sun hat",
+      "beanie": "a beanie",
+      "scarf": "a scarf",
+      "gloves": "gloves",
+      "sunglasses": "sunglasses",
+      "umbrella": "an umbrella"
+    },
+    "sentence": {
+      "overWith": "{outer} over {top} with {bottom} and {feet}.",
+      "over": "{outer} over {top} and {feet}.",
+      "oneWith": "{top} with {bottom} and {feet}.",
+      "one": "{top} and {feet}.",
+      "add": "Add {list}.",
+      "hood": "Hood up."
+    },
+    "carry": {
+      "umbrella": "Compact umbrella",
+      "layer": "An extra layer",
+      "water": "Water",
+      "sunscreen": "Sunscreen"
+    },
+    "carryShort": {
+      "umbrella": "Umbrella",
+      "layer": "Extra layer",
+      "water": "Water",
+      "sunscreen": "Sunscreen"
+    },
+    "headline": {
+      "storm": "Storms: raincoat, not an umbrella",
+      "snowFreezing": "Bundle up for snow",
+      "snow": "Coat and boots for snow",
+      "raincoat": "Raincoat day",
+      "umbrella": {
+        "hot": "Light clothes and an umbrella",
+        "warm": "Light clothes and an umbrella",
+        "mild": "Long sleeves and an umbrella",
+        "cool": "Jacket and an umbrella",
+        "cold": "Coat and an umbrella",
+        "freezing": "Bundle up, bring an umbrella"
+      },
+      "hot": "Dress light and stay cool",
+      "warm": "Light clothes are enough",
+      "mildJacket": "Long sleeves and a light jacket",
+      "mild": "Long sleeves will do",
+      "coolJacket": "Take a jacket",
+      "cool": "Sweater weather",
+      "cold": "Coat weather",
+      "freezing": "Bundle up"
+    },
+    "reason": {
+      "snow": "Snow likely",
+      "snowPct": "Snow likely ({pct}%)",
+      "swing": "A {deg} swing, so carry a layer",
+      "feelCold": "A layer warmer, since you feel the cold",
+      "feelWarm": "A layer lighter, since you run warm"
+    },
+    "page": {
+      "back": "Weather",
+      "when": "When",
+      "outfit": "Outfit",
+      "outfitLabel": "Outfit: {headline}",
+      "figureLabel": "Mannequin wearing {list}",
+      "wearing": "What you're wearing",
+      "throughDay": "Through the day",
+      "dayNoteToday": "Tap a part of the day to dress for it",
+      "dayNoteTomorrow": "Tomorrow, tap to dress for it",
+      "tileLabel": "{when}. {feels}. {headline}",
+      "takeWithYou": "Take with you",
+      "nothingExtra": "Nothing extra. The outfit covers it.",
+      "whyOutfit": "Why this outfit",
+      "fit": "Fit it to you",
+      "saved": "Saved on this device",
+      "figure": "Figure",
+      "figureSub": "Changes the character and a few pieces. More looks (skin tone, hair, glasses) come later",
+      "man": "Man",
+      "woman": "Woman",
+      "feel": "I usually feel",
+      "feelSub": "Shifts every outfit by about 3°",
+      "colder": "Colder",
+      "normal": "Normal",
+      "warmer": "Warmer",
+      "coverage": "More coverage",
+      "coverageSub": "Long sleeves and long legs in any heat, in lighter fabric",
+      "skirts": "Dresses and skirts",
+      "skirtsSub": "Suggest a dress or skirt when it is warm",
+      "tone": {
+        "light": "Light colours reflect the sun and stay cooler.",
+        "mid": "Any colours work today.",
+        "dark": "Darker, thicker fabrics hold warmth."
+      },
+      "foot": "Suggestions come from the hourly forecast for {place} and are general guidance. Adjust for your plans, your workplace and what you feel comfortable in.",
+      "noData": "No hourly forecast to dress for yet."
+    },
+    "stat": {
+      "feelsLike": "Feels like",
+      "air": "Air {t} on average",
+      "sky": "Sky",
+      "kind": {
+        "clear": "Clear",
+        "clearNight": "Clear night",
+        "partly": "Partly cloudy",
+        "cloudy": "Cloudy",
+        "fog": "Fog or haze",
+        "rain": "Rain",
+        "storm": "Thunderstorms",
+        "snow": "Snow"
+      },
+      "rain": "Chance of rain",
+      "snow": "Chance of snow",
+      "highest": "Highest in this window",
+      "highestAt": "Highest around {hour}",
+      "wind": "Wind",
+      "gusts": "Gusts {speed}",
+      "uv": "UV index",
+      "uvAt": "{level} around {hour}",
+      "afterDark": "After dark",
+      "humidity": "Humidity",
+      "muggy": "Muggy, loose fabric helps",
+      "dry": "Dry air",
+      "average": "Average"
     }
   }
 }
