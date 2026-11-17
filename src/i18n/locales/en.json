@@ -747,6 +747,8 @@
         "maghrib": "Sunset",
         "isha": "Night"
       },
+      "nowLeft": "Now · {in} left",
+      "lastNightLeft": "From last night · {in} left",
       "nextIn": "Next · in {in}",
       "fajrTomorrow": "Fajr tomorrow {time}",
       "method": "Method",

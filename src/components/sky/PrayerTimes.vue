@@ -10,17 +10,23 @@
         v-for="row in rows"
         :key="row.key"
         data-prayer
-        :aria-current="row.next ? 'time' : undefined"
+        :aria-current="row.current ? 'time' : undefined"
         class="grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-3 py-1.5"
         :class="
-          row.next ? 'bg-accent text-accent-foreground' : row.muted ? 'text-muted-foreground' : ''
+          row.current
+            ? 'bg-accent text-accent-foreground'
+            : row.muted
+            ? 'text-muted-foreground'
+            : ''
         "
       >
         <span class="flex min-w-0 flex-col">
           <span class="text-[15px] font-semibold leading-5">{{ $t(`sky.prayer.${row.key}`) }}</span>
           <span
             class="text-xs leading-4"
-            :class="row.next ? 'font-semibold' : 'text-muted-foreground'"
+            :class="
+              row.current ? 'font-semibold' : row.next ? 'text-foreground' : 'text-muted-foreground'
+            "
             >{{ row.sub }}</span
           >
         </span>
@@ -83,7 +89,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import DashboardCard from '@/components/common/DashboardCard.vue'
 import skyMixin from '@/mixins/skyMixin'
 import usePrayerStore from '@/stores/prayer'
-import { METHODS, nextDayStart } from '@/utils/sky'
+import { METHODS, dayStartAt, nextDayStart } from '@/utils/sky'
 
 const ORDER = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
 
@@ -113,7 +119,33 @@ export default {
         this.prayerStore.hanafi
       )
     },
-    // the next prayer after the chosen time (sunrise only ends Fajr, so it is never "next")
+    yesterday() {
+      return this.sky.prayer(
+        dayStartAt(this.ds, this.tz, -1),
+        this.prayerStore.method,
+        this.prayerStore.hanafi
+      )
+    },
+    /**
+     * The prayer whose time (waqt) the chosen instant falls in: Fajr runs from dawn to sunrise,
+     * Dhuhr to Asr, Asr to sunset, Maghrib to Isha, and Isha to the next dawn, so before Fajr
+     * it is still last night's Isha. Sunrise to Dhuhr is no prayer's time. Missing times (high
+     * latitudes) drop out and the period before them runs on to the next known one.
+     * Returns { key, end, lastNight } or null.
+     */
+    current() {
+      const marks = [
+        { key: 'isha', t: this.yesterday.isha, lastNight: true },
+        ...ORDER.map((key) => ({ key, t: this.times[key] })),
+        { key: 'fajr', t: this.tomorrow.fajr }
+      ].filter((m) => m.t != null)
+      let i = -1
+      while (i + 1 < marks.length && marks[i + 1].t <= this.t) i++
+      const mark = marks[i]
+      if (!mark || mark.key === 'sunrise' || i === marks.length - 1) return null
+      return { key: mark.key, end: marks[i + 1].t, lastNight: !!mark.lastNight }
+    },
+    // the next prayer to begin today (sunrise only ends Fajr, so it is never "next")
     nextKey() {
       return (
         ORDER.find(
@@ -122,15 +154,24 @@ export default {
       )
     },
     rows() {
+      const cur = this.current
       return ORDER.map((key) => {
         const t = this.times[key]
-        const next = key === this.nextKey
+        const current = cur?.key === key
+        // between sunrise and Dhuhr no prayer is due: count down to Dhuhr instead
+        const next = !cur && key === this.nextKey
+        const left = current && this.skyDuration(cur.end - this.t)
         return {
           key,
           t,
+          current,
           next,
-          muted: key === 'sunrise' || (t != null && t <= this.t),
-          sub: next
+          muted: !current && (key === 'sunrise' || (t != null && t <= this.t)),
+          sub: current
+            ? this.$t(cur.lastNight ? 'sky.prayer.lastNightLeft' : 'sky.prayer.nowLeft', {
+                in: left
+              })
+            : next
             ? this.$t('sky.prayer.nextIn', { in: this.skyDuration(t - this.t) })
             : this.$t(`sky.prayer.sub.${key}`)
         }

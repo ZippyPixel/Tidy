@@ -747,6 +747,8 @@
         "maghrib": "সূর্যাস্ত",
         "isha": "রাত"
       },
+      "nowLeft": "এখন · আর {in} বাকি",
+      "lastNightLeft": "গত রাত থেকে · আর {in} বাকি",
       "nextIn": "পরবর্তী · {in} পরে",
       "fajrTomorrow": "আগামীকাল ফজর {time}",
       "method": "পদ্ধতি",
