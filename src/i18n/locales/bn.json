@@ -1165,8 +1165,6 @@
       "wardNoteOff": "{n}টি বন্ধ। পোশাক শুধু চালু থাকাগুলো থেকেই বাছা হবে।",
       "turnAllOn": "সব চালু করুন",
       "groupCount": "{total}টির মধ্যে {on}টি",
-      "chipOn": "{name}: চালু",
-      "chipOff": "{name}: বন্ধ",
       "looksLabel": "এই আবহাওয়ার পোশাক",
       "lookOf": "{total}টির মধ্যে {n} নম্বর লুক",
       "lookLive": "{total}টির মধ্যে {n} নম্বর লুক। {headline}",

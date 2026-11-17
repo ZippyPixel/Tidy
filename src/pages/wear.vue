@@ -124,6 +124,7 @@
         :text="wearT"
         :span="wearSpan"
       />
+      <WearWardrobe class="col-span-12 lg:row-start-5" />
       <WearSettings class="col-span-12 lg:row-start-4" />
     </div>
 
@@ -148,6 +149,7 @@ import WearDayParts from '@/components/wear/WearDayParts.vue'
 import WearTake from '@/components/wear/WearTake.vue'
 import WearWhy from '@/components/wear/WearWhy.vue'
 import WearSettings from '@/components/wear/WearSettings.vue'
+import WearWardrobe from '@/components/wear/WearWardrobe.vue'
 import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 import wearMixin from '@/mixins/wearMixin'
 import weatherMixin from '@/mixins/weatherMixin'
@@ -167,7 +169,8 @@ export default {
     WearDayParts,
     WearTake,
     WearWhy,
-    WearSettings
+    WearSettings,
+    WearWardrobe
   },
   mixins: [weatherMixin, wearMixin],
   setup() {

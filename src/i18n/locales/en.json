@@ -1165,8 +1165,6 @@
       "wardNoteOff": "{n} switched off. Outfits only use what is on.",
       "turnAllOn": "Turn all on",
       "groupCount": "{on} of {total}",
-      "chipOn": "{name}: on",
-      "chipOff": "{name}: off",
       "looksLabel": "Outfits for this weather",
       "lookOf": "Look {n} of {total}",
       "lookLive": "Look {n} of {total}. {headline}",
