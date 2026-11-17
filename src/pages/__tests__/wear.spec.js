@@ -136,6 +136,44 @@ describe('What to wear page', () => {
     expect(wrapper.text()).toContain('This evening · 5 PM–10 PM')
   })
 
+  it('the hero offers looks; the pieces and the selected day tile follow the chosen one', async () => {
+    const { wrapper } = setup()
+    // the evening, a raincoat day: pick it so its tile is the selected one
+    await wrapper.findAll('[data-wear-part]')[1].trigger('click')
+    const dots = wrapper.findAll('[data-wear-dot]')
+    expect(dots.length).toBeGreaterThan(1)
+    const heroOutfit = () =>
+      wrapper.find('[data-wear-look]:not([aria-hidden])').findComponent(WearFigure).props('outfit')
+    const tileOutfit = () =>
+      wrapper.findAll('[data-wear-part]')[1].findComponent(WearFigure).props('outfit')
+    expect(tileOutfit()).toEqual(heroOutfit())
+    const first = heroOutfit()
+    await dots[1].trigger('click')
+    expect(heroOutfit()).not.toEqual(first)
+    expect(tileOutfit()).toEqual(heroOutfit())
+    // What you're wearing lists the chosen look
+    for (const row of wrapper.findAll('[data-wear-piece]'))
+      expect(row.findComponent(WearFigure).props('outfit')).toEqual(heroOutfit())
+  })
+
+  it('a new window or setting goes back to look 1', async () => {
+    const { wrapper, pinia } = setup()
+    const current = () =>
+      wrapper.findAll('[data-wear-dot]').findIndex((d) => d.attributes('aria-current') === 'true')
+    await wrapper.findAll('[data-wear-dot]')[1].trigger('click')
+    expect(current()).toBe(1)
+    await tabs(wrapper)[2].trigger('click')
+    expect(current()).toBe(0)
+    await wrapper.findAll('[data-wear-dot]')[1].trigger('click')
+    useWearStore(pinia).set('feel', 1)
+    await flushPromises()
+    expect(current()).toBe(0)
+    await wrapper.findAll('[data-wear-dot]')[1].trigger('click')
+    useWearStore(pinia).set('style', 'both')
+    await flushPromises()
+    expect(current()).toBe(0)
+  })
+
   it('Why this outfit gives the reasons and the numbers', () => {
     const { wrapper } = setup()
     const why = wrapper.findAll('[data-wear-why]').map((r) => r.text())

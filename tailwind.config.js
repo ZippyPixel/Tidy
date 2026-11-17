@@ -6,6 +6,8 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      // design/TidyWear motion: one curve for the looks, the wardrobe and the tab thumb
+      transitionTimingFunction: { tidy: 'var(--ease-tidy)' },
       fontFamily: {
         // Roboto Flex for Latin; Bengali glyphs fall through to Noto Sans Bengali
         sans: ['"Roboto Flex"', ...defaultTheme.fontFamily.sans, '"Noto Sans Bengali"']

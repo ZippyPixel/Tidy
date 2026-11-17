@@ -77,12 +77,12 @@
     <div class="grid grid-cols-12 items-start gap-4 sm:gap-6">
       <WearHero
         class="col-span-12 lg:col-span-7 lg:row-start-1"
+        v-model:look="look"
         :win="loading ? null : win"
-        :rec="loading ? null : rec"
+        :looks="loading ? [] : looks"
         :tod="tod"
         :figure="wearPrefs.figure"
         :kicker="pill"
-        :headline="headline"
         :feels="feelsPill"
         :fade-class="fadeClass"
         :text="wearT"
@@ -101,7 +101,7 @@
         :figure="wearPrefs.figure"
         :loading="loading"
         :fade-class="fadeClass"
-        :recommend="wearRecommend"
+        :recommend="dayRecommend"
         :span="wearSpan"
         :temp="wearFmt.temp"
         :text="wearT"
@@ -153,7 +153,8 @@ import wearMixin from '@/mixins/wearMixin'
 import weatherMixin from '@/mixins/weatherMixin'
 import useWeatherStore from '@/stores/weather'
 import useWearStore from '@/stores/wear'
-import { todOf } from '@/utils/wear'
+import { recommend, todOf } from '@/utils/wear'
+import { buildLooks } from '@/utils/wearLooks'
 
 export default {
   name: 'WearPage',
@@ -175,7 +176,8 @@ export default {
     return useWeatherSkeleton()
   },
   data() {
-    return { winId: 'today' }
+    // look: which of the hero's looks is on screen (0 = the dashboard tile's pick)
+    return { winId: 'today', look: 0 }
   },
   computed: {
     ...mapState(useWeatherStore, ['coords']),
@@ -188,8 +190,19 @@ export default {
     loading() {
       return this.showSkeleton || !this.win
     },
+    // up to three outfits for the window; the page follows the one on screen
+    looks() {
+      return this.win ? buildLooks(this.win.summary, this.wearPrefs, this.wearFmt) : []
+    },
+    lookShuffle() {
+      return this.looks[this.look]?.shuffle || 0
+    },
     rec() {
-      return this.win ? this.wearRecommend(this.win) : null
+      return this.looks[this.look]?.rec || this.looks[0]?.rec || null
+    },
+    // a new window, figure, style or any other setting starts again from look 1
+    lookResetKey() {
+      return JSON.stringify([this.winId, this.wearPrefs])
     },
     summary() {
       return this.win?.summary || null
@@ -199,9 +212,6 @@ export default {
       if (!this.win) return 'day'
       const live = this.win.id === 'now' || this.win.id === 'today'
       return live ? todOf(this.summary, this.wearNowHour) : todOf(this.summary)
-    },
-    headline() {
-      return this.rec ? this.wearT(this.rec.headline) : ''
     },
     placeName() {
       return this.coords?.name || ''
@@ -241,7 +251,17 @@ export default {
         : this.$t('wear.feelsShort.span', { lo: t(s.feelsMin), hi: t(s.feelsMax) })
     }
   },
+  watch: {
+    lookResetKey() {
+      this.look = 0
+    }
+  },
   methods: {
+    // Through the day: the tile for the window on screen wears the chosen look
+    dayRecommend(w) {
+      const shuffle = w.id === this.win?.id ? this.lookShuffle : 0
+      return recommend(w.summary, { ...this.wearPrefs, shuffle }, this.wearFmt)
+    },
     pick(id) {
       this.winId = id
     },

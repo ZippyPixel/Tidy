@@ -176,6 +176,21 @@
   }
 }
 
+/* Motion on /wear (design/TidyWear, Tidy Wear Responsive 06): one curve for the looks, the
+   wardrobe accordion and the tab thumb. Reduced motion drops every transition inside
+   .tidy-motion to 1ms (so transitionend still fires). */
+:root {
+  --ease-tidy: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tidy-motion,
+  .tidy-motion * {
+    transition-duration: 1ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
 /* The bottom sheet slides by vaul's own injected CSS and inline transitions, which
    ignore reduced motion and can't be reached with utility classes. */
 @media (prefers-reduced-motion: reduce) {
