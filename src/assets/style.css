@@ -51,6 +51,8 @@
     /* skeleton loader (TidySkeleton): block colour and the highlight that sweeps across it */
     --skeleton: 220 14% 90%;
     --skeleton-highlight: 220 20% 96%;
+    /* What to wear: opacity of the card colour on the glass panels over the street scene */
+    --wear-glass: 0.84;
     /* sun & moon arcs */
     --sun-arc: 30 95% 33%;
     --sun-arc-ahead: 32 70% 42%;
@@ -115,6 +117,7 @@
     --scrollbar-track: 220 5% 15%;
     --skeleton: 220 5% 18%;
     --skeleton-highlight: 220 6% 25%;
+    --wear-glass: 0.8;
     --sun-arc: 40 95% 62%;
     --sun-arc-ahead: 38 45% 42%;
     --moon-arc: 220 14% 80%;
@@ -222,6 +225,15 @@
 
   .tidy-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--scrollbar-thumb-hover));
+  }
+
+  /* What to wear: text panels over the street scene. The scene ignores the theme; the glass
+     follows the card tokens, so its text uses the normal card colours in both themes. */
+  .wear-glass {
+    background-color: hsl(var(--card) / var(--wear-glass));
+    color: hsl(var(--card-foreground));
+    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    backdrop-filter: blur(12px) saturate(1.15);
   }
 
   /* Skeleton loader (design/Tidy Loading, section 05). One clock for the whole page:
