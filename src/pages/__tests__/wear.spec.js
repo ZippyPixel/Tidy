@@ -95,4 +95,86 @@ describe('What to wear page', () => {
     expect(wrapper.find('.tidy-skeleton-soft').exists()).toBe(true)
     expect(tabs(wrapper).every((t) => t.attributes('disabled') !== undefined)).toBe(true)
   })
+
+  it('Through the day: three tiles that stand the character on the road', () => {
+    const { wrapper } = setup()
+    const tiles = wrapper.findAll('[data-wear-part]')
+    expect(tiles).toHaveLength(3)
+    // 1:20 PM: the morning is over, so afternoon, evening, then tomorrow morning
+    expect(tiles.map((t) => t.find('[data-wear-part-caption] span').text())).toEqual([
+      'Afternoon · 1 PM–5 PM',
+      'Evening · 5 PM–10 PM',
+      'Tomorrow morning · 6 AM–12 PM'
+    ])
+    const tile = tiles[0].classes()
+    expect(tile).toEqual(expect.arrayContaining(['h-[148px]', 'sm:h-[300px]']))
+    const fig = tiles[0].find('[data-wear-part-figure]').classes()
+    expect(fig).toEqual(
+      expect.arrayContaining(['absolute', 'bottom-[5px]', 'left-[54px]', 'h-[126px]'])
+    )
+    expect(fig).toEqual(
+      expect.arrayContaining(['sm:bottom-[7px]', 'sm:left-1/2', 'sm:h-[184px]', '-translate-x-1/2'])
+    )
+    const cap = tiles[0].find('[data-wear-part-caption]').classes()
+    expect(cap).toEqual(
+      expect.arrayContaining(['wear-glass', 'top-1/2', 'sm:top-2.5', 'left-[108px]'])
+    )
+  })
+
+  it('a day tile dresses the page for that part of the day', async () => {
+    const { wrapper } = setup()
+    const tile = wrapper.findAll('[data-wear-part]')[1]
+    expect(tile.attributes('aria-pressed')).toBe('false')
+    expect(tile.attributes('aria-label')).toBe('Evening · 5 PM–10 PM. Feels like 13°. Raincoat day')
+    await tile.trigger('click')
+    expect(wrapper.findAll('[data-wear-part]')[1].attributes('aria-pressed')).toBe('true')
+    // a part of today keeps the Today tab selected
+    expect(tabs(wrapper)[1].attributes('aria-selected')).toBe('true')
+    expect(wrapper.text()).toContain('This evening · 5 PM–10 PM')
+  })
+
+  it('Why this outfit gives the reasons and the numbers', () => {
+    const { wrapper } = setup()
+    const why = wrapper.findAll('[data-wear-why]').map((r) => r.text())
+    expect(why).toEqual(['80% chance of rain around 1 PM', 'Feels like 13°', 'Wind up to 58 km/h'])
+    const stats = wrapper.findAll('[data-wear-stat]').map((s) => s.find('dd').text())
+    expect(stats).toEqual(['13°', 'Rain', '80%', '34 km/h', '1', '86%'])
+  })
+
+  it('Take with you says when nothing extra is needed', () => {
+    const { wrapper } = setup()
+    expect(wrapper.text()).toContain('Nothing extra. The outfit covers it.')
+  })
+
+  it('settings: feel and coverage change the outfit and are saved', async () => {
+    const { wrapper, pinia } = setup({
+      forecast: forecast({
+        feelslike_c: 33,
+        temp_c: 31,
+        chance_of_rain: 0,
+        precip_mm: 0,
+        wind_kph: 8,
+        gust_kph: 10,
+        uv: 9,
+        condition: { code: 1000 }
+      })
+    })
+    const wear = useWearStore(pinia)
+    await wrapper.find('[data-wear-switch="coverage"]').trigger('click')
+    expect(wear.coverage).toBe(true)
+    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(/^A long-sleeve top with trousers/)
+    // the skirts switch only shows for the woman figure
+    expect(wrapper.find('[data-wear-switch="skirts"]').exists()).toBe(false)
+    wear.set('figure', 'woman')
+    await flushPromises()
+    expect(wrapper.find('[data-wear-switch="skirts"]').exists()).toBe(true)
+    const colder = wrapper.find('[data-wear-feel] [role="radio"]')
+    await colder.trigger('click')
+    expect(wear.feel).toBe(-1)
+  })
+
+  it('ends with the guidance line for the place', () => {
+    const { wrapper } = setup()
+    expect(wrapper.text()).toContain('Suggestions come from the hourly forecast for Joar Sahara')
+  })
 })

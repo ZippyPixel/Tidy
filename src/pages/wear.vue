@@ -94,7 +94,45 @@
         :fade-class="fadeClass"
         :text="wearT"
       />
+      <WearDayParts
+        class="col-span-12 lg:row-start-2"
+        :windows="wearWindows"
+        :win="win"
+        :figure="wearPrefs.figure"
+        :loading="loading"
+        :fade-class="fadeClass"
+        :recommend="wearRecommend"
+        :span="wearSpan"
+        :temp="wearFmt.temp"
+        :text="wearT"
+        @pick="pick"
+      />
+      <WearTake
+        class="col-span-12 lg:col-span-5 lg:col-start-8 lg:row-start-3"
+        :rec="rec"
+        :loading="loading"
+        :fade-class="fadeClass"
+        :text="wearT"
+      />
+      <WearWhy
+        class="col-span-12 lg:col-span-7 lg:row-start-3"
+        :rec="rec"
+        :summary="summary"
+        :loading="loading"
+        :fade-class="fadeClass"
+        :fmt="wearFmt"
+        :text="wearT"
+        :span="wearSpan"
+      />
+      <WearSettings class="col-span-12 lg:row-start-4" />
     </div>
+
+    <p
+      v-if="placeName"
+      class="m-0 mt-4 max-w-[720px] text-[13px] leading-[18px] text-muted-foreground sm:mt-6"
+    >
+      {{ $t('wear.page.foot', { place: placeName }) }}
+    </p>
   </div>
 </template>
 
@@ -106,6 +144,10 @@ import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import WearHero from '@/components/wear/WearHero.vue'
 import WearPieces from '@/components/wear/WearPieces.vue'
+import WearDayParts from '@/components/wear/WearDayParts.vue'
+import WearTake from '@/components/wear/WearTake.vue'
+import WearWhy from '@/components/wear/WearWhy.vue'
+import WearSettings from '@/components/wear/WearSettings.vue'
 import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 import wearMixin from '@/mixins/wearMixin'
 import weatherMixin from '@/mixins/weatherMixin'
@@ -115,7 +157,17 @@ import { todOf } from '@/utils/wear'
 
 export default {
   name: 'WearPage',
-  components: { AppIcon, SegmentedControl, Skeleton, WearHero, WearPieces },
+  components: {
+    AppIcon,
+    SegmentedControl,
+    Skeleton,
+    WearHero,
+    WearPieces,
+    WearDayParts,
+    WearTake,
+    WearWhy,
+    WearSettings
+  },
   mixins: [weatherMixin, wearMixin],
   setup() {
     const { t } = useI18n()
