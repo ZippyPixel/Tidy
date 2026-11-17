@@ -177,4 +177,30 @@ describe('What to wear page', () => {
     const { wrapper } = setup()
     expect(wrapper.text()).toContain('Suggestions come from the hourly forecast for Joar Sahara')
   })
+
+  it('follows a new location from the header search, staying on the page', async () => {
+    const { wrapper, pinia } = setup()
+    useWeatherStore(pinia).$patch({
+      coords: {
+        name: 'Dubai',
+        country: 'United Arab Emirates',
+        lat: 25.2,
+        lon: 55.3,
+        tzId: 'Asia/Dubai'
+      },
+      forecast: forecast({
+        feelslike_c: 38,
+        temp_c: 36,
+        chance_of_rain: 0,
+        precip_mm: 0,
+        wind_kph: 10,
+        gust_kph: 14,
+        uv: 11,
+        condition: { code: 1000 }
+      })
+    })
+    await flushPromises()
+    expect(wrapper.find('h1').text()).toBe('Dubai')
+    expect(wrapper.find('[data-wear-hero-headline]').text()).toBe('Dress light and stay cool')
+  })
 })
