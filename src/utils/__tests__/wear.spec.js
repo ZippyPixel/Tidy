@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  COMBOS,
+  PIECES,
   figure,
   recommend,
   scene,
@@ -7,6 +9,7 @@ import {
   summarize,
   todOf,
   wearText,
+  wardrobe,
   windows
 } from '@/utils/wear'
 
@@ -51,10 +54,17 @@ const S = (over = {}) => ({
   uvH: null,
   isDay: true,
   kind: 'clear',
+  haze: 0,
+  from: DAY0 + 12 * 3600,
   fromH: 12,
   toH: 22,
   ...over
 })
+// every outfit recommend() can pick, as the combos' own pieces
+const picks = (summary, prefs = {}, n = 12) =>
+  Array.from({ length: n }, (_, shuffle) => recommend(summary, { ...prefs, shuffle }))
+const inCombos = (fig, band, o) =>
+  COMBOS[fig][band].some((c) => Object.entries(c.o).every(([k, v]) => o[k] === v))
 
 // a fake t that shows the key and params, so the tests read the message, not a locale
 const t = (key, params = {}) =>
@@ -86,6 +96,12 @@ describe('summarize', () => {
     expect(s.fromH).toBe(10)
     expect(s.toH).toBe(14)
     expect(s.isDay).toBe(true)
+  })
+
+  it('counts smoky haze hours', () => {
+    const hrs = days((d, h) => (h % 2 ? { condition: { code: 1036, text: 'Smoky haze' } } : {}))[0]
+      .hour
+    expect(summarize(hrs).haze).toBe(0.5)
   })
 
   it('a storm hour wins over everything', () => {
@@ -132,17 +148,61 @@ describe('windows', () => {
 
 describe('recommend', () => {
   it.each([
-    [35, 'hot', 'tee', 'shorts'],
-    [28, 'warm', 'shirt', 'trousers'],
-    [20, 'mild', 'longsleeve', 'trousers'],
-    [15, 'cool', 'sweater', 'trousers'],
-    [5, 'cold', 'sweater', 'trousers'],
-    [-5, 'freezing', 'sweater', 'trousers']
-  ])('feels like %s° is %s', (feels, band, top, bottom) => {
-    const r = recommend(S({ feels, feelsMin: feels, feelsMax: feels }))
-    expect(r.band).toBe(band)
-    expect(r.outfit.top).toBe(top)
-    expect(r.outfit.bottom).toBe(bottom)
+    [35, 'hot'],
+    [28, 'warm'],
+    [20, 'mild'],
+    [15, 'cool'],
+    [5, 'cold'],
+    [-5, 'freezing']
+  ])("feels like %s° is %s, dressed in one of that band's outfits", (feels, band) => {
+    for (const figure of ['man', 'woman']) {
+      const r = recommend(S({ feels, feelsMin: feels, feelsMax: feels }), { figure })
+      expect(r.band).toBe(band)
+      expect(r.style).toBe('everyday')
+      expect(inCombos(figure, band, r.outfit)).toBe(true)
+    }
+  })
+
+  it('picks the same outfit for the same day, and shuffle moves through the list', () => {
+    const s = S({ feels: 28 })
+    expect(recommend(s).outfit).toEqual(recommend(s).outfit)
+    const r0 = recommend(s)
+    const tops = new Set(picks(s, {}, r0.options).map((r) => r.outfit.top + r.outfit.bottom))
+    expect(tops.size).toBe(r0.options)
+    expect(recommend(s, { shuffle: r0.options }).outfit).toEqual(r0.outfit)
+  })
+
+  it('options counts the outfits left after the filters', () => {
+    const s = S({ feels: 28 })
+    const every = recommend(s).options
+    const trad = recommend(s, { style: 'traditional' }).options
+    expect(recommend(s, { style: 'both' }).options).toBe(every + trad)
+  })
+
+  it('style picks traditional outfits, or both', () => {
+    for (const r of picks(S({ feels: 28 }), { style: 'traditional' })) {
+      expect(r.style).toBe('traditional')
+      expect(r.outfit.top).toBe('panjabi')
+    }
+    const both = new Set(picks(S({ feels: 28 }), { style: 'both' }, 20).map((r) => r.style))
+    expect(both).toEqual(new Set(['everyday', 'traditional']))
+  })
+
+  it('never suggests a piece that is switched off', () => {
+    for (const r of picks(S({ feels: 28 }), { exclude: ['jeans', 'polo'] }))
+      expect([r.outfit.top, r.outfit.bottom]).not.toEqual(expect.arrayContaining(['jeans']))
+    const rainy = recommend(S({ feels: 28, rain: 80 }), { exclude: ['umbrella'] })
+    expect(rainy.outfit.held).toBeNull()
+    expect(rainy.carry.map((c) => c.id)).not.toContain('umbrella')
+    const sunny = recommend(S({ feels: 30, uv: 9 }), { exclude: ['cap', 'sunglasses'] })
+    expect(sunny.outfit.head).toBeNull()
+    expect(sunny.outfit.eyes).toBeNull()
+  })
+
+  it('falls back to any outfit when the switches leave none', () => {
+    const all = [...new Set(COMBOS.man.hot.flatMap((c) => Object.values(c.o)))]
+    const r = recommend(S({ feels: 35 }), { exclude: all })
+    expect(r.options).toBe(COMBOS.man.hot.length)
   })
 
   it('band edges belong to the warmer band', () => {
@@ -158,9 +218,10 @@ describe('recommend', () => {
     expect(r.allReasons.at(-1).t.key).toBe('wear.reason.feelCold')
   })
 
-  it('rain brings an umbrella and leads the reasons', () => {
+  it('rain brings an umbrella, lists it to take, and leads the reasons', () => {
     const r = recommend(S({ feels: 28, rain: 80, rainH: 12 }))
     expect(r.outfit.held).toBe('umbrella')
+    expect(r.carry[0]).toMatchObject({ id: 'umbrella', name: { key: 'wear.carry.umbrellaFull' } })
     expect(r.headline.key).toBe('wear.headline.umbrella.warm')
     expect(wearText(t, r.reasons[0].t)).toBe('wear.why.rainAt(80,12 PM)')
   })
@@ -207,17 +268,43 @@ describe('recommend', () => {
     expect(r.allReasons.some((x) => x.k === 'swing')).toBe(true)
   })
 
-  it('woman gets a dress when warm, unless dresses are off', () => {
-    expect(recommend(S({ feels: 28 }), { figure: 'woman' }).outfit.top).toBe('dress')
-    expect(recommend(S({ feels: 28 }), { figure: 'woman', skirts: false }).outfit.top).toBe('shirt')
+  it('woman can get a dress or skirt when warm, unless dresses are off', () => {
+    const on = picks(S({ feels: 28 }), { figure: 'woman' }).map((r) => r.outfit.top)
+    expect(on).toContain('dress')
+    for (const r of picks(S({ feels: 28 }), { figure: 'woman', skirts: false })) {
+      expect(r.outfit.top).not.toBe('dress')
+      expect(r.outfit.bottom).not.toBe('skirt')
+    }
   })
 
-  it('more coverage keeps long sleeves and long trousers in the heat', () => {
-    const r = recommend(S({ feels: 35 }), { coverage: true })
-    expect(r.outfit.top).toBe('longsleeve')
-    expect(r.outfit.bottom).toBe('trousers')
-    expect(r.pieces.find((p) => p.slot === 'top').why.key).toBe('wear.why.coverage')
-    expect(r.pieces.find((p) => p.slot === 'top').name.key).toBe('wear.piece.longsleeveLight')
+  it('more coverage keeps long sleeves and long legs in the heat', () => {
+    for (const figure of ['man', 'woman'])
+      for (const r of picks(S({ feels: 35 }), { coverage: true, figure })) {
+        expect(['tee', 'polo', 'tank', 'dropshoulder', 'top', 'coord', 'dress']).not.toContain(
+          r.outfit.top
+        )
+        expect(['shorts', 'sportshorts']).not.toContain(r.outfit.bottom)
+        expect(r.pieces.find((p) => p.slot === 'top').why.key).toBe('wear.why.coverage')
+      }
+  })
+
+  it('smoky haze carries a mask, and most of the day wears one', () => {
+    const some = recommend(S({ haze: 0.4 }))
+    expect(some.outfit.mask).toBeNull()
+    expect(some.carry.find((c) => c.id === 'mask').why.key).toBe('wear.why.hazePart')
+    const most = recommend(S({ haze: 0.8 }))
+    expect(most.outfit.mask).toBe('mask')
+    expect(most.allReasons.some((x) => x.k === 'haze')).toBe(true)
+    expect(recommend(S({ haze: 0.8 }), { exclude: ['mask'] }).outfit.mask).toBeNull()
+  })
+
+  it('names the layer in the headline', () => {
+    const r = recommend(S({ feels: 13, feelsMin: 12, feelsMax: 14 }))
+    expect(r.outfit.outer).toBeTruthy()
+    expect(r.headline).toEqual({
+      key: 'wear.headline.coolLayer',
+      params: { layer: { key: `wear.layer.${r.outfit.outer}` } }
+    })
   })
 
   it('storms are a raincoat headline', () => {
@@ -241,17 +328,32 @@ describe('wearText', () => {
 describe('sentence', () => {
   it('names the outer layer over the top', () => {
     const r = recommend(S({ feels: 5, feelsMin: 5, feelsMax: 5 }))
+    const o = r.outfit
     const s = sentence(r)
     expect(s.form).toBe('overWith')
-    expect(s.slots).toEqual({ outer: 'coat', top: 'sweater', bottom: 'trousers', feet: 'sneakers' })
-    expect(s.extra).toEqual(['scarf'])
+    expect(s.slots).toEqual({ outer: o.outer, top: o.top, bottom: o.bottom, feet: o.feet })
   })
 
   it('a dress has no bottom; the hood is its own line', () => {
-    expect(sentence(recommend(S({ feels: 28 }), { figure: 'woman' })).form).toBe('one')
+    const dress = picks(S({ feels: 28 }), { figure: 'woman' }).find((r) => r.outfit.top === 'dress')
+    expect(sentence(dress).form).toBe('one')
     const s = sentence(recommend(S({ feels: 15, rain: 80, wind: 40 })))
     expect(s.hood).toBe(true)
     expect(s.extra).not.toContain('hood')
+  })
+})
+
+describe('wardrobe', () => {
+  it('groups what each figure can own, every piece once', () => {
+    for (const fig of ['man', 'woman']) {
+      const groups = wardrobe(fig)
+      expect(groups.map((g) => g.id)).toEqual(['tops', 'bottoms', 'layers', 'shoes', 'extras'])
+      const ids = groups.flatMap((g) => g.items)
+      expect(new Set(ids).size).toBe(ids.length)
+      for (const id of ids) expect(PIECES).toContain(id)
+    }
+    expect(wardrobe('woman').find((g) => g.id === 'extras').items).toContain('dupatta')
+    expect(wardrobe('man').flatMap((g) => g.items)).not.toContain('dupatta')
   })
 })
 
@@ -285,12 +387,26 @@ describe('figure and scene', () => {
     expect(f.viewBox).toBe('0 -44 240 484')
   })
 
+  it('draws every outfit of every figure, with a layer for each piece', () => {
+    for (const fig of ['man', 'woman'])
+      for (const band of Object.keys(COMBOS[fig]))
+        for (const c of COMBOS[fig][band])
+          for (const tone of ['light', 'mid', 'dark']) {
+            const outfit = { mask: 'mask', ...c.o, tone }
+            const f = figure(outfit, { figure: fig })
+            const slots = new Set(f.layers.map((l) => l.slot))
+            for (const k of Object.keys(outfit)) if (k !== 'tone') expect(slots.has(k)).toBe(true)
+            expect(f.layers.every((l) => !/NaN|undefined/.test(l.d))).toBe(true)
+          }
+  })
+
   it('recolours the street by time of day, with the road in the bottom tenth', () => {
     const day = scene('day')
     const night = scene('night')
     expect(day.viewBox).toBe('0 0 400 300')
     expect(day.sky).not.toEqual(night.sky)
     expect(day.layers.at(-1).d).toContain('L0 300')
+    expect(day.road).toBe(day.layers.at(-1).fill)
   })
 })
 
@@ -315,14 +431,20 @@ describe('messages', () => {
         { uv: 11, uvH: 12 },
         { uv: 8 },
         { uv: 6 },
-        { feelsMin: feels - 6, feelsMax: feels + 6 }
+        { feelsMin: feels - 6, feelsMax: feels + 6 },
+        { haze: 0.5 },
+        { haze: 0.9, wind: 40 }
       ])
         for (const prefs of [
           {},
           { figure: 'woman' },
           { coverage: true },
           { feel: -1 },
-          { feel: 1 }
+          { feel: 1 },
+          { style: 'traditional' },
+          { style: 'both', figure: 'woman', shuffle: 1 },
+          { style: 'both', shuffle: 2, coverage: true },
+          { figure: 'woman', style: 'traditional', shuffle: 3 }
         ]) {
           const r = recommend(S({ feels, feelsMin: feels, feelsMax: feels, ...over }), prefs)
           walk(r.headline)
@@ -331,6 +453,8 @@ describe('messages', () => {
           r.carry.forEach((c) => (walk(c.name), walk(c.why)))
           keys.add(`wear.sentence.${sentence(r).form}`)
         }
+    for (const id of PIECES) keys.add(`wear.piece.${id}`)
+    for (const g of wardrobe('woman')) keys.add(`wear.group.${g.id}`)
     const missing = [...keys].filter((k) => k !== 'wear.a.hood' && !has(k))
     expect(missing).toEqual([])
   })

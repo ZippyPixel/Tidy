@@ -8,6 +8,7 @@ import WearScene from '@/components/wear/WearScene.vue'
 import { activeI18n } from '@/i18n'
 import useWeatherStore from '@/stores/weather'
 import useWearStore from '@/stores/wear'
+import { COMBOS } from '@/utils/wear'
 import { forecast, NOW, weatherState } from '@/components/wear/__tests__/fixtures'
 
 const i18n = activeI18n()
@@ -21,6 +22,8 @@ function setup(state = {}) {
 }
 
 const tabs = (w) => w.findAll('[data-wear-tab]')
+const inCombos = (fig, band, o) =>
+  COMBOS[fig][band].some((c) => Object.entries(c.o).every(([k, v]) => o[k] === v))
 
 describe('What to wear page', () => {
   beforeEach(() => {
@@ -48,13 +51,11 @@ describe('What to wear page', () => {
   it('shows the headline, the outfit sentence and an accessible character', () => {
     const { wrapper } = setup()
     expect(wrapper.find('[data-wear-hero-headline]').text()).toBe('Raincoat day')
-    expect(wrapper.find('[data-wear-sentence]').text()).toBe(
-      'A raincoat over a sweater with trousers and boots. Hood up.'
+    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(
+      /^A raincoat over an? .+ with .+ and boots\. Hood up\.$/
     )
     const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
-    expect(hero.props('label')).toBe(
-      'Mannequin wearing raincoat, sweater, trousers, boots, and hood up'
-    )
+    expect(hero.props('label')).toMatch(/^Mannequin wearing raincoat, .+, boots, and hood up$/)
   })
 
   it('says why the hood is up', () => {
@@ -85,7 +86,9 @@ describe('What to wear page', () => {
     await wrapper.find('[role="radiogroup"] [role="radio"]:last-of-type').trigger('click')
     await flushPromises()
     expect(useWearStore(pinia).figure).toBe('woman')
-    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(/^A light dress and sneakers\./)
+    const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
+    expect(hero.props('figure')).toBe('woman')
+    expect(inCombos('woman', 'warm', hero.props('outfit'))).toBe(true)
   })
 
   it('shows skeletons until the forecast is in', () => {
@@ -162,7 +165,9 @@ describe('What to wear page', () => {
     const wear = useWearStore(pinia)
     await wrapper.find('[data-wear-switch="coverage"]').trigger('click')
     expect(wear.coverage).toBe(true)
-    expect(wrapper.find('[data-wear-sentence]').text()).toMatch(/^A long-sleeve top with trousers/)
+    const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
+    expect(['tee', 'polo', 'tank', 'dropshoulder']).not.toContain(hero.props('outfit').top)
+    expect(['shorts', 'sportshorts']).not.toContain(hero.props('outfit').bottom)
     // the skirts switch only shows for the woman figure
     expect(wrapper.find('[data-wear-switch="skirts"]').exists()).toBe(false)
     wear.set('figure', 'woman')
