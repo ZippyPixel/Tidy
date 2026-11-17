@@ -42,37 +42,13 @@
       </div>
     </div>
 
-    <div
-      role="tablist"
-      :aria-label="$t('wear.page.when')"
-      class="mb-4 flex w-full gap-0.5 rounded-[var(--radius)] bg-muted p-[3px] sm:mb-6 sm:w-fit"
-    >
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        type="button"
-        role="tab"
-        :aria-selected="String(tab.on)"
-        :tabindex="tab.on ? 0 : -1"
-        :disabled="loading"
-        class="flex h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[calc(var(--radius)-2px)] px-4 text-[15px] font-semibold leading-5 outline-ring transition-colors duration-[120ms] ease-linear focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 sm:h-14 sm:min-w-[132px] sm:flex-none sm:items-start"
-        :class="
-          tab.on
-            ? 'bg-card text-foreground shadow-[0_1px_2px_hsl(220_20%_10%/0.12)]'
-            : 'text-muted-foreground hover:text-foreground'
-        "
-        data-wear-tab
-        @click="pick(tab.id)"
-        @keydown="onTabKey"
-      >
-        <span>{{ tab.label }}</span>
-        <span
-          v-if="tab.sub"
-          class="whitespace-nowrap text-xs font-medium leading-4 tabular-nums text-muted-foreground"
-          >{{ tab.sub }}</span
-        >
-      </button>
-    </div>
+    <WearTabs
+      class="mb-4 sm:mb-6"
+      :tabs="tabs"
+      :label="$t('wear.page.when')"
+      :disabled="loading"
+      @pick="pick"
+    />
 
     <div class="grid grid-cols-12 items-start gap-4 sm:gap-6">
       <WearHero
@@ -150,6 +126,7 @@ import WearTake from '@/components/wear/WearTake.vue'
 import WearWhy from '@/components/wear/WearWhy.vue'
 import WearSettings from '@/components/wear/WearSettings.vue'
 import WearWardrobe from '@/components/wear/WearWardrobe.vue'
+import WearTabs from '@/components/wear/WearTabs.vue'
 import { useWeatherSkeleton } from '@/composables/useSkeletonGate'
 import wearMixin from '@/mixins/wearMixin'
 import weatherMixin from '@/mixins/weatherMixin'
@@ -170,7 +147,8 @@ export default {
     WearTake,
     WearWhy,
     WearSettings,
-    WearWardrobe
+    WearWardrobe,
+    WearTabs
   },
   mixins: [weatherMixin, wearMixin],
   setup() {
@@ -277,16 +255,6 @@ export default {
         ? this.$t(`wear.part.${w.day}.${w.part}`)
         : this.$t(`wear.window.${w.tonight ? 'tonight' : w.id}`)
       return this.$t('wear.kicker', { when, span: this.wearSpan(w.summary) })
-    },
-    // arrow keys move between the tabs (and select, like the segmented control)
-    onTabKey(event) {
-      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
-      event.preventDefault()
-      const ids = this.tabs.map((t) => t.id)
-      const i = ids.indexOf(this.tabs.find((t) => t.on)?.id)
-      const next = ids[(i + (event.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length]
-      this.pick(next)
-      this.$nextTick(() => this.$el.querySelector('[role="tab"][tabindex="0"]')?.focus())
     }
   }
 }
