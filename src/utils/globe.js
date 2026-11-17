@@ -24,7 +24,8 @@ export function pointSet(points) {
 // globe-land.json: flat [lon * scale, lat * scale, ...]
 export function landPoints({ dots, scale = 10 }) {
   const points = []
-  for (let i = 0; i < dots.length; i += 2) points.push({ lon: dots[i] / scale, lat: dots[i + 1] / scale })
+  for (let i = 0; i < dots.length; i += 2)
+    points.push({ lon: dots[i] / scale, lat: dots[i + 1] / scale })
   return points
 }
 
@@ -80,7 +81,9 @@ const PINCH_RATE = 0.01 // a pinch arrives as ctrl+wheel, with much smaller delt
 const WHEEL_UNIT_PX = { 0: 1, 1: 16, 2: 400 } // by deltaMode: pixels, lines, pages
 
 export const wheelZoom = (zoom, { deltaY, deltaMode, ctrlKey }) =>
-  clampZoom(zoom * Math.exp(-deltaY * WHEEL_UNIT_PX[deltaMode] * (ctrlKey ? PINCH_RATE : WHEEL_RATE)))
+  clampZoom(
+    zoom * Math.exp(-deltaY * WHEEL_UNIT_PX[deltaMode] * (ctrlKey ? PINCH_RATE : WHEEL_RATE))
+  )
 
 // Accent-insensitive, so "Reykjavik" finds "Reykjavík".
 export function normalizeName(text) {
@@ -88,6 +91,21 @@ export function normalizeName(text) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+}
+
+// /api/places index -> { id, name, country, city, lat, lon, tz }[]
+export function flattenPlaces(index) {
+  return index.countries.flatMap((country) =>
+    country.s.map(([name, lat, lon, zone, city], i) => ({
+      id: `${country.code}-${i}`,
+      name,
+      country: country.name,
+      city,
+      lat,
+      lon,
+      tz: index.zones[zone]
+    }))
+  )
 }
 
 // /api/tide-stations index -> { id, name, country, lat, lon }[]

@@ -9,12 +9,25 @@ const INDEX = {
   count: 3,
   credit: { project: 'Slackwater database (https://example.org)' },
   countries: [
-    { name: 'Bangladesh', center: [91, 22], s: [['ticon/c', 'Charchanga', 22.22, 91.05], ['ticon/d', 'Dhaka', 23, 90]] },
+    {
+      name: 'Bangladesh',
+      center: [91, 22],
+      s: [
+        ['ticon/c', 'Charchanga', 22.22, 91.05],
+        ['ticon/d', 'Dhaka', 23, 90]
+      ]
+    },
     { name: 'Iceland', center: [-21, 64], s: [['ticon/r', 'Reykjavík', 64.15, -21.94]] }
   ]
 }
 const LAND = { scale: 10, dots: [900, 235] }
-const HOME = { name: 'Joar Sahara', country: 'Bangladesh', lat: 23.817, lon: 90.417, tzId: 'Asia/Dhaka' }
+const HOME = {
+  name: 'Joar Sahara',
+  country: 'Bangladesh',
+  lat: 23.817,
+  lon: 90.417,
+  tzId: 'Asia/Dhaka'
+}
 const realMatchMedia = window.matchMedia
 
 function setWidth(md) {
@@ -63,8 +76,25 @@ describe('StationExplorer', () => {
     HTMLCanvasElement.prototype.getContext = () => null
     fetchMock = vi.fn(async (url, options) => {
       if (url === '/globe-land.json') return LAND
-      if (options?.query?.q) return { stations: [{ id: 'ticon/c', name: 'Charchanga', country: 'Bangladesh', lat: 22.22, lon: 91.05 }] }
-      if (options?.query?.near) return { stations: [{ id: 'ticon/c', name: 'Charchanga', country: 'Bangladesh', lat: 22.22, lon: 91.05, km: 189 }] }
+      if (options?.query?.q)
+        return {
+          stations: [
+            { id: 'ticon/c', name: 'Charchanga', country: 'Bangladesh', lat: 22.22, lon: 91.05 }
+          ]
+        }
+      if (options?.query?.near)
+        return {
+          stations: [
+            {
+              id: 'ticon/c',
+              name: 'Charchanga',
+              country: 'Bangladesh',
+              lat: 22.22,
+              lon: 91.05,
+              km: 189
+            }
+          ]
+        }
       return INDEX
     })
     vi.stubGlobal('$fetch', fetchMock)
@@ -81,7 +111,9 @@ describe('StationExplorer', () => {
     // the skeleton's minimum is measured on the clock, so it must not move on its own here
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
     let finish
-    fetchMock.mockImplementation((url) => (url === '/globe-land.json' ? LAND : new Promise((resolve) => (finish = resolve))))
+    fetchMock.mockImplementation((url) =>
+      url === '/globe-land.json' ? LAND : new Promise((resolve) => (finish = resolve))
+    )
     setWidth(true)
     wrapper = mount(StationExplorer, {
       attachTo: document.body,
@@ -156,7 +188,10 @@ describe('StationExplorer', () => {
     all('[data-row]')[0].click()
     await wrapper.vm.$nextTick()
     expect(all('[data-section]')[0].textContent).toContain('Bangladesh · 2')
-    expect(all('[data-row]').map((r) => r.getAttribute('aria-label'))).toEqual(['Charchanga, Bangladesh', 'Dhaka, Bangladesh'])
+    expect(all('[data-row]').map((r) => r.getAttribute('aria-label'))).toEqual([
+      'Charchanga, Bangladesh',
+      'Dhaka, Bangladesh'
+    ])
     one('[data-all-countries]').click()
     await wrapper.vm.$nextTick()
     expect(one('[data-section]').textContent).toContain('Suggested')
@@ -203,7 +238,9 @@ describe('StationExplorer', () => {
     one('[data-near]').click()
     await flushPromises()
     await wrapper.vm.$nextTick()
-    expect(fetchMock).toHaveBeenCalledWith('/api/tide-stations', { query: { near: '23.817,90.417' } })
+    expect(fetchMock).toHaveBeenCalledWith('/api/tide-stations', {
+      query: { near: '23.817,90.417' }
+    })
     expect(one('[data-near]').getAttribute('aria-pressed')).toBe('true')
     expect(one('[data-section]').textContent).toContain('Nearest to Joar Sahara')
     expect(one('[data-row]').textContent).toContain('189 km')
@@ -238,7 +275,13 @@ describe('StationExplorer', () => {
   it('groups long distances', async () => {
     await setup()
     await type('Reyk')
-    wrapper.vm.chooseStation({ id: 'ticon/r', name: 'Reykjavík', country: 'Iceland', lat: 64.15, lon: -21.94 })
+    wrapper.vm.chooseStation({
+      id: 'ticon/r',
+      name: 'Reykjavík',
+      country: 'Iceland',
+      lat: 64.15,
+      lon: -21.94
+    })
     await wrapper.vm.$nextTick()
     expect(one('[data-popup]').textContent).toContain('Iceland · 8,649 km from Joar Sahara')
   })
@@ -282,7 +325,11 @@ describe('StationExplorer', () => {
     const pinia = createPinia()
     setWidth(true)
     const mountOne = () =>
-      mount(StationExplorer, { attachTo: document.body, props: { open: true, home: HOME }, global: { plugins: [pinia, activeI18n()] } })
+      mount(StationExplorer, {
+        attachTo: document.body,
+        props: { open: true, home: HOME },
+        global: { plugins: [pinia, activeI18n()] }
+      })
     const first = mountOne()
     await flushPromises()
     first.unmount()
@@ -323,6 +370,84 @@ describe('StationExplorer', () => {
     it('leaves history alone on desktop, even when mounted already open', async () => {
       await setup({ md: true })
       expect(history.length).toBe(length)
+    })
+  })
+
+  describe('places mode', () => {
+    const PLACES = {
+      count: 3,
+      credit: 'GeoNames (CC BY 4.0)',
+      zones: ['Asia/Dhaka', 'Atlantic/Reykjavik'],
+      countries: [
+        {
+          name: 'Bangladesh',
+          code: 'BD',
+          center: [90, 23],
+          s: [
+            ['Chittagong Division', 22.34, 91.83, 0, 'Chattogram'],
+            ['Dhaka Division', 23.71, 90.41, 0, 'Dhaka']
+          ]
+        },
+        {
+          name: 'Iceland',
+          code: 'IS',
+          center: [-21, 64],
+          s: [['Capital Region', 64.14, -21.9, 1, 'Reykjavík']]
+        }
+      ]
+    }
+
+    beforeEach(() => {
+      fetchMock.mockImplementation(async (url) =>
+        url === '/globe-land.json' ? LAND : url === '/api/places' ? PLACES : INDEX
+      )
+    })
+
+    it('words itself for places and credits GeoNames', async () => {
+      await setup({ kind: 'places' })
+      expect(panel().textContent).toContain('Choose a location')
+      expect(one('[data-count]').textContent).toBe('3 regions in 2 countries')
+      expect(panel().textContent).toContain('Places: GeoNames (CC BY 4.0)')
+      expect(fetchMock).toHaveBeenCalledWith('/api/places')
+      expect(fetchMock).not.toHaveBeenCalledWith('/api/tide-stations')
+    })
+
+    it('searches regions in the browser and hands over the place with its zone', async () => {
+      await setup({ kind: 'places' })
+      await type('dhaka')
+      const rows = all('[data-row]')
+      expect(rows.map((r) => r.textContent)).toEqual([expect.stringContaining('Dhaka Division')])
+      expect(rows[0].textContent).toContain('Bangladesh · Dhaka')
+      rows[0].click()
+      await wrapper.vm.$nextTick()
+      expect(one('[data-view-tides]').textContent.trim()).toBe('Use this location')
+      one('[data-view-tides]').click()
+      await wrapper.vm.$nextTick()
+      expect(wrapper.emitted('pick')[0]).toEqual([
+        { name: 'Dhaka Division', country: 'Bangladesh', lat: 23.71, lon: 90.41, tz: 'Asia/Dhaka' }
+      ])
+      // nothing was asked of the server for the search
+      expect(fetchMock.mock.calls.every(([, options]) => !options?.query)).toBe(true)
+    })
+
+    it('lists the nearest regions to home', async () => {
+      await setup({ kind: 'places' })
+      one('[data-near]').click()
+      await flushPromises()
+      const titles = all('[data-row]').map((r) => r.textContent)
+      expect(titles[0]).toContain('Dhaka Division')
+      expect(titles.at(-1)).toContain('Capital Region')
+    })
+
+    it('opens a country into its regions', async () => {
+      await setup({ kind: 'places' })
+      all('[data-row]')
+        .find((r) => r.textContent.includes('Iceland'))
+        .click()
+      await wrapper.vm.$nextTick()
+      expect(all('[data-row]').map((r) => r.textContent)).toEqual([
+        expect.stringContaining('Capital Region')
+      ])
     })
   })
 })

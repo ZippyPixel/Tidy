@@ -87,7 +87,21 @@ describe('Sun & Moon card', () => {
   })
 
   it('stacks on phones, sits side by side on md and stacks again from lg', () => {
-    const groups = setup().find('section > div:last-child')
-    expect(groups.classes()).toEqual(expect.arrayContaining(['flex-col', 'md:flex-row', 'lg:flex-col']))
+    const groups = setup().find('[data-sun-moon-link] > div:last-child')
+    expect(groups.classes()).toEqual(
+      expect.arrayContaining(['flex-col', 'md:flex-row', 'lg:flex-col'])
+    )
+  })
+})
+
+describe('Sun & Moon card link', () => {
+  it('is one link to /sun-moon with "Details" in its header', () => {
+    const wrapper = setup()
+    const link = wrapper.find('[data-sun-moon-link]')
+    expect(link.element.tagName).toBe('A')
+    expect(link.attributes('href')).toBe('/sun-moon')
+    expect(link.find('h2').text()).toBe('Sun & Moon')
+    expect(link.text()).toContain('Details')
+    expect(link.element.querySelector('a, button, input, [tabindex]')).toBeNull()
   })
 })

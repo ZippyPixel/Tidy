@@ -20,7 +20,9 @@
     "@unovis/ts": "^1.6.7",
     "@unovis/vue": "^1.6.7",
     "@vueuse/core": "^14.3.0",
+    "all-the-cities": "^3.1.0",
     "astronomy-engine": "2.1.19",
+    "cities.json": "^1.1.66",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
@@ -31,6 +33,7 @@
     "tailwind-merge": "^3.6.0",
     "tailwind-scrollbar-hide": "^1.1.7",
     "tailwindcss-animate": "^1.0.7",
+    "tz-lookup": "^6.1.25",
     "vaul-vue": "^0.4.1",
     "vue": "^3.5.41",
     "vue-i18n": "^11.4.2"

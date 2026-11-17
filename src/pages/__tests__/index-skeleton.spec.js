@@ -9,7 +9,10 @@ import { MIN_SKELETON_MS } from '@/composables/useSkeletonGate'
 import fixture from '@/utils/__tests__/fixtures/weatherapi-forecast.json'
 
 const i18n = activeI18n()
-const other = () => ({ ...fixture, location: { ...fixture.location, name: 'Sydney', country: 'Australia' } })
+const other = () => ({
+  ...fixture,
+  location: { ...fixture.location, name: 'Sydney', country: 'Australia' }
+})
 
 let resolveForecast
 let wrapper
@@ -24,9 +27,12 @@ function mountHome() {
 }
 
 // the dashboard's cards, by their real titles (they stay on screen while loading)
-const card = (title) => wrapper.findAll('section').find((s) => s.find('h2').exists() && s.find('h2').text() === title)
+// cards are sections, or one link (Sun & Moon, Tides)
+const card = (title) =>
+  wrapper.findAll('section, a').find((s) => s.find('h2').exists() && s.find('h2').text() === title)
 // weather cards only: the tides card waits on its own request (tides-card.spec)
-const skeletons = () => wrapper.findAll('[data-skeleton]').filter((s) => !s.element.closest('a[href="/tides"]'))
+const skeletons = () =>
+  wrapper.findAll('[data-skeleton]').filter((s) => !s.element.closest('a[href="/tides"]'))
 const status = () => wrapper.find('[role="status"]').text()
 
 async function land(response = fixture) {
@@ -36,7 +42,9 @@ async function land(response = fixture) {
 
 describe('dashboard skeletons', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] })
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date']
+    })
     vi.setSystemTime(fixture.location.localtime_epoch * 1000)
     vi.stubGlobal(
       '$fetch',
@@ -54,7 +62,13 @@ describe('dashboard skeletons', () => {
   it('shows every card as a skeleton on the first frame, titles real, one status', () => {
     mountHome()
     expect(status()).toBe('Loading weather…')
-    for (const title of ['Current Conditions', 'Hourly', '3 Days Forecast', 'Sun & Moon', 'Details']) {
+    for (const title of [
+      'Current Conditions',
+      'Hourly',
+      '3 Days Forecast',
+      'Sun & Moon',
+      'Details'
+    ]) {
       const section = card(title)
       expect(section, title).toBeTruthy()
       expect(section.attributes('aria-busy'), title).toBe('true')

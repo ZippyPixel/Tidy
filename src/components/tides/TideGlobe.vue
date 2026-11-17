@@ -1,5 +1,10 @@
 <template>
-  <div ref="box" data-globe class="relative min-h-0 min-w-0 overflow-hidden bg-background" @wheel.prevent="onWheel">
+  <div
+    ref="box"
+    data-globe
+    class="relative min-h-0 min-w-0 overflow-hidden bg-background"
+    @wheel.prevent="onWheel"
+  >
     <!-- The wheel is on the box, not the canvas: the controls and the popup sit on top of the
          canvas, and ctrl+wheel over them would zoom the browser -->
     <!-- Drawn on a canvas, which has to know its pixel size: the one place tides measures -->
@@ -23,31 +28,80 @@
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 flex items-center justify-center [container-type:size]"
     >
-      <div data-globe-skeleton class="tidy-skeleton-soft size-[80cqmin] flex-none rounded-full shadow-[0_0_0_1px_hsl(var(--border))] md:size-[84cqmin]" />
+      <div
+        data-globe-skeleton
+        class="tidy-skeleton-soft size-[80cqmin] flex-none rounded-full shadow-[0_0_0_1px_hsl(var(--border))] md:size-[84cqmin]"
+      />
     </div>
 
     <div class="absolute right-3 top-3 flex flex-col gap-2 md:right-5 md:top-5">
-      <button type="button" data-spin :disabled="loading" :aria-label="$t(spinning ? 'tides.explorer.spinStop' : 'tides.explorer.spinStart')" :class="controlClass" @click="toggleSpin">
+      <button
+        type="button"
+        data-spin
+        :disabled="loading"
+        :aria-label="$t(spinning ? 'tides.explorer.spinStop' : 'tides.explorer.spinStart')"
+        :class="controlClass"
+        @click="toggleSpin"
+      >
         <svg v-if="spinning" viewBox="0 0 24 24" aria-hidden="true" class="size-4 fill-current">
           <rect x="6" y="5" width="4" height="14" rx="1" />
           <rect x="14" y="5" width="4" height="14" rx="1" />
         </svg>
         <svg v-else viewBox="0 0 24 24" aria-hidden="true" class="size-4 fill-current">
-          <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" />
+          <path
+            d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"
+          />
         </svg>
       </button>
-      <button type="button" data-zoom-in :disabled="loading" :aria-label="$t('tides.explorer.zoomIn')" :class="controlClass" @click="zoomBy(zoomStep)">
-        <svg viewBox="0 0 24 24" aria-hidden="true" class="size-[18px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <button
+        type="button"
+        data-zoom-in
+        :disabled="loading"
+        :aria-label="$t('tides.explorer.zoomIn')"
+        :class="controlClass"
+        @click="zoomBy(zoomStep)"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          class="size-[18px]"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
           <path d="M12 5v14" />
           <path d="M5 12h14" />
         </svg>
       </button>
-      <button type="button" data-zoom-out :disabled="loading" :aria-label="$t('tides.explorer.zoomOut')" :class="controlClass" @click="zoomBy(1 / zoomStep)">
-        <svg viewBox="0 0 24 24" aria-hidden="true" class="size-[18px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <button
+        type="button"
+        data-zoom-out
+        :disabled="loading"
+        :aria-label="$t('tides.explorer.zoomOut')"
+        :class="controlClass"
+        @click="zoomBy(1 / zoomStep)"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          class="size-[18px]"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
           <path d="M5 12h14" />
         </svg>
       </button>
-      <button type="button" data-recenter :disabled="loading" :aria-label="$t('tides.explorer.recenter')" :class="controlClass" @click="recenter">
+      <button
+        type="button"
+        data-recenter
+        :disabled="loading"
+        :aria-label="recenterLabel || $t('tides.explorer.recenter')"
+        :class="controlClass"
+        @click="recenter"
+      >
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
@@ -94,7 +148,7 @@
         class="inline-flex h-10 flex-none items-center whitespace-nowrap rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground outline-ring hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         @click="$emit('view', pick)"
       >
-        {{ $t('tides.explorer.viewTides') }}
+        {{ actionLabel || $t('tides.explorer.viewTides') }}
       </button>
     </div>
 
@@ -146,6 +200,9 @@ export default {
     /** the station picked in the list or on the globe */
     pick: { type: Object, default: null },
     pickSub: { type: String, default: '' },
+    /** the popup's button and the recentre control (places mode); tide wording when empty */
+    actionLabel: { type: String, default: '' },
+    recenterLabel: { type: String, default: '' },
     isMd: { type: Boolean, default: false },
     ariaLabel: { type: String, default: '' },
     credit: { type: String, default: '' },
@@ -205,7 +262,10 @@ export default {
     this.resizeObserver.observe(this.$refs.box)
     // a system theme change: the colours are read from the tokens on each draw
     this.themeObserver = new MutationObserver(() => this.draw())
-    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
     this.draw()
     this.kick()
   },
@@ -230,7 +290,10 @@ export default {
       const width = box.clientWidth
       const height = box.clientHeight
       const ratio = Math.min(2, window.devicePixelRatio || 1)
-      if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
+      if (
+        canvas.width !== Math.round(width * ratio) ||
+        canvas.height !== Math.round(height * ratio)
+      ) {
         canvas.width = Math.round(width * ratio)
         canvas.height = Math.round(height * ratio)
       }
@@ -255,7 +318,14 @@ export default {
       context.arc(cx, cy, radius * 1.16, 0, TAU)
       context.fill()
 
-      const shade = context.createRadialGradient(cx - radius * 0.35, cy - radius * 0.4, radius * 0.1, cx, cy, radius)
+      const shade = context.createRadialGradient(
+        cx - radius * 0.35,
+        cy - radius * 0.4,
+        radius * 0.1,
+        cx,
+        cy,
+        radius
+      )
       shade.addColorStop(0, color('--surface-raised'))
       shade.addColorStop(1, color('--card'))
       context.fillStyle = shade
@@ -272,7 +342,8 @@ export default {
         context.beginPath()
         for (let i = 0; i < set.count; i++) {
           const p = projectAngles(this.cam, set.lambda[i], set.sinLat[i], set.cosLat[i])
-          if (p.depth <= minDepth || p.x < -4 || p.y < -4 || p.x > width + 4 || p.y > height + 4) continue
+          if (p.depth <= minDepth || p.x < -4 || p.y < -4 || p.x > width + 4 || p.y > height + 4)
+            continue
           context.moveTo(p.x + size, p.y)
           context.arc(p.x, p.y, size, 0, TAU)
         }
@@ -322,7 +393,9 @@ export default {
         }
         element.style.opacity = '1'
         element.style.pointerEvents = ''
-        element.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + offset)}px) translate(-50%, -100%)`
+        element.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(
+          p.y + offset
+        )}px) translate(-50%, -100%)`
       }
       place(this.$refs.tip, this.hover, -14)
       const popup = this.$refs.popup
@@ -368,7 +441,15 @@ export default {
         this.draw()
         return
       }
-      this.fly = { startedAt: performance.now(), lon: this.view.lon, turn, lat: this.view.lat, toLat, zoom: this.view.zoom, toZoom }
+      this.fly = {
+        startedAt: performance.now(),
+        lon: this.view.lon,
+        turn,
+        lat: this.view.lat,
+        toLat,
+        zoom: this.view.zoom,
+        toZoom
+      }
       this.kick()
     },
     zoomBy(factor) {
@@ -389,13 +470,25 @@ export default {
     stationAt(event) {
       if (!this.cam || !this.stationSet) return null
       const box = this.$refs.box.getBoundingClientRect()
-      const index = hitTest(this.cam, this.stationSet, event.clientX - box.left, event.clientY - box.top, event.pointerType)
+      const index = hitTest(
+        this.cam,
+        this.stationSet,
+        event.clientX - box.left,
+        event.clientY - box.top,
+        event.pointerType
+      )
       return index >= 0 ? this.stations[index] : null
     },
     onDown(event) {
       if (!this.cam) return
       event.currentTarget.setPointerCapture?.(event.pointerId)
-      this.drag = { x: event.clientX, y: event.clientY, lon: this.view.lon, lat: this.view.lat, moved: false }
+      this.drag = {
+        x: event.clientX,
+        y: event.clientY,
+        lon: this.view.lon,
+        lat: this.view.lat,
+        moved: false
+      }
       this.fly = null
       this.stopSpin()
     },

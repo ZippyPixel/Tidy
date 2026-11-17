@@ -13,3 +13,15 @@ export function writePreferenceCookie(name, value) {
   if (typeof document === 'undefined') return
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${MAX_AGE}; SameSite=Lax`
 }
+
+// Sun & Moon prayer times: "<method key>|<hanafi|standard>", e.g. "karachi|hanafi"
+export const PRAYER_COOKIE_KEY = 'tidy-prayer'
+
+export function parsePrayerCookie(value, methodKeys) {
+  const [method, asr] = String(value ?? '').split('|')
+  const index = methodKeys.indexOf(method)
+  return { method: index >= 0 ? index : 0, hanafi: asr !== 'standard' }
+}
+
+export const formatPrayerCookie = (methodKey, hanafi) =>
+  `${methodKey}|${hanafi ? 'hanafi' : 'standard'}`

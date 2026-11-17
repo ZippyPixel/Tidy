@@ -12,9 +12,17 @@
         <span>{{ $t('tides.page.back') }}</span>
       </NuxtLink>
 
-      <div class="mb-4 flex flex-col items-start gap-3 md:mb-6 md:flex-row md:items-end md:justify-between md:gap-6">
-        <div class="min-w-0" :class="{ 'w-full md:w-auto': showSkeleton }" :aria-busy="showSkeleton ? 'true' : undefined">
-          <div class="mb-1 text-[13px] font-medium leading-4 text-muted-foreground">{{ $t('tides.title') }}</div>
+      <div
+        class="mb-4 flex flex-col items-start gap-3 md:mb-6 md:flex-row md:items-end md:justify-between md:gap-6"
+      >
+        <div
+          class="min-w-0"
+          :class="{ 'w-full md:w-auto': showSkeleton }"
+          :aria-busy="showSkeleton ? 'true' : undefined"
+        >
+          <div class="mb-1 text-[13px] font-medium leading-4 text-muted-foreground">
+            {{ $t('tides.title') }}
+          </div>
           <!-- skeleton: station name, region and the distance line -->
           <div v-if="showSkeleton" data-skeleton class="flex flex-col">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -25,12 +33,23 @@
           </div>
           <template v-else>
             <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1" :class="fadeClass">
-              <h1 class="text-[clamp(1.25rem,1rem+1vw,1.625rem)] font-semibold leading-[1.2] tracking-[-0.01em]">
+              <h1
+                class="text-[clamp(1.25rem,1rem+1vw,1.625rem)] font-semibold leading-[1.2] tracking-[-0.01em]"
+              >
                 {{ station?.name || $t('tides.tideTimes') }}
               </h1>
-              <span v-if="meta" data-meta class="text-[15px] text-muted-foreground">{{ meta }}</span>
+              <span v-if="meta" data-meta class="text-[15px] text-muted-foreground">{{
+                meta
+              }}</span>
             </div>
-            <div v-if="distanceLine" data-distance class="mt-1 text-[13px] leading-[18px] tabular-nums text-muted-foreground" :class="fadeClass">{{ distanceLine }}</div>
+            <div
+              v-if="distanceLine"
+              data-distance
+              class="mt-1 text-[13px] leading-[18px] tabular-nums text-muted-foreground"
+              :class="fadeClass"
+            >
+              {{ distanceLine }}
+            </div>
           </template>
         </div>
         <!-- real from the first frame; waits at 50% until there is a station to change from -->
@@ -62,10 +81,18 @@
       </div>
 
       <!-- skeleton: one card per section, in the loaded page's placement (see below) -->
-      <div v-if="showSkeleton" data-loading class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6">
-        <TideNowSkeleton class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-2 xl:col-span-4" />
+      <div
+        v-if="showSkeleton"
+        data-loading
+        class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6"
+      >
+        <TideNowSkeleton
+          class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-2 xl:col-span-4"
+        />
         <TideChartSkeleton class="col-span-12 md:row-start-1" />
-        <TodayTidesSkeleton class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-2 xl:col-span-4 xl:col-start-5" />
+        <TodayTidesSkeleton
+          class="col-span-12 md:col-span-6 md:col-start-7 md:row-start-2 xl:col-span-4 xl:col-start-5"
+        />
         <TideWeekSkeleton class="col-span-12 md:row-start-3 xl:col-span-8" />
         <MoonTidesSkeleton
           class="col-span-12 md:col-span-6 md:col-start-1 md:row-start-4 xl:col-span-4 xl:col-start-9 xl:row-start-2"
@@ -76,7 +103,11 @@
         <NearbyStationsSkeleton class="col-span-12 md:row-start-5 xl:row-start-4" />
       </div>
 
-      <div v-else-if="station" class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6" :class="fadeClass">
+      <div
+        v-else-if="station"
+        class="grid grid-cols-12 items-stretch gap-3 sm:gap-4 md:gap-6"
+        :class="fadeClass"
+      >
         <!-- source order is the phone order; md and xl re-place the cards -->
         <TideNow
           :tides="tides"
@@ -108,15 +139,21 @@
               <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
             </button>
             <div aria-live="polite" class="flex min-w-0 flex-1 flex-col items-center text-center">
-              <span data-range-title class="whitespace-nowrap text-base font-semibold leading-6">{{ rangeTitle }}</span>
-              <span data-range-tag class="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-primary">{{ rangeTag }}</span>
+              <span data-range-title class="whitespace-nowrap text-base font-semibold leading-6">{{
+                rangeTitle
+              }}</span>
+              <span
+                data-range-tag
+                class="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-primary"
+                >{{ rangeTag }}</span
+              >
             </div>
             <button
               v-if="view === 'day'"
               type="button"
               data-next-day
               :aria-label="$t('tides.chart.nextDay')"
-              :disabled="day >= 6"
+              :disabled="day >= lastDay"
               :class="dayButton"
               @click="day += 1"
             >
@@ -124,11 +161,21 @@
             </button>
           </div>
           <TideChart :tides="tides" :view="view" :day="day" :now="now" />
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-4 text-muted-foreground">
-            <span class="flex items-center gap-1.5"><span class="size-[9px] rounded-full bg-tide" />{{ $t('tides.chart.high') }}</span>
-            <span class="flex items-center gap-1.5"><span class="size-[9px] rounded-full border-2 border-tide" />{{ $t('tides.chart.low') }}</span>
+          <div
+            class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-4 text-muted-foreground"
+          >
+            <span class="flex items-center gap-1.5"
+              ><span class="size-[9px] rounded-full bg-tide" />{{ $t('tides.chart.high') }}</span
+            >
+            <span class="flex items-center gap-1.5"
+              ><span class="size-[9px] rounded-full border-2 border-tide" />{{
+                $t('tides.chart.low')
+              }}</span
+            >
             <span class="flex items-center gap-1.5">
-              <span class="h-[9px] w-3.5 rounded-sm bg-chart-night shadow-[inset_0_0_0_1px_hsl(var(--border))]" />{{ $t('tides.chart.night') }}
+              <span
+                class="h-[9px] w-3.5 rounded-sm bg-chart-night shadow-[inset_0_0_0_1px_hsl(var(--border))]"
+              />{{ $t('tides.chart.night') }}
             </span>
             <span data-note>{{ chartNote }}</span>
           </div>
@@ -160,27 +207,68 @@
         />
       </div>
 
-      <section v-else data-empty class="flex flex-col items-start gap-4 rounded-card border bg-card p-6 md:p-10">
-        <svg viewBox="0 0 48 48" aria-hidden="true" class="size-12 fill-none stroke-tide" stroke-width="2" stroke-linecap="round">
+      <section
+        v-else
+        data-empty
+        class="flex flex-col items-start gap-4 rounded-card border bg-card p-6 md:p-10"
+      >
+        <svg
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+          class="size-12 fill-none stroke-tide"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
           <path d="M4 20c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4" />
           <path d="M4 30c5 0 5-4 10-4s5 4 10 4 5-4 10-4 5 4 10 4" opacity="0.5" />
         </svg>
         <div class="flex max-w-[560px] flex-col gap-1.5">
           <span class="text-lg font-semibold leading-6">{{ $t(emptyCopy.title) }}</span>
-          <span class="text-sm leading-[21px] text-muted-foreground [text-wrap:pretty]">{{ $t(emptyCopy.body) }}</span>
+          <span class="text-sm leading-[21px] text-muted-foreground [text-wrap:pretty]">{{
+            $t(emptyCopy.body)
+          }}</span>
         </div>
-        <button v-if="state === 'notFound'" type="button" data-back-home :class="pillButton" @click="clearStation">{{ backLabel }}</button>
-        <button v-else-if="state === 'error'" type="button" data-retry :class="pillButton" @click="load(true)">{{ $t('tides.empty.retry') }}</button>
-        <button v-else type="button" data-empty-explore aria-haspopup="dialog" :class="pillButton" @click="openExplorer($event)">
+        <button
+          v-if="state === 'notFound'"
+          type="button"
+          data-back-home
+          :class="pillButton"
+          @click="clearStation"
+        >
+          {{ backLabel }}
+        </button>
+        <button
+          v-else-if="state === 'error'"
+          type="button"
+          data-retry
+          :class="pillButton"
+          @click="load(true)"
+        >
+          {{ $t('tides.empty.retry') }}
+        </button>
+        <button
+          v-else
+          type="button"
+          data-empty-explore
+          aria-haspopup="dialog"
+          :class="pillButton"
+          @click="openExplorer($event)"
+        >
           {{ $t('tides.none.cta') }}
         </button>
       </section>
 
-      <footer class="mt-6 flex max-w-[760px] flex-col gap-1.5 border-t pt-5 text-[13px] leading-[19px] text-muted-foreground md:mt-8">
+      <footer
+        class="mt-6 flex max-w-[760px] flex-col gap-1.5 border-t pt-5 text-[13px] leading-[19px] text-muted-foreground md:mt-8"
+      >
         <p>{{ $t('tides.footer.disclaimer') }}</p>
-        <TideCredit v-if="footerCredit" data-credit :text="footerCredit" class="[overflow-wrap:anywhere]" />
+        <TideCredit
+          v-if="footerCredit"
+          data-credit
+          :text="footerCredit"
+          class="[overflow-wrap:anywhere]"
+        />
       </footer>
-
     </SkeletonGate>
 
     <ClientOnly>
@@ -224,12 +312,19 @@ import SkeletonGate from '@/components/common/SkeletonGate.vue'
 import tideMixin from '@/mixins/tideMixin'
 import tideNow from '@/mixins/tideNow'
 import weatherMixin from '@/mixins/weatherMixin'
-import useTidesStore from '@/stores/tides'
+import useTidesStore, { LONG_DAYS } from '@/stores/tides'
 import useWeatherStore from '@/stores/weather'
 import { addDays, dateInZone, zoneOffsetMin } from '@/utils/tideTime'
 import { dayIndexAt, haversineKm, offsetParts } from '@/utils/tides'
 
 const NAMED_DATUMS = ['LAT', 'MLLW', 'MLW', 'MSL']
+const DEFAULT_DAYS = 7
+const DATE_PATTERN = /^\d{4}-\d\d-\d\d$/
+const daysApart = (a, b) => {
+  const [ay, am, ad] = a.split('-').map(Number)
+  const [by, bm, bd] = b.split('-').map(Number)
+  return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 864e5)
+}
 const SHORT_DATE = { month: 'short', day: 'numeric' }
 
 export default {
@@ -272,6 +367,8 @@ export default {
       explorerOpener: null,
       // set while the explorer closes: on a phone that takes a history step
       pendingStation: null,
+      // the ?date= the chart was last opened on, so it opens once and then is the user's
+      openedDate: null,
       pillButton:
         'inline-flex h-11 flex-none items-center gap-2 whitespace-nowrap rounded-full border bg-card px-[18px] text-sm font-semibold text-foreground outline-ring hover:bg-foreground/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:bg-foreground/10 disabled:pointer-events-none disabled:opacity-50',
       dayButton:
@@ -285,8 +382,36 @@ export default {
       const id = this.$route.query.station
       return typeof id === 'string' && id ? id : null
     },
+    // /tides?lat=&lon=&name= (from Sun & Moon): the station nearest that place, not the
+    // forecast location's; a ?station= wins over it
+    nearQuery() {
+      if (this.stationId) return null
+      const { lat, lon, name } = this.$route.query
+      const la = typeof lat === 'string' && lat ? Number(lat) : NaN
+      const lo = typeof lon === 'string' && lon ? Number(lon) : NaN
+      if (!(Math.abs(la) <= 90 && Math.abs(lo) <= 180)) return null
+      return { lat: la, lon: lo, name: typeof name === 'string' ? name : '' }
+    },
+    nearKey() {
+      return this.nearQuery ? `${this.nearQuery.lat},${this.nearQuery.lon}` : null
+    },
+    // the place distances are measured from
+    origin() {
+      return this.nearQuery ?? this.coords
+    },
+    // /tides?date=YYYY-MM-DD (from Sun & Moon) opens the chart on that day in the station's zone
+    dateQuery() {
+      const date = this.$route.query.date
+      return typeof date === 'string' && DATE_PATTERN.test(date) ? date : null
+    },
+    horizon() {
+      return this.dateQuery ? LONG_DAYS : DEFAULT_DAYS
+    },
+    lastDay() {
+      return this.horizon - 1
+    },
     slot() {
-      return this.stationId ? this.tidesStore.chosen : this.tidesStore.nearest
+      return this.stationId || this.nearQuery ? this.tidesStore.chosen : this.tidesStore.nearest
     },
     tides() {
       return this.slot.data
@@ -299,12 +424,14 @@ export default {
       if (this.slot.status === 'notFound' || this.slot.status === 'error') return this.slot.status
       if (this.tides) return 'none'
       // nothing to look up until the weather says where we are
-      if (!this.stationId && !this.coords && !this.weatherPending) return 'pick'
+      if (!this.stationId && !this.nearQuery && !this.coords && !this.weatherPending) return 'pick'
       return 'loading'
     },
     emptyCopy() {
-      if (this.state === 'notFound') return { title: 'tides.empty.notFoundTitle', body: 'tides.empty.notFoundBody' }
-      if (this.state === 'error') return { title: 'tides.empty.errorTitle', body: 'tides.empty.errorBody' }
+      if (this.state === 'notFound')
+        return { title: 'tides.empty.notFoundTitle', body: 'tides.empty.notFoundBody' }
+      if (this.state === 'error')
+        return { title: 'tides.empty.errorTitle', body: 'tides.empty.errorBody' }
       if (this.state === 'none') return { title: 'tides.none.title', body: 'tides.none.body' }
       return { title: 'tides.empty.pickTitle', body: 'tides.empty.pickBody' }
     },
@@ -316,12 +443,14 @@ export default {
       return this.station?.timezone
     },
     meta() {
-      return this.station ? [this.station.country, this.station.region].filter(Boolean).join(' · ') : ''
+      return this.station
+        ? [this.station.country, this.station.region].filter(Boolean).join(' · ')
+        : ''
     },
     distanceKm() {
       if (!this.station) return null
       if (this.station.distanceKm !== null) return this.station.distanceKm
-      return this.coords ? Math.round(haversineKm(this.coords, this.station)) : null
+      return this.origin ? Math.round(haversineKm(this.origin, this.station)) : null
     },
     zoneText() {
       const { hours, minutes, negative } = offsetParts(zoneOffsetMin(this.now, this.zone))
@@ -334,8 +463,13 @@ export default {
     distanceLine() {
       if (!this.station) return ''
       const parts = [this.zoneText]
-      if (this.distanceKm !== null && this.coords) {
-        parts.unshift(this.$t('tides.page.kmFrom', { km: this.tideGrouped(this.distanceKm), place: this.coords.name }))
+      if (this.distanceKm !== null && this.origin?.name) {
+        parts.unshift(
+          this.$t('tides.page.kmFrom', {
+            km: this.tideGrouped(this.distanceKm),
+            place: this.origin.name
+          })
+        )
       }
       return parts.join(' · ')
     },
@@ -354,11 +488,14 @@ export default {
       return this.tides.days[Math.max(0, Math.min(last, today + this.day))].date
     },
     rangeTitle() {
-      if (this.view === 'day') return this.tideDate(this.selectedDate, { weekday: 'long', month: 'long', day: 'numeric' })
+      if (this.view === 'day')
+        return this.tideDate(this.selectedDate, { weekday: 'long', month: 'long', day: 'numeric' })
       const start = this.todayDate
       const end = addDays(start, 6)
       const sameMonth = start.slice(0, 7) === end.slice(0, 7)
-      return `${this.tideDate(start, SHORT_DATE)} – ${sameMonth ? this.formatNumber(Number(end.slice(8))) : this.tideDate(end, SHORT_DATE)}`
+      return `${this.tideDate(start, SHORT_DATE)} – ${
+        sameMonth ? this.formatNumber(Number(end.slice(8))) : this.tideDate(end, SHORT_DATE)
+      }`
     },
     rangeTag() {
       if (this.view === 'week') return this.$t('tides.chart.next7')
@@ -384,21 +521,42 @@ export default {
       this.day = 0
       this.load()
     },
+    nearKey() {
+      this.day = 0
+      this.load()
+    },
+    dateQuery() {
+      this.load()
+      this.openDate()
+    },
+    station() {
+      this.openDate()
+    },
     coords() {
       this.load()
     }
   },
   mounted() {
     this.load()
+    this.openDate()
   },
   methods: {
     load(force = false) {
-      const slot = this.stationId ? 'chosen' : 'nearest'
+      const chosen = this.stationId || this.nearQuery
       // a retry has to get past the "already loaded this" check
-      if (force) this.tidesStore[slot].key = null
+      if (force) this.tidesStore[chosen ? 'chosen' : 'nearest'].key = null
       // the nearest one always loads, for the way back from a station that doesn't exist
-      this.tidesStore.loadNearest(this.coords)
-      if (this.stationId) this.tidesStore.loadStation(this.stationId)
+      this.tidesStore.loadNearest(this.coords, chosen ? DEFAULT_DAYS : this.horizon)
+      if (this.stationId) this.tidesStore.loadStation(this.stationId, this.horizon)
+      else if (this.nearQuery) this.tidesStore.loadNear(this.nearQuery, this.horizon)
+    },
+    openDate() {
+      if (!this.dateQuery || !this.station || this.openedDate === this.dateQuery) return
+      this.openedDate = this.dateQuery
+      const offset = daysApart(this.todayDate, this.dateQuery)
+      if (offset < -1 || offset > this.lastDay) return
+      this.view = 'day'
+      this.day = offset
     },
     openExplorer(event) {
       this.explorerOpener = event?.currentTarget ?? null
