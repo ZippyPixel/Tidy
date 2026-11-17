@@ -25,3 +25,26 @@ export function parsePrayerCookie(value, methodKeys) {
 
 export const formatPrayerCookie = (methodKey, hanafi) =>
   `${methodKey}|${hanafi ? 'hanafi' : 'standard'}`
+
+// What to wear: "<man|woman>|<feel -1..1>|<coverage 0|1>|<skirts 0|1>", e.g. "man|0|0|1"
+export const WEAR_COOKIE_KEY = 'tidy-wear'
+export const WEAR_DEFAULTS = Object.freeze({
+  figure: 'man',
+  feel: 0,
+  coverage: false,
+  skirts: true
+})
+
+export function parseWearCookie(value) {
+  const [figure, feel, coverage, skirts] = String(value ?? '').split('|')
+  const f = Number(feel)
+  return {
+    figure: figure === 'woman' ? 'woman' : 'man',
+    feel: f === -1 || f === 1 ? f : 0,
+    coverage: coverage === '1',
+    skirts: skirts !== '0'
+  }
+}
+
+export const formatWearCookie = ({ figure, feel, coverage, skirts }) =>
+  `${figure}|${feel}|${coverage ? 1 : 0}|${skirts ? 1 : 0}`

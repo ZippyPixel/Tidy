@@ -9,10 +9,13 @@ const routerAt = (path, query = {}) => ({
 })
 
 describe('followLocation', () => {
-  it('returns to home from a page without weather', () => {
-    const router = routerAt('/about')
-    followLocation(router)
-    expect(router.push).toHaveBeenCalledWith('/')
+  it('never leaves the page: What to wear and About stay open', () => {
+    for (const path of ['/wear', '/about']) {
+      const router = routerAt(path)
+      followLocation(router)
+      expect(router.push).not.toHaveBeenCalled()
+      expect(router.replace).not.toHaveBeenCalled()
+    }
   })
 
   it('stays put on home, and without a router', () => {
