@@ -26,25 +26,31 @@ export function parsePrayerCookie(value, methodKeys) {
 export const formatPrayerCookie = (methodKey, hanafi) =>
   `${methodKey}|${hanafi ? 'hanafi' : 'standard'}`
 
-// What to wear: "<man|woman>|<feel -1..1>|<coverage 0|1>|<skirts 0|1>", e.g. "man|0|0|1"
+// What to wear: "<man|woman>|<feel -1..1>|<coverage 0|1>|<skirts 0|1>|<style>|<off ids, dot separated>",
+// e.g. "man|0|0|1|everyday|jeans.cap". Cookies from before style and exclude read as everyday, all on.
 export const WEAR_COOKIE_KEY = 'tidy-wear'
+export const WEAR_STYLES = Object.freeze(['everyday', 'traditional', 'both'])
 export const WEAR_DEFAULTS = Object.freeze({
   figure: 'man',
   feel: 0,
   coverage: false,
-  skirts: true
+  skirts: true,
+  style: 'everyday',
+  exclude: Object.freeze([])
 })
 
 export function parseWearCookie(value) {
-  const [figure, feel, coverage, skirts] = String(value ?? '').split('|')
+  const [figure, feel, coverage, skirts, style, off] = String(value ?? '').split('|')
   const f = Number(feel)
   return {
     figure: figure === 'woman' ? 'woman' : 'man',
     feel: f === -1 || f === 1 ? f : 0,
     coverage: coverage === '1',
-    skirts: skirts !== '0'
+    skirts: skirts !== '0',
+    style: WEAR_STYLES.includes(style) ? style : 'everyday',
+    exclude: (off || '').split('.').filter((id) => /^[a-z]+$/.test(id))
   }
 }
 
-export const formatWearCookie = ({ figure, feel, coverage, skirts }) =>
-  `${figure}|${feel}|${coverage ? 1 : 0}|${skirts ? 1 : 0}`
+export const formatWearCookie = ({ figure, feel, coverage, skirts, style, exclude }) =>
+  `${figure}|${feel}|${coverage ? 1 : 0}|${skirts ? 1 : 0}|${style}|${(exclude || []).join('.')}`

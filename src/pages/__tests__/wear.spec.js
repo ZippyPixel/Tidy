@@ -178,6 +178,17 @@ describe('What to wear page', () => {
     expect(wear.feel).toBe(-1)
   })
 
+  it('the style control picks traditional outfits and is saved', async () => {
+    const { wrapper, pinia } = setup()
+    const radios = wrapper.findAll('[data-wear-style] [role="radio"]')
+    expect(radios.map((r) => r.text())).toEqual(['Everyday', 'Traditional', 'Both'])
+    await radios[1].trigger('click')
+    expect(useWearStore(pinia).style).toBe('traditional')
+    expect(document.cookie).toContain('traditional')
+    const hero = wrapper.findAllComponents(WearFigure).find((f) => f.props('label'))
+    expect(hero.props('outfit').top).toBe('panjabi')
+  })
+
   it('ends with the guidance line for the place', () => {
     const { wrapper } = setup()
     expect(wrapper.text()).toContain('Suggestions come from the hourly forecast for Joar Sahara')
