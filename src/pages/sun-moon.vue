@@ -4,13 +4,16 @@
          The page is a function of { place, instant }, both kept in the URL (utils/skyRoute). -->
     <SkeletonGate v-slot="{ showSkeleton, fadeClass }" :loading="loading">
       <p role="status" class="sr-only">{{ showSkeleton ? $t('loading.sky') : '' }}</p>
-      <NuxtLink
-        to="/"
-        class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
-      >
-        <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
-        <span>{{ $t('tides.page.back') }}</span>
-      </NuxtLink>
+      <div class="flex items-center justify-between">
+        <NuxtLink
+          to="/"
+          class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
+        >
+          <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
+          <span>{{ $t('tides.page.back') }}</span>
+        </NuxtLink>
+        <ShareButton variant="icon" origin="sky" />
+      </div>
 
       <div class="mb-4 min-w-0 md:mb-6">
         <div class="mb-1 text-[13px] font-medium leading-4 text-muted-foreground">
@@ -159,6 +162,7 @@ import { defineAsyncComponent, markRaw, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { mapState } from 'pinia'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ShareButton from '@/components/share/ShareButton.vue'
 import SkeletonGate from '@/components/common/SkeletonGate.vue'
 import SkySkeleton from '@/components/skeletons/SkySkeleton.vue'
 import { SKY_GRID, SKY_PLACE } from '@/components/sky/layout'
@@ -199,6 +203,7 @@ const LIVE_TICK_MS = 30000
 export default {
   name: 'SunMoonPage',
   components: {
+    ShareButton,
     AppIcon,
     Skeleton,
     SkeletonGate,

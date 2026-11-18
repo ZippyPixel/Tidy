@@ -57,6 +57,12 @@ describe('share card', () => {
     expect(api.date.value).toBe('2026-11-06')
   })
 
+  it('has one root element, the box the export captures', async () => {
+    const { wrapper } = await setup()
+    const card = wrapper.findComponent(ShareCard)
+    expect(card.element.classList).toContain('share-card-box')
+  })
+
   it('shows the Today details and reads them all out', async () => {
     const { wrapper } = await setup()
     expect(details(wrapper)).toEqual(['wind', 'visibility', 'uv', 'aqi', 'sun', 'moon'])

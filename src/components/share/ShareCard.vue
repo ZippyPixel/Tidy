@@ -1,8 +1,8 @@
 <template>
-  <!-- design/TidyShareCard: drawn in a 360-unit space. The outer box is a size container and
-       every length is calc(var(--u) * n) with --u = 100cqw / 360, so the card renders at any
-       width the parent gives it (preview) or at 1080 (export) without measuring anything. -->
   <div class="share-card-box" :style="boxStyle">
+    <!-- design/TidyShareCard: drawn in a 360-unit space. The outer box is a size container and
+         every length is calc(var(--u) * n) with --u = 100cqw / 360, so the card renders at any
+         width the parent gives it (preview) or at 1080 (export) without measuring anything. -->
     <div
       role="img"
       :aria-label="ariaLabel"

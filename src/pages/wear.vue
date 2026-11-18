@@ -4,13 +4,16 @@
          chosen window (now / today / tomorrow / a part of the day), derived from the forecast
          the weather store already has. The choice of window lasts while you stay on the page. -->
     <p role="status" class="sr-only">{{ loading ? $t('loading.wear') : '' }}</p>
-    <NuxtLink
-      to="/"
-      class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
-    >
-      <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
-      <span>{{ $t('wear.page.back') }}</span>
-    </NuxtLink>
+    <div class="flex items-center justify-between">
+      <NuxtLink
+        to="/"
+        class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
+      >
+        <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
+        <span>{{ $t('wear.page.back') }}</span>
+      </NuxtLink>
+      <ShareButton variant="icon" origin="wear" />
+    </div>
 
     <div
       class="mb-4 flex flex-wrap items-start justify-between gap-4 sm:mb-5 sm:items-end"
@@ -117,6 +120,7 @@
 import { useI18n } from 'vue-i18n'
 import { mapState } from 'pinia'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ShareButton from '@/components/share/ShareButton.vue'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import WearHero from '@/components/wear/WearHero.vue'
@@ -138,6 +142,7 @@ import { buildLooks } from '@/utils/wearLooks'
 export default {
   name: 'WearPage',
   components: {
+    ShareButton,
     AppIcon,
     SegmentedControl,
     Skeleton,
