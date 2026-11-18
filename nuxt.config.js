@@ -54,7 +54,12 @@ export default defineNuxtConfig({
     weatherApiKey: '',
     // the default keeps the app working with only a key configured; override per
     // environment to point at a mock or a proxy
-    weatherApiBase: 'https://api.weatherapi.com/v1'
+    weatherApiBase: 'https://api.weatherapi.com/v1',
+    public: {
+      // the site the share card links back to (NUXT_PUBLIC_SITE_URL, e.g. https://tidy.example);
+      // empty = the origin the page was opened on
+      siteUrl: ''
+    }
   },
 
   app: {

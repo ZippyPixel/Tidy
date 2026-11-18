@@ -6,16 +6,32 @@
     >
       <slot />
     </main>
+    <!-- the share composer: its own chunk, loaded the first time someone shares -->
+    <ShareComposer v-if="everOpened" :site-origin="siteOrigin" @close="closeShare" />
   </div>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
+import { mapActions, mapState } from 'pinia'
 import AppHeader from '@/components/layout/AppHeader.vue'
+import useShareStore from '@/stores/share'
 
 export default {
   name: 'DefaultLayout',
   components: {
-    AppHeader
+    AppHeader,
+    ShareComposer: defineAsyncComponent(() => import('@/components/share/ShareComposer.vue'))
+  },
+  setup() {
+    // public runtime config (NUXT_PUBLIC_SITE_URL): the site the share card links back to
+    return { siteOrigin: useRuntimeConfig().public.siteUrl || '' }
+  },
+  computed: {
+    ...mapState(useShareStore, ['everOpened'])
+  },
+  methods: {
+    ...mapActions(useShareStore, ['closeShare'])
   }
 }
 </script>

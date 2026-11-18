@@ -33,6 +33,7 @@ import {
   withoutShare
 } from '@/utils/share/shareLink'
 import { EPA_LEVELS, UV_LEVELS } from '@/constants/levelColors'
+import { exifOffsetMinutes, exifWallClock, photoTakenAt } from '@/utils/share/photoTime'
 
 const RISE = 6 * 60 // 6:00
 const SET = 18 * 60 // 18:00
@@ -322,5 +323,34 @@ describe('file name', () => {
   it('keeps letters of any script', () => {
     expect(slugify('ঢাকা')).not.toBe('')
     expect(slugify('  --Hello,  World!-- ')).toBe('hello-world')
+  })
+})
+
+describe('photo time', () => {
+  it('reads the EXIF wall clock', () => {
+    expect(exifWallClock('2026:11:04 17:42:00')).toBe(Date.UTC(2026, 10, 4, 17, 42, 0))
+    expect(exifWallClock('nope')).toBe(null)
+    expect(exifWallClock('0000:00:00 00:00:00')).toBe(null)
+  })
+
+  it('reads offsets', () => {
+    expect(exifOffsetMinutes('+05:30')).toBe(330)
+    expect(exifOffsetMinutes('-04:00')).toBe(-240)
+    expect(exifOffsetMinutes('')).toBe(null)
+  })
+
+  it('pins the clock with the camera offset', () => {
+    expect(photoTakenAt({ dateTimeOriginal: '2026:11:04 17:42:00', offsetTimeOriginal: '+06:00' }, 'UTC')).toBe(
+      Date.UTC(2026, 10, 4, 11, 42)
+    )
+  })
+
+  it("otherwise reads the clock as the place's", () => {
+    expect(photoTakenAt({ dateTimeOriginal: '2026:11:04 17:42:00' }, 'Asia/Dhaka')).toBe(Date.UTC(2026, 10, 4, 11, 42))
+    // New York in summer is UTC−4
+    expect(photoTakenAt({ dateTimeOriginal: '2026:07:04 12:00:00' }, 'America/New_York')).toBe(
+      Date.UTC(2026, 6, 4, 16, 0)
+    )
+    expect(photoTakenAt({ dateTimeOriginal: null }, 'UTC')).toBe(null)
   })
 })
