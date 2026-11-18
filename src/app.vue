@@ -9,6 +9,7 @@
 <script>
 import { mapState, mapActions } from 'pinia'
 import useWeatherStore from '@/stores/weather'
+import { parseShareLink } from '@/utils/share/shareLink'
 
 export default {
   name: 'App',
@@ -20,6 +21,8 @@ export default {
       detectUserLocation: 'detectUserLocation'
     }),
     async checkAndDetectLocation() {
+      // a share link loads its own place (pages/index.vue)
+      if (parseShareLink(this.$route?.query || {})?.place) return
       if (!this.location && !this.isLoading) {
         try {
           await this.detectUserLocation()

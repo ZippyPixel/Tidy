@@ -26,6 +26,20 @@ describe('followLocation', () => {
     expect(() => followLocation(undefined)).not.toThrow()
   })
 
+  it('drops a share link from home, keeping anything else', () => {
+    const router = routerAt('/', {
+      lat: '23.82',
+      lon: '90.42',
+      tz: 'Asia/Dhaka',
+      d: '2026-11-06',
+      from: 'share',
+      m: 'today',
+      x: '1'
+    })
+    followLocation(router)
+    expect(router.replace).toHaveBeenCalledWith({ query: { x: '1' } })
+  })
+
   it('keeps Sun & Moon open on the new location, keeping its time', () => {
     const router = routerAt('/sun-moon', {
       t: '2026-11-24T21:30',
