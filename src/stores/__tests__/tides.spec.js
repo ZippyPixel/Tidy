@@ -118,6 +118,7 @@ describe('weather store coords', () => {
     await weather.setValues(fixture)
     expect(weather.coords).toEqual({
       name: 'Joar Sahara',
+      region: '',
       country: 'Bangladesh',
       lat: 23.817,
       lon: 90.417,

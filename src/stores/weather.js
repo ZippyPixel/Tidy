@@ -21,7 +21,7 @@ export default defineStore('weather', {
     localtime: '', // the location's clock when fetched, 'YYYY-MM-DD HH:mm'
     today: '', // the location's current date, YYYY-MM-DD
     zoneOffsetMs: null, // location UTC offset, for its wall clock (utils/astro locationClock)
-    coords: null, // { name, country, lat, lon, tzId } of the forecast location, for the tides
+    coords: null, // { name, region, country, lat, lon, tzId } of the forecast location, for the tides
     astro: {}, //sunrise, sunset, moonrise, moonset
     rawTemperature: {}, //stores raw C and F values from API
     chanceOfRain: '',
@@ -182,6 +182,7 @@ export default defineStore('weather', {
       //where the forecast is for, so the tides can find the nearest station
       this.coords = {
         name: response.location.name,
+        region: response.location.region || '',
         country: response.location.country,
         lat: response.location.lat,
         lon: response.location.lon,
