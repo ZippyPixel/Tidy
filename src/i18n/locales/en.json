@@ -7,7 +7,8 @@
     "search": "Searching…",
     "places": "Loading places…",
     "sky": "Working out the sky…",
-    "wear": "Picking an outfit…"
+    "wear": "Picking an outfit…",
+    "share": "Making your card…"
   },
   "header": {
     "searchPlaceholder": "Search City",
@@ -1214,6 +1215,211 @@
       "layers": "Layers",
       "shoes": "Shoes",
       "extras": "Extras"
+    }
+  },
+  "share": {
+    "button": "Share",
+    "buttonToday": "Share today",
+    "buttonLabel": "Share today's weather as an image",
+    "pageButton": {
+      "tides": "Share the tide",
+      "sky": "Share the sky",
+      "wear": "Share your outfit"
+    },
+    "title": {
+      "dashboard": "Share today",
+      "tides": "Share the tide",
+      "sky": "Share the sky",
+      "wear": "Share your outfit"
+    },
+    "subtitle": "One tap to share. Tweak it if you like.",
+    "description": "Make an image of this weather to share or save.",
+    "preview": "Preview",
+    "tabs": {
+      "label": "Share options",
+      "look": "Look",
+      "content": "Content",
+      "privacy": "Privacy"
+    },
+    "look": {
+      "title": "Look",
+      "sky": "Sky",
+      "photo": "Photo",
+      "sticker": "Sticker",
+      "skyHint": "Your sky, right now",
+      "skyHintShort": "Right now",
+      "photoHint": "Weather on your photo",
+      "photoHintShort": "Yours",
+      "stickerHint": "Just the text, to paste",
+      "stickerHintShort": "Just text"
+    },
+    "photo": {
+      "title": "Your photo",
+      "choose": "Choose a photo",
+      "stays": "It stays on this device. TIDY never uploads it.",
+      "change": "Change",
+      "remove": "Remove",
+      "meta": "{size} MB · on this device",
+      "taken": "Weather from when it was taken",
+      "takenHint": "{when} · tides, sun and moon for that moment",
+      "noWeather": "No weather on record for then, so the weather lines and details are hidden.",
+      "needed": "Choose a photo first."
+    },
+    "size": {
+      "title": "Size",
+      "story": "Story",
+      "post": "Post",
+      "square": "Square",
+      "inkTitle": "Text colour",
+      "white": "White",
+      "dark": "Dark",
+      "whiteHint": "Darker photos",
+      "darkHint": "Brighter photos"
+    },
+    "exportLabel": {
+      "story": "Story · 1080 × 1920",
+      "post": "Post · 1080 × 1350",
+      "square": "Square · 1080 × 1080",
+      "sticker": "Transparent PNG · 1080 wide"
+    },
+    "safeZones": "Safe zones",
+    "moments": {
+      "title": "Moment",
+      "today": {
+        "name": "Today",
+        "blurb": "Wind, visibility, UV, air, sun, moon"
+      },
+      "beach": {
+        "name": "Beach day",
+        "blurb": "Tide, wind, UV, sun arc"
+      },
+      "sky": {
+        "name": "Sky watch",
+        "blurb": "Moon, sun arc, golden hour, clouds"
+      },
+      "outfit": {
+        "name": "Outfit",
+        "blurb": "What to wear, rain, UV, wind"
+      }
+    },
+    "top": {
+      "title": "Top of the card",
+      "reset": "Reset",
+      "place": "Location",
+      "date": "Date & time",
+      "temp": "Temperature",
+      "summary": "Summary",
+      "hilo": "High & low",
+      "feels": "Feels like"
+    },
+    "details": {
+      "title": "Weather details",
+      "count": "{used} of {cap}",
+      "full": "{cap} fit on a {format}. Remove one to add another.",
+      "fullSwitch": "{cap} fit on a {format}. Remove one to add another, or switch to Story for six.",
+      "formats": {
+        "story": "story",
+        "post": "post",
+        "square": "square",
+        "sticker": "sticker"
+      },
+      "wind": "Wind",
+      "visibility": "Visibility",
+      "uv": "UV",
+      "aqi": "Air quality",
+      "sun": "Sun arc",
+      "moon": "Moon phase",
+      "rain": "Rain chance",
+      "humidity": "Humidity",
+      "cloud": "Clouds",
+      "golden": "Golden hour",
+      "tide": "Tide",
+      "wear": "What to wear"
+    },
+    "privacy": {
+      "place": "Location detail",
+      "city": "City",
+      "region": "Region",
+      "placeOff": "Location is off on the card, so the link carries no place.",
+      "cityHint": "The city on the card. The link is rounded to about 1 km.",
+      "regionHint": "Region and country on the card. The link is rounded to about 10 km.",
+      "link": "TIDY link",
+      "linkHint": "Shown on the card and sent with it. Friends open this weather in TIDY.",
+      "noteTitle": "Nothing leaves your device",
+      "noteBody": "The image is made here. Photos are never uploaded, and their location and camera details are not in what you share."
+    },
+    "actions": {
+      "share": "Share",
+      "shareSticker": "Share sticker",
+      "save": "Save",
+      "copy": "Copy",
+      "download": "Download PNG",
+      "copyImage": "Copy image",
+      "making": "Making the image…",
+      "failed": "Couldn't make the image. Try again.",
+      "copyFailed": "Couldn't copy the image. Save it instead."
+    },
+    "done": {
+      "shared": "Shared",
+      "saved": "Saved",
+      "copied": "Copied",
+      "sharedTitle": "Your card is on its way",
+      "sharedBody": "Anyone who opens the link lands on this weather in TIDY.",
+      "sharedBodyNoLink": "The image went out without a TIDY link.",
+      "savedTitle": "Image saved",
+      "savedBodyStory": "In Instagram, tap + › Story and pick it from your gallery.",
+      "savedBody": "Post it anywhere: it is a normal PNG.",
+      "copiedTitle": "Image copied",
+      "stickerCopiedTitle": "Sticker copied",
+      "copiedBody": "Paste it into a chat, a doc or a post.",
+      "stickerCopiedBody": "Open a story in Instagram, tap and hold on your photo, then Paste. Pinch to size it.",
+      "sentWith": "Sent with the image",
+      "another": "Make another",
+      "close": "Done"
+    },
+    "text": {
+      "today": "Today's weather in {place}, made with TIDY.",
+      "todayNoPlace": "Today's weather, made with TIDY.",
+      "beach": "Tide, wind and sun in {place} today.",
+      "beachNoPlace": "Tide, wind and sun today.",
+      "sky": "Tonight's moon and golden hour in {place}.",
+      "skyNoPlace": "Tonight's moon and golden hour.",
+      "outfit": "What I'm wearing for the weather in {place} today.",
+      "outfitNoPlace": "What I'm wearing for the weather today.",
+      "seeYours": "See yours: {url}"
+    },
+    "card": {
+      "aria": "TIDY share card",
+      "addPhoto": "Add a photo",
+      "uv": "UV",
+      "aqi": "AQI",
+      "hilo": "H {hi}  L {lo}",
+      "taken": "Taken {when}",
+      "profileRow": "Profile row",
+      "replyBar": "Reply bar"
+    },
+    "spoken": {
+      "wind": "Wind {value} {unit}",
+      "uv": "UV index {value}",
+      "aqi": "Air quality {value}",
+      "visibility": "Visibility {value} {unit}",
+      "rain": "Chance of rain {value}",
+      "humidity": "Humidity {value}",
+      "cloud": "Cloud cover {value}",
+      "golden": "Golden hour {time}",
+      "tideRising": "Tide {value} {unit} and rising",
+      "tideFalling": "Tide {value} {unit} and falling",
+      "wear": "What to wear: {text}",
+      "sun": "Sunrise {rise}, sunset {set}",
+      "moon": "Moon: {phase}, {lit}% lit"
+    },
+    "banner": {
+      "label": "Opened from a shared TIDY card",
+      "kicker": "From a shared TIDY card",
+      "body": "You're looking at {place} on {date}.",
+      "bodyNoDate": "You're looking at {place}.",
+      "mine": "Show my weather",
+      "dismiss": "Dismiss"
     }
   }
 }

@@ -4,13 +4,16 @@
          SkeletonGate holds the per-section skeletons while the station loads. -->
     <SkeletonGate v-slot="{ showSkeleton, fadeClass }" :loading="state === 'loading'">
       <p role="status" class="sr-only">{{ showSkeleton ? $t('loading.tides') : '' }}</p>
-      <NuxtLink
-        to="/"
-        class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
-      >
-        <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
-        <span>{{ $t('tides.page.back') }}</span>
-      </NuxtLink>
+      <div class="flex items-center justify-between">
+        <NuxtLink
+          to="/"
+          class="-ml-2 mb-1 inline-flex h-11 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-medium text-muted-foreground outline-ring hover:text-foreground focus-visible:outline focus-visible:outline-2"
+        >
+          <AppIcon name="chevron-left" :size="18" :stroke-width="2" />
+          <span>{{ $t('tides.page.back') }}</span>
+        </NuxtLink>
+        <ShareButton variant="icon" origin="tides" />
+      </div>
 
       <div
         class="mb-4 flex flex-col items-start gap-3 md:mb-6 md:flex-row md:items-end md:justify-between md:gap-6"
@@ -290,6 +293,7 @@ import { defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { mapState, mapStores } from 'pinia'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ShareButton from '@/components/share/ShareButton.vue'
 import DashboardCard from '@/components/common/DashboardCard.vue'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import MoonTides from '@/components/tides/MoonTides.vue'
@@ -330,6 +334,7 @@ const SHORT_DATE = { month: 'short', day: 'numeric' }
 export default {
   name: 'TidesPage',
   components: {
+    ShareButton,
     AppIcon,
     DashboardCard,
     MoonTides,
