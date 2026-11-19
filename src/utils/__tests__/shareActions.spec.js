@@ -7,7 +7,7 @@ import {
   shareFile,
   shareText
 } from '@/utils/share/shareActions'
-import { pickFontFaces } from '@/utils/share/capture'
+import { pickFontFaces, coversText, cardFontCss } from '@/utils/share/capture'
 
 describe('share buttons', () => {
   it('shares on a phone and saves second', () => {
@@ -112,5 +112,39 @@ describe('font embedding', () => {
     expect(kept).toContain('b.woff2')
     expect(kept).toContain('c.woff2')
     expect(kept).not.toContain('a.woff2')
+  })
+
+  it('matches a face to the text by its unicode-range', () => {
+    const latin = '@font-face { src: url(c.woff2); unicode-range: U+0000-00FF, U+0131; }'
+    const bengali = '@font-face { src: url(d.woff2); unicode-range: U+0951-0952, U+0980-09FE; }'
+    const wild = '@font-face { src: url(e.woff2); unicode-range: U+20??; }'
+    expect(coversText(latin, 'Dhaka 31°')).toBe(true)
+    expect(coversText(bengali, 'Dhaka 31°')).toBe(false)
+    expect(coversText(bengali, 'ঢাকা')).toBe(true)
+    expect(coversText(wild, '·')).toBe(false)
+    expect(coversText(wild, '–')).toBe(true)
+    expect(coversText('@font-face { src: url(f.woff2); }', 'x')).toBe(true)
+  })
+
+  it('inlines the font files, since the captured image cannot fetch them', async () => {
+    const sheet = `/* bengali */
+@font-face { font-family: 'Noto Sans Bengali'; src: url(https://fonts.gstatic.com/bn.woff2) format('woff2'); unicode-range: U+0980-09FE; }
+/* latin */
+@font-face { font-family: 'Roboto Flex'; src: url(https://fonts.gstatic.com/latin.woff2) format('woff2'); unicode-range: U+0000-00FF; }`
+    const fetch = vi.fn(async (url) =>
+      url.includes('googleapis')
+        ? { ok: true, text: async () => sheet }
+        : { ok: true, blob: async () => new Blob(['font'], { type: 'font/woff2' }) }
+    )
+    vi.stubGlobal('fetch', fetch)
+    try {
+      const css = await cardFontCss('Dhaka 31°')
+      expect(css).toContain("font-family: 'Roboto Flex'")
+      expect(css).toContain('url(data:font/woff2;base64,')
+      expect(css).not.toContain('gstatic')
+      expect(css).not.toContain('Noto Sans Bengali')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
