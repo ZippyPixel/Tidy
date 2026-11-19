@@ -77,7 +77,7 @@ describe('share card', () => {
   it('gives the summary the headline size with the temperature off', async () => {
     const { wrapper } = await setup({ props: { header: ['summary'] } })
     const summary = wrapper.findAll('span').find((s) => s.text() === 'Sunny')
-    expect(summary.attributes('style')).toContain('calc(var(--u) * 40)')
+    expect(summary.attributes('style')).toContain('calc(var(--u) * 36)')
   })
 
   it('drops the link text when the link is off', async () => {

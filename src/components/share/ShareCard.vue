@@ -225,10 +225,10 @@ const ARROW_DOWN = 'M12 5v14 M18.5 12.5 12 19l-6.5-6.5'
 // sizes in the 360-unit space. Story padding keeps text out of Instagram's overlays:
 // 66 / 360 × 1080 ≈ 198 px under the top 180 px; 72 → 216 px over the bottom 200 px
 const SIZES = {
-  story: { padX: 28, padT: 66, padB: 72, temp: 116, cond: 21, condHero: 40, sub: 13, place: 15.5, date: 12.5, val: 22, unit: 12.5, glyph: 19, rowGap: 22, colGap: 24, flow: 16, scaleH: 6, moon: 32, arcH: 34, small: 11.5 },
-  post: { padX: 28, padT: 28, padB: 24, temp: 90, cond: 19, condHero: 34, sub: 12.5, place: 14.5, date: 12, val: 20, unit: 12, glyph: 18, rowGap: 16, colGap: 22, flow: 12, scaleH: 5.5, moon: 28, arcH: 30, small: 11 },
-  square: { padX: 24, padT: 24, padB: 22, temp: 72, cond: 16.5, condHero: 28, sub: 12, place: 14, date: 11.5, val: 18, unit: 11.5, glyph: 17, rowGap: 13, colGap: 20, flow: 10, scaleH: 5, moon: 26, arcH: 26, small: 10.5 },
-  sticker: { padX: 22, padT: 20, padB: 20, temp: 78, cond: 18, condHero: 30, sub: 12.5, place: 14.5, date: 12, val: 20, unit: 12, glyph: 18, rowGap: 16, colGap: 22, flow: 12, scaleH: 5.5, moon: 28, arcH: 30, small: 11 }
+  story: { padX: 28, padT: 66, padB: 72, temp: 104, cond: 19, condHero: 36, sub: 12, place: 14, date: 11.5, val: 20, unit: 11.5, glyph: 18, rowGap: 22, colGap: 24, flow: 16, scaleH: 6, moon: 30, arcH: 32, small: 10.5 },
+  post: { padX: 28, padT: 28, padB: 24, temp: 81, cond: 17, condHero: 30.5, sub: 11.5, place: 13, date: 11, val: 18, unit: 11, glyph: 17, rowGap: 16, colGap: 22, flow: 12, scaleH: 5.5, moon: 26, arcH: 28, small: 10 },
+  square: { padX: 24, padT: 24, padB: 22, temp: 65, cond: 15, condHero: 25, sub: 11, place: 12.5, date: 10.5, val: 16, unit: 10.5, glyph: 16, rowGap: 13, colGap: 20, flow: 10, scaleH: 5, moon: 24, arcH: 25, small: 9.5 },
+  sticker: { padX: 22, padT: 20, padB: 20, temp: 70, cond: 16, condHero: 27, sub: 11.5, place: 13, date: 11, val: 18, unit: 11, glyph: 17, rowGap: 16, colGap: 22, flow: 12, scaleH: 5.5, moon: 26, arcH: 28, small: 10 }
 }
 
 const FONT = "'Roboto Flex', 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', sans-serif"
@@ -463,7 +463,7 @@ export default {
         boxSizing: 'border-box',
         borderRadius: this.u(5),
         border: `${this.u(1.6)} solid ${this.inkColor}`,
-        fontSize: this.u(8.5),
+        fontSize: this.u(8),
         fontWeight: 750,
         letterSpacing: '0.02em',
         lineHeight: 1,
@@ -495,10 +495,10 @@ export default {
       }
     },
     markStyle() {
-      return { fontSize: this.u(12.5), fontWeight: 650, letterSpacing: '0.46em', lineHeight: 1 }
+      return { fontSize: this.u(11.5), fontWeight: 650, letterSpacing: '0.46em', lineHeight: 1, flex: 'none' }
     },
     urlStyle() {
-      return { fontSize: this.u(11.5), fontWeight: 500, lineHeight: 1, letterSpacing: '0.01em', color: this.inkSoft }
+      return { fontSize: this.u(10.5), fontWeight: 500, lineHeight: 1, letterSpacing: '0.01em', color: this.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }
     }
   },
   methods: {
